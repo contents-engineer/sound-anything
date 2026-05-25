@@ -36,7 +36,10 @@ export class MockProvider {
       ].join('\n\n')
     }
 
-    const needsKrTranslation = opts.language !== null && opts.language !== '한국어'
+    const needsKrTranslation =
+      opts.language !== null &&
+      opts.language !== '한국어' &&
+      opts.language !== '한국어+영어 섞어서'
 
     const mockSectionKr = (label: string, n: number) =>
       `[${label}]\nMOCK ${n} ${label} 번역 첫번째 줄\nMOCK ${n} ${label} 번역 두번째 줄\nMOCK ${n} ${label} 번역 세번째 줄\nMOCK ${n} ${label} 번역 네번째 줄`
