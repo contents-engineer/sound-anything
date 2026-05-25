@@ -3,6 +3,7 @@ import type { GenerationMode, GenerationResult, Selections } from '@/types'
 import { MockProvider } from '@/lib/ai/mock'
 import { OpenAIProvider } from '@/lib/ai/openai'
 import { AnthropicProvider } from '@/lib/ai/anthropic'
+import { GeminiProvider } from '@/lib/ai/gemini'
 
 export interface AIProvider {
   name: string
@@ -19,7 +20,7 @@ export function getProvider(): AIProvider {
     case 'anthropic':
       return new AnthropicProvider()
     case 'gemini':
-      throw new Error(`Provider "${name}" is not yet implemented. Run with AI_PROVIDER=mock for now.`)
+      return new GeminiProvider()
     default:
       throw new Error(`Unknown AI_PROVIDER: ${name}`)
   }
