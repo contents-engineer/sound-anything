@@ -17,8 +17,9 @@ const TOOL = {
           properties: {
             title: { type: 'string' },
             concept: { type: 'string' },
+            lyrics: { type: 'string' },
           },
-          required: ['title', 'concept'],
+          required: ['title', 'concept', 'lyrics'],
         },
       },
     },
@@ -43,7 +44,7 @@ export class AnthropicProvider {
 
     const msg = await this.client.messages.create({
       model: this.model,
-      max_tokens: 4096,
+      max_tokens: 8192,
       system: [{ type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }],
       tools: [TOOL],
       tool_choice: { type: 'tool', name: 'submit_playlist' },

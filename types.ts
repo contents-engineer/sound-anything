@@ -29,6 +29,7 @@ export type Selections = {
 export type SongConcept = {
   title: string
   concept: string
+  lyrics: string
 }
 
 export type GenerationResult = {

@@ -8,8 +8,9 @@ const SONG_SCHEMA = {
   properties: {
     title:   { type: Type.STRING },
     concept: { type: Type.STRING },
+    lyrics:  { type: Type.STRING },
   },
-  required: ['title', 'concept'],
+  required: ['title', 'concept', 'lyrics'],
 }
 
 export class GeminiProvider {

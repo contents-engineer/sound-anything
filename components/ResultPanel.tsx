@@ -36,14 +36,24 @@ export function ResultPanel({ result }: { result: GenerationResult }) {
       </article>
 
       {result.songs && (
-        <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+        <div className="grid grid-cols-1 gap-3 lg:grid-cols-2">
           {result.songs.map((s, i) => (
-            <article key={i} className="rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm">
-              <header className="mb-1 flex items-center justify-between">
+            <article key={i} className="flex flex-col rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm">
+              <header className="mb-2 flex items-center justify-between gap-2">
                 <h4 className="text-sm font-semibold text-zinc-900">{i + 1}. {s.title}</h4>
-                <CopyButton text={`${s.title}\n\n${s.concept}`} />
+                <CopyButton text={`${s.title}\n\n${s.concept}\n\n${s.lyrics}`} />
               </header>
-              <p className="text-sm leading-relaxed text-zinc-700">{s.concept}</p>
+              <p className="mb-3 text-sm leading-relaxed text-zinc-700">{s.concept}</p>
+              <details className="mt-auto group rounded-lg border border-zinc-200 bg-zinc-50">
+                <summary className="flex cursor-pointer items-center justify-between px-3 py-2 text-xs font-medium text-zinc-700">
+                  <span>🎤 가사 (Suno 입력란용)</span>
+                  <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                    <CopyButton text={s.lyrics} />
+                    <span className="text-zinc-400 transition group-open:rotate-180">▾</span>
+                  </div>
+                </summary>
+                <pre className="overflow-x-auto whitespace-pre-wrap border-t border-zinc-200 bg-white px-3 py-2 font-mono text-xs leading-relaxed text-zinc-800">{s.lyrics}</pre>
+              </details>
             </article>
           ))}
         </div>

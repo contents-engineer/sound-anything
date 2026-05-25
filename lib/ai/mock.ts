@@ -21,9 +21,25 @@ export class MockProvider {
       return { mode, prompt, songs: null }
     }
 
+    const mockSection = (label: string, n: number) =>
+      `[${label}]\nMOCK ${n} ${label} 첫번째 줄 자리\nMOCK ${n} ${label} 두번째 줄 자리\nMOCK ${n} ${label} 세번째 줄 자리\nMOCK ${n} ${label} 네번째 줄 자리`
+
+    const mockLyrics = (n: number) => {
+      const chorus = `[Chorus]\nMOCK ${n} 후렴 첫번째 줄 자리\nMOCK ${n} 후렴 두번째 줄 자리\nMOCK ${n} 후렴 세번째 줄 자리\nMOCK ${n} 후렴 네번째 줄 자리`
+      return [
+        mockSection('Verse 1', n),
+        chorus,
+        mockSection('Verse 2', n),
+        mockSection('Bridge', n),
+        chorus,
+        mockSection('Outro', n),
+      ].join('\n\n')
+    }
+
     const songs: SongConcept[] = Array.from({ length: 10 }, (_, i) => ({
       title: `목업 트랙 ${i + 1}`,
       concept: `${summary} 분위기를 살린 ${opts.lengthMin}분짜리 트랙의 콘셉트 메모 ${i + 1}번. 실제 LLM 응답은 분위기·이미지·훅 아이디어를 두세 문장으로 묘사합니다.`,
+      lyrics: mockLyrics(i + 1),
     }))
 
     return { mode, prompt, songs }
