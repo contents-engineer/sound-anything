@@ -2,14 +2,18 @@
 'use client'
 
 import { useState } from 'react'
-import type { GenerationResult } from '@/types'
+import type { GenerationResult, SectionKey, Selections } from '@/types'
+import { SECTIONS } from '@/lib/options'
+
+const HAS_KOREAN = /[가-힣]/
 
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false)
   return (
     <button
       type="button"
-      onClick={async () => {
+      onClick={async (e) => {
+        e.stopPropagation()
         await navigator.clipboard.writeText(text)
         setCopied(true)
         setTimeout(() => setCopied(false), 1500)
@@ -21,9 +25,90 @@ function CopyButton({ text }: { text: string }) {
   )
 }
 
+type ChipItem = { label: string; emoji?: string; sectionKey?: SectionKey }
+
+function collectSelectionChips(selections: Selections): ChipItem[] {
+  const items: ChipItem[] = []
+  for (const sec of SECTIONS) {
+    const picks = selections[sec.key]
+    const arr = Array.isArray(picks) ? picks : picks ? [picks] : []
+    for (const label of arr) {
+      const preset = sec.presets.find((p) => p.label === label)
+      items.push({ label, emoji: preset?.emoji, sectionKey: sec.key })
+    }
+    const custom = selections.customInputs[sec.key]?.trim()
+    if (custom) items.push({ label: custom, sectionKey: sec.key })
+  }
+  items.push({ label: `${selections.lengthMin}분`, emoji: '⏳' })
+  return items
+}
+
+function SelectionMirror({ selections }: { selections: Selections }) {
+  const chips = collectSelectionChips(selections)
+  if (chips.length === 0) return null
+  return (
+    <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-violet-50 via-white to-fuchsia-50/40 p-5 shadow-sm ring-1 ring-violet-200/70">
+      <div className="pointer-events-none absolute -right-12 -top-12 h-32 w-32 rounded-full bg-violet-300/20 blur-2xl" aria-hidden />
+      <div className="relative mb-3 flex items-center gap-2">
+        <span
+          aria-hidden
+          className="flex h-7 w-7 items-center justify-center rounded-full bg-violet-600 text-sm text-white shadow-sm shadow-violet-300"
+        >
+          🎯
+        </span>
+        <span className="text-sm font-semibold tracking-tight text-violet-900">이 플레이리스트의 옵션</span>
+        <span className="ml-auto rounded-full bg-violet-600/10 px-2 py-0.5 text-xs font-medium text-violet-700">
+          {chips.length}개
+        </span>
+      </div>
+      <div className="relative flex flex-wrap gap-1.5">
+        {chips.map((it, i) => (
+          <span
+            key={`${it.sectionKey ?? 'len'}-${i}`}
+            className="inline-flex items-center gap-1.5 rounded-full bg-white px-3 py-1 text-xs font-medium text-zinc-800 shadow-sm ring-1 ring-violet-200/80 transition hover:-translate-y-0.5 hover:shadow-md hover:ring-violet-400"
+          >
+            {it.emoji && <span aria-hidden className="text-sm leading-none">{it.emoji}</span>}
+            <span>{it.label}</span>
+          </span>
+        ))}
+      </div>
+    </div>
+  )
+}
+
+function SongSummaryChips({ selections }: { selections: Selections }) {
+  const chips: ChipItem[] = []
+  const genre = selections.genre[0]
+  if (genre) {
+    const preset = SECTIONS.find((s) => s.key === 'genre')?.presets.find((p) => p.label === genre)
+    chips.push({ label: genre, emoji: preset?.emoji })
+  }
+  if (selections.bpm) {
+    const preset = SECTIONS.find((s) => s.key === 'bpm')?.presets.find((p) => p.label === selections.bpm)
+    chips.push({ label: selections.bpm, emoji: preset?.emoji })
+  }
+  chips.push({ label: `${selections.lengthMin}분`, emoji: '⏳' })
+  if (chips.length === 0) return null
+  return (
+    <div className="hidden flex-wrap gap-1 sm:flex">
+      {chips.map((it, i) => (
+        <span
+          key={i}
+          className="inline-flex items-center gap-1 rounded-full bg-zinc-100 px-2 py-0.5 text-[11px] text-zinc-600"
+        >
+          {it.emoji && <span aria-hidden>{it.emoji}</span>}
+          <span>{it.label}</span>
+        </span>
+      ))}
+    </div>
+  )
+}
+
 export function ResultPanel({ result }: { result: GenerationResult }) {
   return (
     <div className="mt-6 flex flex-col gap-4">
+      {result.selections && <SelectionMirror selections={result.selections} />}
+
       <article className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
         <header className="mb-2 flex items-center justify-between">
           <h3 className="text-sm font-semibold text-zinc-700">통합 프롬프트</h3>
@@ -37,55 +122,80 @@ export function ResultPanel({ result }: { result: GenerationResult }) {
 
       {result.songs && (
         <div className="flex flex-col gap-3">
-          {result.songs.map((s, i) => (
-            <details key={i} className="group overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm">
-              <summary className="flex cursor-pointer select-none items-center justify-between gap-2 px-5 py-4">
-                <h4 className="text-base font-semibold text-zinc-900">{i + 1}. {s.title}</h4>
-                <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                  <CopyButton text={`${s.title}\n\n[KO] ${s.titles.ko}\n[EN] ${s.titles.en}\n[JA] ${s.titles.ja}\n\n${s.lyrics}${s.lyricsKr ? `\n\n--- 한국어 번역 ---\n\n${s.lyricsKr}` : ''}`} />
-                  <span className="text-zinc-400 transition group-open:rotate-180">▾</span>
-                </div>
-              </summary>
-
-              <div className="border-t border-zinc-200 px-5 py-4">
-                <section>
-                  <div className="mb-1 text-xs font-medium text-zinc-500">🌐 언어별 타이틀</div>
-                  <dl className="grid gap-1 rounded-lg bg-zinc-50 p-3 text-sm">
-                    <div className="flex gap-3">
-                      <dt className="w-16 shrink-0 text-zinc-500">한국어</dt>
-                      <dd className="font-medium text-zinc-900">{s.titles.ko}</dd>
+          {result.songs.map((s, i) => {
+            const hasKoreanInLyrics = HAS_KOREAN.test(s.lyrics)
+            const isDuplicate = s.lyricsKr.trim() === s.lyrics.trim()
+            const showTranslation = !!s.lyricsKr && !hasKoreanInLyrics && !isDuplicate
+            return (
+              <details
+                key={i}
+                open={i === 0}
+                className="group overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm"
+              >
+                <summary className="flex cursor-pointer select-none items-start justify-between gap-3 px-5 py-4">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <h4 className="text-base font-semibold text-zinc-900">
+                        {i + 1}. {s.title}
+                      </h4>
+                      {result.selections && <SongSummaryChips selections={result.selections} />}
                     </div>
-                    <div className="flex gap-3">
-                      <dt className="w-16 shrink-0 text-zinc-500">English</dt>
-                      <dd className="font-medium text-zinc-900">{s.titles.en}</dd>
-                    </div>
-                    <div className="flex gap-3">
-                      <dt className="w-16 shrink-0 text-zinc-500">日本語</dt>
-                      <dd className="font-medium text-zinc-900">{s.titles.ja}</dd>
-                    </div>
-                  </dl>
-                </section>
-
-                <section className="mt-3">
-                  <div className="mb-1 flex items-center justify-between">
-                    <span className="text-xs font-medium text-zinc-500">🎤 가사 (Suno 입력란용)</span>
-                    <CopyButton text={s.lyrics} />
                   </div>
-                  <pre className="overflow-x-auto whitespace-pre-wrap rounded-lg bg-zinc-50 p-3 font-mono text-sm leading-relaxed text-zinc-800">{s.lyrics}</pre>
-                </section>
+                  <div className="flex shrink-0 items-center gap-2">
+                    <CopyButton
+                      text={`${s.title}\n\n[KO] ${s.titles.ko}\n[EN] ${s.titles.en}\n[JA] ${s.titles.ja}\n\n${s.lyrics}${showTranslation ? `\n\n--- 한국어 번역 ---\n\n${s.lyricsKr}` : ''}`}
+                    />
+                    <span className="text-zinc-400 transition group-open:rotate-180">▾</span>
+                  </div>
+                </summary>
 
-                {s.lyricsKr && (
+                <div className="border-t border-zinc-200 px-5 py-4">
+                  {s.concept && (
+                    <section className="mb-3 rounded-lg border-l-2 border-violet-300 bg-violet-50/40 px-3 py-2">
+                      <div className="mb-0.5 text-xs font-medium text-zinc-500">💡 곡 콘셉트</div>
+                      <p className="text-sm leading-relaxed text-zinc-800">{s.concept}</p>
+                    </section>
+                  )}
+
+                  <section>
+                    <div className="mb-1 text-xs font-medium text-zinc-500">🌐 언어별 타이틀</div>
+                    <dl className="grid gap-1 rounded-lg bg-zinc-50 p-3 text-sm">
+                      <div className="flex gap-3">
+                        <dt className="w-16 shrink-0 text-zinc-500">한국어</dt>
+                        <dd className="font-medium text-zinc-900">{s.titles.ko}</dd>
+                      </div>
+                      <div className="flex gap-3">
+                        <dt className="w-16 shrink-0 text-zinc-500">English</dt>
+                        <dd className="font-medium text-zinc-900" lang="en">{s.titles.en}</dd>
+                      </div>
+                      <div className="flex gap-3">
+                        <dt className="w-16 shrink-0 text-zinc-500">日本語</dt>
+                        <dd className="font-medium text-zinc-900" lang="ja">{s.titles.ja}</dd>
+                      </div>
+                    </dl>
+                  </section>
+
                   <section className="mt-3">
                     <div className="mb-1 flex items-center justify-between">
-                      <span className="text-xs font-medium text-zinc-500">🇰🇷 한국어 번역</span>
-                      <CopyButton text={s.lyricsKr} />
+                      <span className="text-xs font-medium text-zinc-500">🎤 가사 (Suno 입력란용)</span>
+                      <CopyButton text={s.lyrics} />
                     </div>
-                    <pre className="overflow-x-auto whitespace-pre-wrap rounded-lg bg-zinc-50 p-3 font-mono text-sm leading-relaxed text-zinc-800">{s.lyricsKr}</pre>
+                    <pre className="overflow-x-auto whitespace-pre-wrap rounded-lg bg-zinc-50 p-3 font-mono text-sm leading-relaxed text-zinc-800">{s.lyrics}</pre>
                   </section>
-                )}
-              </div>
-            </details>
-          ))}
+
+                  {showTranslation && (
+                    <section className="mt-3">
+                      <div className="mb-1 flex items-center justify-between">
+                        <span className="text-xs font-medium text-zinc-500">🇰🇷 한국어 번역</span>
+                        <CopyButton text={s.lyricsKr} />
+                      </div>
+                      <pre className="overflow-x-auto whitespace-pre-wrap rounded-lg bg-zinc-50 p-3 font-mono text-sm leading-relaxed text-zinc-800">{s.lyricsKr}</pre>
+                    </section>
+                  )}
+                </div>
+              </details>
+            )
+          })}
         </div>
       )}
     </div>

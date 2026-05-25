@@ -34,10 +34,11 @@ export function OptionSection({
           <span>{number}. {title}</span>
           <span className="text-sm font-normal text-zinc-500">({subtitle})</span>
           <span className={[
-            'ml-auto rounded-full px-2 py-0.5 text-xs',
+            'ml-auto shrink-0 whitespace-nowrap rounded-full px-2 py-0.5 text-xs',
             multi ? 'bg-violet-100 text-violet-700' : 'bg-zinc-100 text-zinc-500',
           ].join(' ')}>
-            {multi ? '다중 선택 가능' : '단일 선택'}
+            <span className="sm:hidden">{multi ? '중복' : '단일'}</span>
+            <span className="hidden sm:inline">{multi ? '중복 선택 가능' : '단일 선택'}</span>
           </span>
         </h2>
       </header>

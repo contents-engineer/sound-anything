@@ -1,7 +1,7 @@
 // app/page.tsx
 'use client'
 
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import type { GenerationMode, GenerationResult, Selections, SectionKey } from '@/types'
 import { SECTIONS } from '@/lib/options'
 import { OptionSection } from '@/components/OptionSection'
@@ -9,6 +9,7 @@ import { LengthSlider } from '@/components/LengthSlider'
 import { ResultPanel } from '@/components/ResultPanel'
 import { HistoryDrawer } from '@/components/HistoryDrawer'
 import { loadHistory, pushHistory, clearHistory } from '@/lib/history'
+import { isEmptySelections } from '@/lib/promptBuilder'
 
 const EMPTY: Selections = {
   genre: [], mood: [], vocal: [], usage: [], instrument: [],
@@ -26,6 +27,7 @@ export default function Page() {
   const [history, setHistory] = useState<GenerationResult[]>([])
   const [historyOpen, setHistoryOpen] = useState(false)
   const resultRef = useRef<HTMLDivElement>(null)
+  const isEmpty = useMemo(() => isEmptySelections(selections), [selections])
 
   useEffect(() => { setHistory(loadHistory()) }, [])
 
@@ -66,8 +68,9 @@ export default function Page() {
         setError(data?.error?.message ?? '알 수 없는 오류')
         return
       }
-      setResult(data as GenerationResult)
-      setHistory(pushHistory(data as GenerationResult))
+      const enriched: GenerationResult = { ...(data as GenerationResult), selections }
+      setResult(enriched)
+      setHistory(pushHistory(enriched))
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : '네트워크 오류')
     } finally {
@@ -79,8 +82,8 @@ export default function Page() {
     <div className="mx-auto max-w-5xl px-4 py-8">
       <header className="mb-6 flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold">플레이리스트 음악 만들기</h1>
-          <p className="text-sm text-zinc-500">프롬프트 + 10곡 콘셉트를 한 번에 생성합니다</p>
+          <h1 className="text-2xl font-bold">AI 음악 콘셉트 스튜디오</h1>
+          <p className="text-sm text-zinc-500">프롬프트 + 1곡 또는 10곡 콘셉트를 생성합니다</p>
         </div>
         <button
           type="button"
@@ -114,23 +117,28 @@ export default function Page() {
         />
       </div>
 
-      <div className="sticky bottom-4 z-10 mt-6 flex flex-wrap gap-3 rounded-2xl border border-zinc-200 bg-white/90 p-4 shadow-lg backdrop-blur">
+      <div className="sticky bottom-4 z-10 mt-6 flex flex-wrap items-center gap-3 rounded-2xl border border-zinc-200 bg-white/90 p-4 shadow-lg backdrop-blur">
         <button
           type="button"
-          disabled={loading !== null}
-          onClick={() => generate('prompt-only')}
-          className="rounded-xl border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50 disabled:opacity-50"
+          disabled={loading !== null || isEmpty}
+          title={isEmpty ? '먼저 옵션을 하나 이상 선택하세요' : undefined}
+          onClick={() => generate('single')}
+          className="rounded-xl border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {loading === 'prompt-only' ? '생성 중…' : '단일 스타일 프롬프트 생성'}
+          {loading === 'single' ? '생성 중…' : '1곡 생성'}
         </button>
         <button
           type="button"
-          disabled={loading !== null}
+          disabled={loading !== null || isEmpty}
+          title={isEmpty ? '먼저 옵션을 하나 이상 선택하세요' : undefined}
           onClick={() => generate('full')}
-          className="rounded-xl bg-violet-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-violet-700 disabled:opacity-50"
+          className="rounded-xl bg-violet-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-50"
         >
-          {loading === 'full' ? '생성 중…' : 'Playlist 만들기'}
+          {loading === 'full' ? '생성 중…' : '10곡 생성'}
         </button>
+        {isEmpty && !error && (
+          <span className="text-xs text-zinc-500">옵션을 1개 이상 선택해 주세요</span>
+        )}
         {error && <span className="text-sm text-red-600">⚠ {error}</span>}
       </div>
 

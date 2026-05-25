@@ -56,7 +56,8 @@ export class MockProvider {
       ].join('\n\n')
     }
 
-    const songs: SongConcept[] = Array.from({ length: 10 }, (_, i) => ({
+    const songCount = mode === 'single' ? 1 : 10
+    const songs: SongConcept[] = Array.from({ length: songCount }, (_, i) => ({
       title: `목업 트랙 ${i + 1}`,
       titles: {
         ko: `목업 트랙 ${i + 1}`,

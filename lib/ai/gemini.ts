@@ -40,7 +40,7 @@ export class GeminiProvider {
   async generate(opts: Selections, mode: GenerationMode): Promise<Omit<GenerationResult, 'generatedAt' | 'provider'>> {
     const userPrompt = buildUserPrompt(opts, mode)
 
-    const schema = mode === 'full'
+    const schema = mode !== 'prompt-only'
       ? {
           type: Type.OBJECT,
           properties: {
@@ -70,6 +70,6 @@ export class GeminiProvider {
 
     const text = resp.text ?? ''
     const parsed = JSON.parse(text) as { prompt: string; songs?: GenerationResult['songs'] }
-    return { mode, prompt: parsed.prompt, songs: mode === 'full' ? parsed.songs ?? null : null }
+    return { mode, prompt: parsed.prompt, songs: mode !== 'prompt-only' ? parsed.songs ?? null : null }
   }
 }

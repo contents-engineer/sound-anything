@@ -64,6 +64,6 @@ export class AnthropicProvider {
     const toolUse = msg.content.find((b) => b.type === 'tool_use')
     if (!toolUse || toolUse.type !== 'tool_use') throw new Error('Anthropic did not return tool_use block')
     const input = toolUse.input as { prompt: string; songs: GenerationResult['songs'] }
-    return { mode, prompt: input.prompt, songs: mode === 'full' ? input.songs : null }
+    return { mode, prompt: input.prompt, songs: mode !== 'prompt-only' ? input.songs : null }
   }
 }

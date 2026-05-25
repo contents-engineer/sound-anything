@@ -1,5 +1,5 @@
 // types.ts
-export type GenerationMode = 'prompt-only' | 'full'
+export type GenerationMode = 'prompt-only' | 'single' | 'full'
 
 export type SectionKey =
   | 'genre'
@@ -40,6 +40,7 @@ export type GenerationResult = {
   songs: SongConcept[] | null
   generatedAt: string
   provider: string
+  selections?: Selections
 }
 
 export type ApiError = {

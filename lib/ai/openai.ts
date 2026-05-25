@@ -38,6 +38,6 @@ export class OpenAIProvider {
     } catch {
       parsed = await call('이전 응답이 JSON 스키마를 어겼습니다. 반드시 {"prompt": string, "songs": null | Array<{title,concept}>} 형태로만 답하세요.')
     }
-    return { mode, prompt: parsed.prompt, songs: mode === 'full' ? parsed.songs : null }
+    return { mode, prompt: parsed.prompt, songs: mode !== 'prompt-only' ? parsed.songs : null }
   }
 }
