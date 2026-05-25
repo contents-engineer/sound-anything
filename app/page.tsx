@@ -6,6 +6,7 @@ import type { GenerationMode, GenerationResult, Selections, SectionKey } from '@
 import { SECTIONS } from '@/lib/options'
 import { OptionSection } from '@/components/OptionSection'
 import { LengthSlider } from '@/components/LengthSlider'
+import { ResultPanel } from '@/components/ResultPanel'
 
 const EMPTY: Selections = {
   genre: [], mood: [], vocal: [], usage: [], instrument: [],
@@ -109,12 +110,7 @@ export default function Page() {
         {error && <span className="text-sm text-red-600">⚠ {error}</span>}
       </div>
 
-      {/* ResultPanel slot — filled in Task 11 */}
-      {result && (
-        <pre className="mt-6 overflow-auto rounded-2xl border border-zinc-200 bg-zinc-900 p-4 text-xs text-zinc-100">
-          {JSON.stringify(result, null, 2)}
-        </pre>
-      )}
+      {result && <ResultPanel result={result} />}
     </div>
   )
 }
