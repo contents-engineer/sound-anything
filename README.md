@@ -1,36 +1,36 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Sound Anything — Playlist Music Creator Clone
 
-## Getting Started
+A Next.js 15 clone of TubeMaster's "플레이리스트 음악 만들기" page. Pick from 10 categories of musical attributes and an LLM generates a composite music-generation prompt plus 10 original song concepts (title + brief mood/imagery summary). Outputs are designed to be pasted into AI music services like Suno or Udio.
 
-First, run the development server:
+## Setup
 
 ```bash
+npm install
+cp .env.example .env.local
+# edit .env.local — pick a provider and add its key, or leave AI_PROVIDER=mock
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open http://localhost:3000.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Providers
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+Set `AI_PROVIDER` in `.env.local` to one of:
 
-## Learn More
+| Provider  | Env var(s)                                     |
+| --------- | ---------------------------------------------- |
+| `mock`    | none — deterministic dummy data, useful for UI work |
+| `openai`  | `OPENAI_API_KEY`, optional `OPENAI_MODEL`      |
+| `anthropic` | `ANTHROPIC_API_KEY`, optional `ANTHROPIC_MODEL` |
+| `gemini`  | `GOOGLE_API_KEY`, optional `GEMINI_MODEL`      |
 
-To learn more about Next.js, take a look at the following resources:
+The API key never leaves the server — all LLM calls go through `/api/generate`.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## What this app generates
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+- A single composite music-generation prompt.
+- 10 song concepts (each: short original title + 2–3 sentence description of mood, imagery, and hook idea). The concepts are creative metadata, not lyric text.
 
-## Deploy on Vercel
+## Design / Plan
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+See `docs/superpowers/specs/` and `docs/superpowers/plans/`.
