@@ -3,15 +3,26 @@ import { GoogleGenAI, Type } from '@google/genai'
 import type { GenerationMode, GenerationResult, Selections } from '@/types'
 import { SYSTEM_PROMPT, buildUserPrompt } from '@/lib/promptBuilder'
 
+const TITLES_SCHEMA = {
+  type: Type.OBJECT,
+  properties: {
+    ko: { type: Type.STRING },
+    en: { type: Type.STRING },
+    ja: { type: Type.STRING },
+  },
+  required: ['ko', 'en', 'ja'],
+}
+
 const SONG_SCHEMA = {
   type: Type.OBJECT,
   properties: {
     title:    { type: Type.STRING },
+    titles:   TITLES_SCHEMA,
     concept:  { type: Type.STRING },
     lyrics:   { type: Type.STRING },
     lyricsKr: { type: Type.STRING },
   },
-  required: ['title', 'concept', 'lyrics', 'lyricsKr'],
+  required: ['title', 'titles', 'concept', 'lyrics', 'lyricsKr'],
 }
 
 export class GeminiProvider {

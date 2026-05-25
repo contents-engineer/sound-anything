@@ -16,11 +16,20 @@ const TOOL = {
           type: 'object',
           properties: {
             title: { type: 'string' },
+            titles: {
+              type: 'object',
+              properties: {
+                ko: { type: 'string' },
+                en: { type: 'string' },
+                ja: { type: 'string' },
+              },
+              required: ['ko', 'en', 'ja'],
+            },
             concept: { type: 'string' },
             lyrics: { type: 'string' },
             lyricsKr: { type: 'string' },
           },
-          required: ['title', 'concept', 'lyrics', 'lyricsKr'],
+          required: ['title', 'titles', 'concept', 'lyrics', 'lyricsKr'],
         },
       },
     },

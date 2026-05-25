@@ -28,6 +28,7 @@ export type Selections = {
 
 export type SongConcept = {
   title: string
+  titles: { ko: string; en: string; ja: string }
   concept: string
   lyrics: string
   lyricsKr: string

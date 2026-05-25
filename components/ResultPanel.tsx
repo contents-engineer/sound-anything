@@ -42,13 +42,31 @@ export function ResultPanel({ result }: { result: GenerationResult }) {
               <summary className="flex cursor-pointer select-none items-center justify-between gap-2 px-5 py-4">
                 <h4 className="text-base font-semibold text-zinc-900">{i + 1}. {s.title}</h4>
                 <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
-                  <CopyButton text={`${s.title}\n\n${s.lyrics}${s.lyricsKr ? `\n\n--- 한국어 번역 ---\n\n${s.lyricsKr}` : ''}`} />
+                  <CopyButton text={`${s.title}\n\n[KO] ${s.titles.ko}\n[EN] ${s.titles.en}\n[JA] ${s.titles.ja}\n\n${s.lyrics}${s.lyricsKr ? `\n\n--- 한국어 번역 ---\n\n${s.lyricsKr}` : ''}`} />
                   <span className="text-zinc-400 transition group-open:rotate-180">▾</span>
                 </div>
               </summary>
 
               <div className="border-t border-zinc-200 px-5 py-4">
                 <section>
+                  <div className="mb-1 text-xs font-medium text-zinc-500">🌐 언어별 타이틀</div>
+                  <dl className="grid gap-1 rounded-lg bg-zinc-50 p-3 text-sm">
+                    <div className="flex gap-3">
+                      <dt className="w-16 shrink-0 text-zinc-500">한국어</dt>
+                      <dd className="font-medium text-zinc-900">{s.titles.ko}</dd>
+                    </div>
+                    <div className="flex gap-3">
+                      <dt className="w-16 shrink-0 text-zinc-500">English</dt>
+                      <dd className="font-medium text-zinc-900">{s.titles.en}</dd>
+                    </div>
+                    <div className="flex gap-3">
+                      <dt className="w-16 shrink-0 text-zinc-500">日本語</dt>
+                      <dd className="font-medium text-zinc-900">{s.titles.ja}</dd>
+                    </div>
+                  </dl>
+                </section>
+
+                <section className="mt-3">
                   <div className="mb-1 flex items-center justify-between">
                     <span className="text-xs font-medium text-zinc-500">🎤 가사 (Suno 입력란용)</span>
                     <CopyButton text={s.lyrics} />

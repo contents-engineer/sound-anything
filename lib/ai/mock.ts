@@ -55,6 +55,11 @@ export class MockProvider {
 
     const songs: SongConcept[] = Array.from({ length: 10 }, (_, i) => ({
       title: `목업 트랙 ${i + 1}`,
+      titles: {
+        ko: `목업 트랙 ${i + 1}`,
+        en: `Mock Track ${i + 1}`,
+        ja: `モックトラック ${i + 1}`,
+      },
       concept: `${summary} 분위기를 살린 ${opts.lengthMin}분짜리 트랙의 콘셉트 메모 ${i + 1}번. 실제 LLM 응답은 분위기·이미지·훅 아이디어를 두세 문장으로 묘사합니다.`,
       lyrics: mockLyrics(i + 1),
       lyricsKr: needsKrTranslation ? mockLyricsKr(i + 1) : '',
