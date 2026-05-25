@@ -30,6 +30,7 @@ export type SongConcept = {
   title: string
   concept: string
   lyrics: string
+  lyricsKr: string
 }
 
 export type GenerationResult = {

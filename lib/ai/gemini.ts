@@ -6,11 +6,12 @@ import { SYSTEM_PROMPT, buildUserPrompt } from '@/lib/promptBuilder'
 const SONG_SCHEMA = {
   type: Type.OBJECT,
   properties: {
-    title:   { type: Type.STRING },
-    concept: { type: Type.STRING },
-    lyrics:  { type: Type.STRING },
+    title:    { type: Type.STRING },
+    concept:  { type: Type.STRING },
+    lyrics:   { type: Type.STRING },
+    lyricsKr: { type: Type.STRING },
   },
-  required: ['title', 'concept', 'lyrics'],
+  required: ['title', 'concept', 'lyrics', 'lyricsKr'],
 }
 
 export class GeminiProvider {

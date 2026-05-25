@@ -36,10 +36,28 @@ export class MockProvider {
       ].join('\n\n')
     }
 
+    const needsKrTranslation = opts.language !== null && opts.language !== '한국어'
+
+    const mockSectionKr = (label: string, n: number) =>
+      `[${label}]\nMOCK ${n} ${label} 번역 첫번째 줄\nMOCK ${n} ${label} 번역 두번째 줄\nMOCK ${n} ${label} 번역 세번째 줄\nMOCK ${n} ${label} 번역 네번째 줄`
+
+    const mockLyricsKr = (n: number) => {
+      const chorus = `[Chorus]\nMOCK ${n} 후렴 번역 첫번째 줄\nMOCK ${n} 후렴 번역 두번째 줄\nMOCK ${n} 후렴 번역 세번째 줄\nMOCK ${n} 후렴 번역 네번째 줄`
+      return [
+        mockSectionKr('Verse 1', n),
+        chorus,
+        mockSectionKr('Verse 2', n),
+        mockSectionKr('Bridge', n),
+        chorus,
+        mockSectionKr('Outro', n),
+      ].join('\n\n')
+    }
+
     const songs: SongConcept[] = Array.from({ length: 10 }, (_, i) => ({
       title: `목업 트랙 ${i + 1}`,
       concept: `${summary} 분위기를 살린 ${opts.lengthMin}분짜리 트랙의 콘셉트 메모 ${i + 1}번. 실제 LLM 응답은 분위기·이미지·훅 아이디어를 두세 문장으로 묘사합니다.`,
       lyrics: mockLyrics(i + 1),
+      lyricsKr: needsKrTranslation ? mockLyricsKr(i + 1) : '',
     }))
 
     return { mode, prompt, songs }

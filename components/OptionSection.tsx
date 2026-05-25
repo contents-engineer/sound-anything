@@ -33,7 +33,12 @@ export function OptionSection({
           <span>{emoji}</span>
           <span>{number}. {title}</span>
           <span className="text-sm font-normal text-zinc-500">({subtitle})</span>
-          {!multi && <span className="ml-auto text-xs text-zinc-500">단일 선택</span>}
+          <span className={[
+            'ml-auto rounded-full px-2 py-0.5 text-xs',
+            multi ? 'bg-violet-100 text-violet-700' : 'bg-zinc-100 text-zinc-500',
+          ].join(' ')}>
+            {multi ? '다중 선택 가능' : '단일 선택'}
+          </span>
         </h2>
       </header>
       <div className="flex flex-wrap gap-2">
