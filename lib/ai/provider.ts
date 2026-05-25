@@ -1,6 +1,7 @@
 // lib/ai/provider.ts
 import type { GenerationMode, GenerationResult, Selections } from '@/types'
 import { MockProvider } from '@/lib/ai/mock'
+import { OpenAIProvider } from '@/lib/ai/openai'
 
 export interface AIProvider {
   name: string
@@ -13,6 +14,7 @@ export function getProvider(): AIProvider {
     case 'mock':
       return new MockProvider()
     case 'openai':
+      return new OpenAIProvider()
     case 'anthropic':
     case 'gemini':
       throw new Error(`Provider "${name}" is not yet implemented. Run with AI_PROVIDER=mock for now.`)
