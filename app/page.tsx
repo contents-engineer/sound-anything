@@ -1,12 +1,14 @@
 // app/page.tsx
 'use client'
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import type { GenerationMode, GenerationResult, Selections, SectionKey } from '@/types'
 import { SECTIONS } from '@/lib/options'
 import { OptionSection } from '@/components/OptionSection'
 import { LengthSlider } from '@/components/LengthSlider'
 import { ResultPanel } from '@/components/ResultPanel'
+import { HistoryDrawer } from '@/components/HistoryDrawer'
+import { loadHistory, pushHistory, clearHistory } from '@/lib/history'
 
 const EMPTY: Selections = {
   genre: [], mood: [], vocal: [], usage: [], instrument: [],
@@ -21,6 +23,10 @@ export default function Page() {
   const [loading, setLoading] = useState<GenerationMode | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<GenerationResult | null>(null)
+  const [history, setHistory] = useState<GenerationResult[]>([])
+  const [historyOpen, setHistoryOpen] = useState(false)
+
+  useEffect(() => { setHistory(loadHistory()) }, [])
 
   function toggle(key: SectionKey, label: string) {
     setSelections((s) => {
@@ -53,6 +59,7 @@ export default function Page() {
         return
       }
       setResult(data as GenerationResult)
+      setHistory(pushHistory(data as GenerationResult))
     } catch (e: unknown) {
       setError(e instanceof Error ? e.message : '네트워크 오류')
     } finally {
@@ -62,9 +69,18 @@ export default function Page() {
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
-      <header className="mb-6">
-        <h1 className="text-2xl font-bold">플레이리스트 음악 만들기</h1>
-        <p className="text-sm text-zinc-500">프롬프트 + 10곡 콘셉트를 한 번에 생성합니다</p>
+      <header className="mb-6 flex items-start justify-between">
+        <div>
+          <h1 className="text-2xl font-bold">플레이리스트 음악 만들기</h1>
+          <p className="text-sm text-zinc-500">프롬프트 + 10곡 콘셉트를 한 번에 생성합니다</p>
+        </div>
+        <button
+          type="button"
+          onClick={() => setHistoryOpen(true)}
+          className="rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50"
+        >
+          히스토리 {history.length}
+        </button>
       </header>
 
       <div className="flex flex-col gap-4">
@@ -111,6 +127,14 @@ export default function Page() {
       </div>
 
       {result && <ResultPanel result={result} />}
+
+      <HistoryDrawer
+        open={historyOpen}
+        entries={history}
+        onClose={() => setHistoryOpen(false)}
+        onSelect={(e) => { setResult(e); setHistoryOpen(false) }}
+        onClear={() => { clearHistory(); setHistory([]) }}
+      />
     </div>
   )
 }
