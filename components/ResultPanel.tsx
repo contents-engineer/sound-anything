@@ -36,35 +36,37 @@ export function ResultPanel({ result }: { result: GenerationResult }) {
       </article>
 
       {result.songs && (
-        <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3">
           {result.songs.map((s, i) => (
-            <article key={i} className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
-              <header className="mb-3 flex items-center justify-between gap-2">
+            <details key={i} className="group overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm">
+              <summary className="flex cursor-pointer select-none items-center justify-between gap-2 px-5 py-4">
                 <h4 className="text-base font-semibold text-zinc-900">{i + 1}. {s.title}</h4>
-                <CopyButton text={`${s.title}\n\n${s.lyrics}${s.lyricsKr ? `\n\n--- 한국어 번역 ---\n\n${s.lyricsKr}` : ''}`} />
-              </header>
-
-              <section>
-                <div className="mb-1 flex items-center justify-between">
-                  <span className="text-xs font-medium text-zinc-500">🎤 가사 (Suno 입력란용)</span>
-                  <CopyButton text={s.lyrics} />
+                <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+                  <CopyButton text={`${s.title}\n\n${s.lyrics}${s.lyricsKr ? `\n\n--- 한국어 번역 ---\n\n${s.lyricsKr}` : ''}`} />
+                  <span className="text-zinc-400 transition group-open:rotate-180">▾</span>
                 </div>
-                <pre className="overflow-x-auto whitespace-pre-wrap rounded-lg bg-zinc-50 p-3 font-mono text-sm leading-relaxed text-zinc-800">{s.lyrics}</pre>
-              </section>
+              </summary>
 
-              {s.lyricsKr && (
-                <details className="group mt-3 rounded-lg border border-zinc-200 bg-zinc-50" open>
-                  <summary className="flex cursor-pointer items-center justify-between px-3 py-2 text-xs font-medium text-zinc-700">
-                    <span>🇰🇷 한국어 번역</span>
-                    <div className="flex items-center gap-2" onClick={(e) => e.stopPropagation()}>
+              <div className="border-t border-zinc-200 px-5 py-4">
+                <section>
+                  <div className="mb-1 flex items-center justify-between">
+                    <span className="text-xs font-medium text-zinc-500">🎤 가사 (Suno 입력란용)</span>
+                    <CopyButton text={s.lyrics} />
+                  </div>
+                  <pre className="overflow-x-auto whitespace-pre-wrap rounded-lg bg-zinc-50 p-3 font-mono text-sm leading-relaxed text-zinc-800">{s.lyrics}</pre>
+                </section>
+
+                {s.lyricsKr && (
+                  <section className="mt-3">
+                    <div className="mb-1 flex items-center justify-between">
+                      <span className="text-xs font-medium text-zinc-500">🇰🇷 한국어 번역</span>
                       <CopyButton text={s.lyricsKr} />
-                      <span className="text-zinc-400 transition group-open:rotate-180">▾</span>
                     </div>
-                  </summary>
-                  <pre className="overflow-x-auto whitespace-pre-wrap border-t border-zinc-200 bg-white px-3 py-2 font-mono text-sm leading-relaxed text-zinc-800">{s.lyricsKr}</pre>
-                </details>
-              )}
-            </article>
+                    <pre className="overflow-x-auto whitespace-pre-wrap rounded-lg bg-zinc-50 p-3 font-mono text-sm leading-relaxed text-zinc-800">{s.lyricsKr}</pre>
+                  </section>
+                )}
+              </div>
+            </details>
           ))}
         </div>
       )}

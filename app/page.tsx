@@ -1,7 +1,7 @@
 // app/page.tsx
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import type { GenerationMode, GenerationResult, Selections, SectionKey } from '@/types'
 import { SECTIONS } from '@/lib/options'
 import { OptionSection } from '@/components/OptionSection'
@@ -25,8 +25,16 @@ export default function Page() {
   const [result, setResult] = useState<GenerationResult | null>(null)
   const [history, setHistory] = useState<GenerationResult[]>([])
   const [historyOpen, setHistoryOpen] = useState(false)
+  const resultRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => { setHistory(loadHistory()) }, [])
+
+  useEffect(() => {
+    if (!result) return
+    requestAnimationFrame(() => {
+      resultRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    })
+  }, [result])
 
   function toggle(key: SectionKey, label: string) {
     setSelections((s) => {
@@ -126,7 +134,11 @@ export default function Page() {
         {error && <span className="text-sm text-red-600">⚠ {error}</span>}
       </div>
 
-      {result && <ResultPanel result={result} />}
+      {result && (
+        <div ref={resultRef} className="scroll-mt-4">
+          <ResultPanel result={result} />
+        </div>
+      )}
 
       <HistoryDrawer
         open={historyOpen}
