@@ -5,18 +5,22 @@ import { SYSTEM_PROMPT, buildUserPrompt } from '@/lib/promptBuilder'
 
 export class OpenAIProvider {
   name = 'openai'
+  private client: OpenAI
+  private model: string
 
-  async generate(opts: Selections, mode: GenerationMode): Promise<Omit<GenerationResult, 'generatedAt' | 'provider'>> {
+  constructor() {
     const apiKey = process.env.OPENAI_API_KEY
     if (!apiKey) throw new Error('OPENAI_API_KEY is not set')
-    const model = process.env.OPENAI_MODEL ?? 'gpt-4o-mini'
-    const client = new OpenAI({ apiKey })
+    this.model = process.env.OPENAI_MODEL ?? 'gpt-4o-mini'
+    this.client = new OpenAI({ apiKey })
+  }
 
+  async generate(opts: Selections, mode: GenerationMode): Promise<Omit<GenerationResult, 'generatedAt' | 'provider'>> {
     const userPrompt = buildUserPrompt(opts, mode)
 
     const call = async (extraInstruction = '') => {
-      const completion = await client.chat.completions.create({
-        model,
+      const completion = await this.client.chat.completions.create({
+        model: this.model,
         response_format: { type: 'json_object' },
         messages: [
           { role: 'system', content: SYSTEM_PROMPT + (extraInstruction ? `\n\n${extraInstruction}` : '') },
