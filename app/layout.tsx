@@ -3,7 +3,7 @@ import type { Metadata } from 'next'
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'AI 음악 콘셉트 스튜디오',
+  title: 'Suno.ai Lyrics Generator',
   description: '옵션을 선택해 AI 음악 생성용 프롬프트와 곡 콘셉트·가사를 만드는 도구',
 }
 

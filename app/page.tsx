@@ -12,12 +12,12 @@ import { loadHistory, pushHistory, clearHistory } from '@/lib/history'
 import { isEmptySelections } from '@/lib/promptBuilder'
 
 const EMPTY: Selections = {
-  genre: [], mood: [], vocal: [], usage: [], instrument: [],
+  genre: null, mood: [], vocal: [], usage: null, instrument: [],
   bpm: null, age: null, language: null,
   topic: [], lengthMin: 3, customInputs: {},
 }
 
-const MULTI_KEYS: SectionKey[] = ['genre', 'mood', 'vocal', 'usage', 'instrument', 'topic']
+const MULTI_KEYS: SectionKey[] = ['mood', 'vocal', 'instrument', 'topic']
 
 export default function Page() {
   const [selections, setSelections] = useState<Selections>(EMPTY)
@@ -82,7 +82,7 @@ export default function Page() {
     <div className="mx-auto max-w-5xl px-4 py-8">
       <header className="mb-6 flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold">AI 음악 콘셉트 스튜디오</h1>
+          <h1 className="text-2xl font-bold">Suno.ai Lyrics Generator</h1>
           <p className="text-sm text-zinc-500">프롬프트 + 1곡 또는 10곡 콘셉트를 생성합니다</p>
         </div>
         <button

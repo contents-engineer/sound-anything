@@ -1,7 +1,31 @@
 // lib/ai/anthropic.ts
 import Anthropic from '@anthropic-ai/sdk'
-import type { GenerationMode, GenerationResult, Selections } from '@/types'
-import { SYSTEM_PROMPT, buildUserPrompt } from '@/lib/promptBuilder'
+import type { GenerationMode, GenerationResult, GrammarCheckResult, Selections } from '@/types'
+import { GRAMMAR_SYSTEM_PROMPT, SYSTEM_PROMPT, buildGrammarUserPrompt, buildUserPrompt } from '@/lib/promptBuilder'
+
+const GRAMMAR_TOOL = {
+  name: 'submit_grammar_check',
+  description: 'Return grammar-corrected lyrics and the list of corrections made.',
+  input_schema: {
+    type: 'object' as const,
+    properties: {
+      corrected: { type: 'string' },
+      corrections: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            from: { type: 'string' },
+            to: { type: 'string' },
+            reason: { type: 'string' },
+          },
+          required: ['from', 'to', 'reason'],
+        },
+      },
+    },
+    required: ['corrected', 'corrections'],
+  },
+}
 
 const TOOL = {
   name: 'submit_playlist',
@@ -65,5 +89,23 @@ export class AnthropicProvider {
     if (!toolUse || toolUse.type !== 'tool_use') throw new Error('Anthropic did not return tool_use block')
     const input = toolUse.input as { prompt: string; songs: GenerationResult['songs'] }
     return { mode, prompt: input.prompt, songs: mode !== 'prompt-only' ? input.songs : null }
+  }
+
+  async checkGrammar(lyrics: string, language?: string | null): Promise<Omit<GrammarCheckResult, 'checkedAt' | 'provider'>> {
+    const userPrompt = buildGrammarUserPrompt(lyrics, language)
+
+    const msg = await this.client.messages.create({
+      model: this.model,
+      max_tokens: 4096,
+      system: [{ type: 'text', text: GRAMMAR_SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }],
+      tools: [GRAMMAR_TOOL],
+      tool_choice: { type: 'tool', name: 'submit_grammar_check' },
+      messages: [{ role: 'user', content: userPrompt }],
+    })
+
+    const toolUse = msg.content.find((b) => b.type === 'tool_use')
+    if (!toolUse || toolUse.type !== 'tool_use') throw new Error('Anthropic did not return tool_use block')
+    const input = toolUse.input as Omit<GrammarCheckResult, 'checkedAt' | 'provider'>
+    return { corrected: input.corrected, corrections: input.corrections ?? [] }
   }
 }

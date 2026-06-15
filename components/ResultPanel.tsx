@@ -2,8 +2,9 @@
 'use client'
 
 import { useState } from 'react'
-import type { GenerationResult, SectionKey, Selections } from '@/types'
+import type { GenerationResult, GrammarCheckResult, SectionKey, Selections } from '@/types'
 import { SECTIONS } from '@/lib/options'
+import { GrammarCheckModal } from '@/components/GrammarCheckModal'
 
 const HAS_KOREAN = /[가-힣]/
 
@@ -78,7 +79,7 @@ function SelectionMirror({ selections }: { selections: Selections }) {
 
 function SongSummaryChips({ selections }: { selections: Selections }) {
   const chips: ChipItem[] = []
-  const genre = selections.genre[0]
+  const genre = selections.genre
   if (genre) {
     const preset = SECTIONS.find((s) => s.key === 'genre')?.presets.find((p) => p.label === genre)
     chips.push({ label: genre, emoji: preset?.emoji })
@@ -105,6 +106,38 @@ function SongSummaryChips({ selections }: { selections: Selections }) {
 }
 
 export function ResultPanel({ result }: { result: GenerationResult }) {
+  const [grammarOpen, setGrammarOpen] = useState(false)
+  const [grammarLoading, setGrammarLoading] = useState(false)
+  const [grammarResult, setGrammarResult] = useState<GrammarCheckResult | null>(null)
+  const [grammarError, setGrammarError] = useState<string | null>(null)
+  const [checkingIndex, setCheckingIndex] = useState<number | null>(null)
+
+  async function runGrammarCheck(lyrics: string, index: number) {
+    setGrammarOpen(true)
+    setGrammarLoading(true)
+    setGrammarError(null)
+    setGrammarResult(null)
+    setCheckingIndex(index)
+    try {
+      const res = await fetch('/api/grammar-check', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({ lyrics, language: result.selections?.language ?? null }),
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setGrammarError(data?.error?.message ?? '알 수 없는 오류')
+      } else {
+        setGrammarResult(data as GrammarCheckResult)
+      }
+    } catch (e: unknown) {
+      setGrammarError(e instanceof Error ? e.message : '네트워크 오류')
+    } finally {
+      setGrammarLoading(false)
+      setCheckingIndex(null)
+    }
+  }
+
   return (
     <div className="mt-6 flex flex-col gap-4">
       {result.selections && <SelectionMirror selections={result.selections} />}
@@ -119,6 +152,14 @@ export function ResultPanel({ result }: { result: GenerationResult }) {
         </header>
         <p className="whitespace-pre-wrap rounded-lg bg-zinc-50 p-3 font-mono text-sm text-zinc-800">{result.prompt}</p>
       </article>
+
+      <GrammarCheckModal
+        open={grammarOpen}
+        loading={grammarLoading}
+        result={grammarResult}
+        error={grammarError}
+        onClose={() => setGrammarOpen(false)}
+      />
 
       {result.songs && (
         <div className="flex flex-col gap-3">
@@ -178,7 +219,17 @@ export function ResultPanel({ result }: { result: GenerationResult }) {
                   <section className="mt-3">
                     <div className="mb-1 flex items-center justify-between">
                       <span className="text-xs font-medium text-zinc-500">🎤 가사 (Suno 입력란용)</span>
-                      <CopyButton text={s.lyrics} />
+                      <div className="flex items-center gap-2">
+                        <button
+                          type="button"
+                          onClick={() => runGrammarCheck(s.lyrics, i)}
+                          disabled={grammarLoading && checkingIndex === i}
+                          className="rounded-md border border-violet-300 bg-violet-50 px-2 py-1 text-xs font-medium text-violet-700 hover:bg-violet-100 disabled:cursor-not-allowed disabled:opacity-60"
+                        >
+                          {grammarLoading && checkingIndex === i ? '검토 중…' : '✏️ 맞춤법 확인'}
+                        </button>
+                        <CopyButton text={s.lyrics} />
+                      </div>
                     </div>
                     <pre className="overflow-x-auto whitespace-pre-wrap rounded-lg bg-zinc-50 p-3 font-mono text-sm leading-relaxed text-zinc-800">{s.lyrics}</pre>
                   </section>

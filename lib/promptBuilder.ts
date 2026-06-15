@@ -3,8 +3,8 @@ import type { GenerationMode, Selections } from '@/types'
 import { SECTIONS } from '@/lib/options'
 
 export function isEmptySelections(s: Selections): boolean {
-  const multi = s.genre.length + s.mood.length + s.vocal.length + s.usage.length + s.instrument.length + s.topic.length
-  const single = (s.bpm ? 1 : 0) + (s.age ? 1 : 0) + (s.language ? 1 : 0)
+  const multi = s.mood.length + s.vocal.length + s.instrument.length + s.topic.length
+  const single = (s.genre ? 1 : 0) + (s.usage ? 1 : 0) + (s.bpm ? 1 : 0) + (s.age ? 1 : 0) + (s.language ? 1 : 0)
   const customs = Object.values(s.customInputs).filter((v) => v && v.trim().length > 0).length
   return multi + single + customs === 0
 }
@@ -82,6 +82,39 @@ export function buildUserPrompt(s: Selections, mode: GenerationMode): string {
   lines.push(`- mode: ${mode}`)
   lines.push('')
   lines.push('위 옵션을 바탕으로 JSON으로 응답해 주세요.')
+  return lines.join('\n')
+}
+
+export const GRAMMAR_SYSTEM_PROMPT = `당신은 작사·교정 전문가입니다. 입력으로 들어온 노래 가사를 검토해 명백한 문법 오류만 바로잡습니다.
+
+# 핵심 원칙
+- 노래 가사이므로 **시적 허용은 적극 존중**합니다. 다음은 오류가 아닙니다:
+  - 운율·박자를 위한 어순 도치, 주어/조사 생략, 반복, 후렴 변형
+  - 의도된 비문, 감탄어, 의성/의태어, 신조어·은어, 줄임말
+  - 외래어·외국어 혼용, 라임을 위한 변칙 표기
+- **명백한 문법 오류만** 교정합니다. 예:
+  - 한국어: 조사 오용("를"/"을" 명백 혼동), 활용 오류("했었었던" 류 명백한 중첩), 시제 비일치, 명백한 맞춤법(예: "되" vs "돼", "데" vs "대"), 띄어쓰기 중 의미가 바뀌는 경우
+  - 영어: 주어-동사 일치, 시제 일관성, 관사·전치사의 명백한 오용, 철자 오류
+  - 일본어: 조사 오용, 활용 오류, 한자 오용
+- 의미·운율·분위기를 바꾸는 교정은 **하지 마세요**. 의심스러우면 그대로 둡니다.
+- 섹션 라벨([Verse 1], [Chorus] 등)과 줄 구조(줄 수, 빈 줄)는 **절대 변경하지 마세요**.
+- 가사가 "(Instrumental)" 한 줄이면 그대로 둡니다. corrections는 빈 배열.
+
+# 출력 (반드시 지정된 JSON 스키마)
+- "corrected": 교정이 반영된 가사 전문. 수정할 곳이 없으면 원본을 그대로 복사.
+- "corrections": 수정 항목 배열. 수정 사항이 없으면 빈 배열 [].
+  - "from": 교정 전 표현(원본에서 발췌한 짧은 구절, 한 줄 이내)
+  - "to": 교정 후 표현
+  - "reason": 왜 수정했는지 한국어로 1문장 (예: "조사 '을/를' 오용", "주어-동사 수 일치")`
+
+export function buildGrammarUserPrompt(lyrics: string, language?: string | null): string {
+  const lines: string[] = []
+  if (language) lines.push(`- 가사 언어 힌트: ${language}`)
+  lines.push('- 아래 가사를 위 규칙대로 검토하고 JSON으로만 응답하세요.')
+  lines.push('')
+  lines.push('=== 가사 시작 ===')
+  lines.push(lyrics)
+  lines.push('=== 가사 끝 ===')
   return lines.join('\n')
 }
 

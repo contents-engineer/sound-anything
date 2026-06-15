@@ -163,10 +163,10 @@ export const TOPICS: Preset[] = [
 ]
 
 export const SECTIONS: SectionMeta[] = [
-  { key: 'genre',      number: 1, emoji: '🎸', title: '장르 선택',        subtitle: '음악의 색깔',     placeholder: '원하는 장르를 직접 입력하세요',          multi: true,  presets: GENRES },
+  { key: 'genre',      number: 1, emoji: '🎸', title: '장르 선택',        subtitle: '음악의 색깔',     placeholder: '원하는 장르를 직접 입력하세요',          multi: false, presets: GENRES },
   { key: 'mood',       number: 2, emoji: '✨', title: '분위기 및 감성',    subtitle: '감정의 깊이',     placeholder: '원하는 분위기를 직접 입력하세요',        multi: true,  presets: MOODS },
   { key: 'vocal',      number: 3, emoji: '🎤', title: '보컬 및 창법',      subtitle: '목소리의 질감',   placeholder: '원하는 보컬 스타일을 직접 입력하세요',   multi: true,  presets: VOCALS },
-  { key: 'usage',      number: 4, emoji: '🎬', title: '사용 용도',         subtitle: '공간의 울림',     placeholder: '사용 용도를 직접 입력하세요',            multi: true,  presets: USAGES },
+  { key: 'usage',      number: 4, emoji: '🎬', title: '사용 용도',         subtitle: '공간의 울림',     placeholder: '사용 용도를 직접 입력하세요',            multi: false, presets: USAGES },
   { key: 'instrument', number: 5, emoji: '🎹', title: '주요 악기',         subtitle: '소리의 도구',     placeholder: '원하는 악기를 직접 입력하세요',          multi: true,  presets: INSTRUMENTS },
   { key: 'bpm',        number: 6, emoji: '⚡', title: '속도 (BPM)',        subtitle: '리듬의 맥박',     placeholder: '원하는 BPM을 직접 입력하세요',           multi: false, presets: BPMS },
   { key: 'age',        number: 7, emoji: '👥', title: '타겟 연령대',       subtitle: '청중의 공감',     placeholder: '타겟 연령대를 직접 입력하세요',          multi: false, presets: AGES },

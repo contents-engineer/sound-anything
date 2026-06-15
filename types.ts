@@ -13,10 +13,10 @@ export type SectionKey =
   | 'topic'
 
 export type Selections = {
-  genre: string[]
+  genre: string | null
   mood: string[]
   vocal: string[]
-  usage: string[]
+  usage: string | null
   instrument: string[]
   bpm: string | null
   age: string | null
@@ -50,4 +50,22 @@ export type ApiError = {
 export type ApiRequest = {
   selections: Selections
   mode: GenerationMode
+}
+
+export type GrammarCorrection = {
+  from: string
+  to: string
+  reason: string
+}
+
+export type GrammarCheckResult = {
+  corrected: string
+  corrections: GrammarCorrection[]
+  provider: string
+  checkedAt: string
+}
+
+export type GrammarCheckRequest = {
+  lyrics: string
+  language?: string | null
 }

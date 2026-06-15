@@ -1,7 +1,7 @@
 // lib/ai/openai.ts
 import OpenAI from 'openai'
-import type { GenerationMode, GenerationResult, Selections } from '@/types'
-import { SYSTEM_PROMPT, buildUserPrompt } from '@/lib/promptBuilder'
+import type { GenerationMode, GenerationResult, GrammarCheckResult, Selections } from '@/types'
+import { GRAMMAR_SYSTEM_PROMPT, SYSTEM_PROMPT, buildGrammarUserPrompt, buildUserPrompt } from '@/lib/promptBuilder'
 
 export class OpenAIProvider {
   name = 'openai'
@@ -39,5 +39,21 @@ export class OpenAIProvider {
       parsed = await call('이전 응답이 JSON 스키마를 어겼습니다. 반드시 {"prompt": string, "songs": null | Array<{title,concept}>} 형태로만 답하세요.')
     }
     return { mode, prompt: parsed.prompt, songs: mode !== 'prompt-only' ? parsed.songs : null }
+  }
+
+  async checkGrammar(lyrics: string, language?: string | null): Promise<Omit<GrammarCheckResult, 'checkedAt' | 'provider'>> {
+    const userPrompt = buildGrammarUserPrompt(lyrics, language)
+    const completion = await this.client.chat.completions.create({
+      model: this.model,
+      response_format: { type: 'json_object' },
+      messages: [
+        { role: 'system', content: GRAMMAR_SYSTEM_PROMPT },
+        { role: 'user', content: userPrompt },
+      ],
+      temperature: 0.2,
+    })
+    const text = completion.choices[0]?.message?.content ?? ''
+    const parsed = JSON.parse(text) as Omit<GrammarCheckResult, 'checkedAt' | 'provider'>
+    return { corrected: parsed.corrected, corrections: parsed.corrections ?? [] }
   }
 }
