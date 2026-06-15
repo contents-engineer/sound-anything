@@ -1,5 +1,5 @@
 // lib/ai/provider.ts
-import type { GenerationMode, GenerationResult, GrammarCheckResult, Selections } from '@/types'
+import type { GenerationMode, GenerationResult, Selections } from '@/types'
 import { MockProvider } from '@/lib/ai/mock'
 import { OpenAIProvider } from '@/lib/ai/openai'
 import { AnthropicProvider } from '@/lib/ai/anthropic'
@@ -8,10 +8,12 @@ import { GeminiProvider } from '@/lib/ai/gemini'
 export interface AIProvider {
   name: string
   generate(opts: Selections, mode: GenerationMode): Promise<Omit<GenerationResult, 'generatedAt' | 'provider'>>
-  checkGrammar(lyrics: string, language?: string | null): Promise<Omit<GrammarCheckResult, 'checkedAt' | 'provider'>>
 }
 
-export function getProvider(): AIProvider {
+export function getProvider(modelOverride?: string): AIProvider {
+  if (modelOverride && modelOverride.startsWith('gemini-')) {
+    return new GeminiProvider(modelOverride)
+  }
   const name = (process.env.AI_PROVIDER ?? 'mock').toLowerCase()
   switch (name) {
     case 'mock':

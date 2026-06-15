@@ -50,22 +50,5 @@ export type ApiError = {
 export type ApiRequest = {
   selections: Selections
   mode: GenerationMode
-}
-
-export type GrammarCorrection = {
-  from: string
-  to: string
-  reason: string
-}
-
-export type GrammarCheckResult = {
-  corrected: string
-  corrections: GrammarCorrection[]
-  provider: string
-  checkedAt: string
-}
-
-export type GrammarCheckRequest = {
-  lyrics: string
-  language?: string | null
+  model?: string
 }

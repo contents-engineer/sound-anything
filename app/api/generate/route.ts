@@ -23,7 +23,7 @@ export async function POST(req: Request) {
 
   let provider
   try {
-    provider = getProvider()
+    provider = getProvider(body.model)
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : 'Unknown provider error'
     return err('MISSING_API_KEY', message, 500)

@@ -1,7 +1,8 @@
 // lib/ai/gemini.ts
 import { GoogleGenAI, Type } from '@google/genai'
-import type { GenerationMode, GenerationResult, GrammarCheckResult, Selections } from '@/types'
-import { GRAMMAR_SYSTEM_PROMPT, SYSTEM_PROMPT, buildGrammarUserPrompt, buildUserPrompt } from '@/lib/promptBuilder'
+import type { GenerationMode, GenerationResult, Selections } from '@/types'
+import { DEFAULT_MODEL_ID } from '@/lib/models'
+import { SYSTEM_PROMPT, buildUserPrompt } from '@/lib/promptBuilder'
 
 const TITLES_SCHEMA = {
   type: Type.OBJECT,
@@ -30,10 +31,10 @@ export class GeminiProvider {
   private client: GoogleGenAI
   private model: string
 
-  constructor() {
+  constructor(modelOverride?: string) {
     const apiKey = process.env.GOOGLE_API_KEY
     if (!apiKey) throw new Error('GOOGLE_API_KEY is not set')
-    this.model = process.env.GEMINI_MODEL ?? 'gemini-2.0-flash'
+    this.model = modelOverride ?? process.env.GEMINI_MODEL ?? DEFAULT_MODEL_ID
     this.client = new GoogleGenAI({ apiKey })
   }
 
@@ -71,41 +72,5 @@ export class GeminiProvider {
     const text = resp.text ?? ''
     const parsed = JSON.parse(text) as { prompt: string; songs?: GenerationResult['songs'] }
     return { mode, prompt: parsed.prompt, songs: mode !== 'prompt-only' ? parsed.songs ?? null : null }
-  }
-
-  async checkGrammar(lyrics: string, language?: string | null): Promise<Omit<GrammarCheckResult, 'checkedAt' | 'provider'>> {
-    const userPrompt = buildGrammarUserPrompt(lyrics, language)
-    const grammarSchema = {
-      type: Type.OBJECT,
-      properties: {
-        corrected: { type: Type.STRING },
-        corrections: {
-          type: Type.ARRAY,
-          items: {
-            type: Type.OBJECT,
-            properties: {
-              from:   { type: Type.STRING },
-              to:     { type: Type.STRING },
-              reason: { type: Type.STRING },
-            },
-            required: ['from', 'to', 'reason'],
-          },
-        },
-      },
-      required: ['corrected', 'corrections'],
-    }
-    const resp = await this.client.models.generateContent({
-      model: this.model,
-      contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
-      config: {
-        systemInstruction: GRAMMAR_SYSTEM_PROMPT,
-        responseMimeType: 'application/json',
-        responseSchema: grammarSchema,
-        temperature: 0.2,
-      },
-    })
-    const text = resp.text ?? ''
-    const parsed = JSON.parse(text) as Omit<GrammarCheckResult, 'checkedAt' | 'provider'>
-    return { corrected: parsed.corrected, corrections: parsed.corrections ?? [] }
   }
 }

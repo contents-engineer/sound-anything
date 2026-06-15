@@ -10,6 +10,7 @@ import { ResultPanel } from '@/components/ResultPanel'
 import { HistoryDrawer } from '@/components/HistoryDrawer'
 import { loadHistory, pushHistory, clearHistory } from '@/lib/history'
 import { isEmptySelections } from '@/lib/promptBuilder'
+import { DEFAULT_MODEL_ID, MODELS } from '@/lib/models'
 
 const EMPTY: Selections = {
   genre: null, mood: [], vocal: [], usage: null, instrument: [],
@@ -26,6 +27,7 @@ export default function Page() {
   const [result, setResult] = useState<GenerationResult | null>(null)
   const [history, setHistory] = useState<GenerationResult[]>([])
   const [historyOpen, setHistoryOpen] = useState(false)
+  const [modelId, setModelId] = useState<string>(DEFAULT_MODEL_ID)
   const resultRef = useRef<HTMLDivElement>(null)
   const isEmpty = useMemo(() => isEmptySelections(selections), [selections])
 
@@ -61,7 +63,7 @@ export default function Page() {
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ selections, mode }),
+        body: JSON.stringify({ selections, mode, model: modelId }),
       })
       const data = await res.json()
       if (!res.ok) {
@@ -118,28 +120,56 @@ export default function Page() {
       </div>
 
       <div className="sticky bottom-4 z-10 mt-6 flex flex-wrap items-center gap-3 rounded-2xl border border-zinc-200 bg-white/90 p-4 shadow-lg backdrop-blur">
-        <button
-          type="button"
-          disabled={loading !== null || isEmpty}
-          title={isEmpty ? '먼저 옵션을 하나 이상 선택하세요' : undefined}
-          onClick={() => generate('single')}
-          className="rounded-xl border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {loading === 'single' ? '생성 중…' : '1곡 생성'}
-        </button>
-        <button
-          type="button"
-          disabled={loading !== null || isEmpty}
-          title={isEmpty ? '먼저 옵션을 하나 이상 선택하세요' : undefined}
-          onClick={() => generate('full')}
-          className="rounded-xl bg-violet-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-50"
-        >
-          {loading === 'full' ? '생성 중…' : '10곡 생성'}
-        </button>
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-medium text-zinc-500">모델</span>
+          <div role="radiogroup" aria-label="생성 모델 선택" className="inline-flex rounded-lg border border-zinc-300 bg-zinc-50 p-0.5">
+            {MODELS.map((m) => {
+              const active = modelId === m.id
+              return (
+                <button
+                  key={m.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={active}
+                  disabled={loading !== null}
+                  onClick={() => setModelId(m.id)}
+                  className={[
+                    'rounded-md px-3 py-1.5 text-xs font-medium transition disabled:cursor-not-allowed disabled:opacity-50',
+                    active
+                      ? 'bg-violet-600 text-white shadow'
+                      : 'text-zinc-700 hover:bg-white',
+                  ].join(' ')}
+                >
+                  {m.label}
+                </button>
+              )
+            })}
+          </div>
+        </div>
+        <div className="ml-auto flex items-center gap-3">
+          <button
+            type="button"
+            disabled={loading !== null || isEmpty}
+            title={isEmpty ? '먼저 옵션을 하나 이상 선택하세요' : undefined}
+            onClick={() => generate('single')}
+            className="rounded-xl border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {loading === 'single' ? '생성 중…' : '1곡 생성'}
+          </button>
+          <button
+            type="button"
+            disabled={loading !== null || isEmpty}
+            title={isEmpty ? '먼저 옵션을 하나 이상 선택하세요' : undefined}
+            onClick={() => generate('full')}
+            className="rounded-xl bg-violet-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-50"
+          >
+            {loading === 'full' ? '생성 중…' : '10곡 생성'}
+          </button>
+        </div>
         {isEmpty && !error && (
-          <span className="text-xs text-zinc-500">옵션을 1개 이상 선택해 주세요</span>
+          <span className="w-full text-xs text-zinc-500">옵션을 1개 이상 선택해 주세요</span>
         )}
-        {error && <span className="text-sm text-red-600">⚠ {error}</span>}
+        {error && <span className="w-full text-sm text-red-600">⚠ {error}</span>}
       </div>
 
       {result && (

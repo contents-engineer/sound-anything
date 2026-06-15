@@ -1,18 +1,8 @@
 // lib/ai/mock.ts
-import type { GenerationMode, GenerationResult, GrammarCheckResult, Selections, SongConcept } from '@/types'
+import type { GenerationMode, GenerationResult, Selections, SongConcept } from '@/types'
 
 export class MockProvider {
   name = 'mock'
-
-  async checkGrammar(lyrics: string): Promise<Omit<GrammarCheckResult, 'checkedAt' | 'provider'>> {
-    await new Promise((r) => setTimeout(r, 400))
-    return {
-      corrected: lyrics,
-      corrections: [
-        { from: '예시 표현', to: '예시 교정', reason: '목업 응답 — 실제 검사는 LLM provider에서 수행' },
-      ],
-    }
-  }
 
   async generate(opts: Selections, mode: GenerationMode): Promise<Omit<GenerationResult, 'generatedAt' | 'provider'>> {
     await new Promise((r) => setTimeout(r, 600))
