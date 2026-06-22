@@ -1,6 +1,6 @@
 // lib/ai/gemini.ts
 import { GoogleGenAI, Type } from '@google/genai'
-import type { GenerationMode, GenerationResult, Selections } from '@/types'
+import type { GenerationExtras, GenerationMode, GenerationResult, Selections } from '@/types'
 import { DEFAULT_MODEL_ID } from '@/lib/models'
 import { SYSTEM_PROMPT, buildUserPrompt } from '@/lib/promptBuilder'
 
@@ -38,15 +38,21 @@ export class GeminiProvider {
     this.client = new GoogleGenAI({ apiKey })
   }
 
-  async generate(opts: Selections, mode: GenerationMode): Promise<Omit<GenerationResult, 'generatedAt' | 'provider'>> {
-    const userPrompt = buildUserPrompt(opts, mode)
+  async generate(opts: Selections, mode: GenerationMode, extras?: GenerationExtras): Promise<Omit<GenerationResult, 'generatedAt' | 'provider'>> {
+    const userPrompt = buildUserPrompt(opts, mode, extras)
+    const songCount = mode === 'full' ? 10 : mode === 'single' ? 1 : 0
 
     const schema = mode !== 'prompt-only'
       ? {
           type: Type.OBJECT,
           properties: {
             prompt: { type: Type.STRING },
-            songs:  { type: Type.ARRAY, items: SONG_SCHEMA },
+            songs:  {
+              type: Type.ARRAY,
+              items: SONG_SCHEMA,
+              minItems: String(songCount),
+              maxItems: String(songCount),
+            },
           },
           required: ['prompt', 'songs'],
         }
@@ -66,6 +72,7 @@ export class GeminiProvider {
         responseMimeType: 'application/json',
         responseSchema: schema,
         temperature: 0.9,
+        maxOutputTokens: mode === 'full' ? 32768 : 8192,
       },
     })
 

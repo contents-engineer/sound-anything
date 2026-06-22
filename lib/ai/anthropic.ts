@@ -1,6 +1,6 @@
 // lib/ai/anthropic.ts
 import Anthropic from '@anthropic-ai/sdk'
-import type { GenerationMode, GenerationResult, Selections } from '@/types'
+import type { GenerationExtras, GenerationMode, GenerationResult, Selections } from '@/types'
 import { SYSTEM_PROMPT, buildUserPrompt } from '@/lib/promptBuilder'
 
 const TOOL = {
@@ -49,12 +49,12 @@ export class AnthropicProvider {
     this.client = new Anthropic({ apiKey })
   }
 
-  async generate(opts: Selections, mode: GenerationMode): Promise<Omit<GenerationResult, 'generatedAt' | 'provider'>> {
-    const userPrompt = buildUserPrompt(opts, mode)
+  async generate(opts: Selections, mode: GenerationMode, extras?: GenerationExtras): Promise<Omit<GenerationResult, 'generatedAt' | 'provider'>> {
+    const userPrompt = buildUserPrompt(opts, mode, extras)
 
     const msg = await this.client.messages.create({
       model: this.model,
-      max_tokens: 8192,
+      max_tokens: mode === 'full' ? 16384 : 8192,
       system: [{ type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }],
       tools: [TOOL],
       tool_choice: { type: 'tool', name: 'submit_playlist' },

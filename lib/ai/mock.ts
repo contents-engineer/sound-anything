@@ -1,10 +1,11 @@
 // lib/ai/mock.ts
-import type { GenerationMode, GenerationResult, Selections, SongConcept } from '@/types'
+import type { GenerationExtras, GenerationMode, GenerationResult, Selections, SongConcept } from '@/types'
 
 export class MockProvider {
   name = 'mock'
 
-  async generate(opts: Selections, mode: GenerationMode): Promise<Omit<GenerationResult, 'generatedAt' | 'provider'>> {
+  async generate(opts: Selections, mode: GenerationMode, extras?: GenerationExtras): Promise<Omit<GenerationResult, 'generatedAt' | 'provider'>> {
+    void extras
     await new Promise((r) => setTimeout(r, 600))
 
     const summary = [

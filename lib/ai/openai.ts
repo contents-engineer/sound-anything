@@ -1,6 +1,6 @@
 // lib/ai/openai.ts
 import OpenAI from 'openai'
-import type { GenerationMode, GenerationResult, Selections } from '@/types'
+import type { GenerationExtras, GenerationMode, GenerationResult, Selections } from '@/types'
 import { SYSTEM_PROMPT, buildUserPrompt } from '@/lib/promptBuilder'
 
 export class OpenAIProvider {
@@ -15,8 +15,8 @@ export class OpenAIProvider {
     this.client = new OpenAI({ apiKey })
   }
 
-  async generate(opts: Selections, mode: GenerationMode): Promise<Omit<GenerationResult, 'generatedAt' | 'provider'>> {
-    const userPrompt = buildUserPrompt(opts, mode)
+  async generate(opts: Selections, mode: GenerationMode, extras?: GenerationExtras): Promise<Omit<GenerationResult, 'generatedAt' | 'provider'>> {
+    const userPrompt = buildUserPrompt(opts, mode, extras)
 
     const call = async (extraInstruction = '') => {
       const completion = await this.client.chat.completions.create({

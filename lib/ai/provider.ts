@@ -1,5 +1,5 @@
 // lib/ai/provider.ts
-import type { GenerationMode, GenerationResult, Selections } from '@/types'
+import type { GenerationExtras, GenerationMode, GenerationResult, Selections } from '@/types'
 import { MockProvider } from '@/lib/ai/mock'
 import { OpenAIProvider } from '@/lib/ai/openai'
 import { AnthropicProvider } from '@/lib/ai/anthropic'
@@ -7,7 +7,7 @@ import { GeminiProvider } from '@/lib/ai/gemini'
 
 export interface AIProvider {
   name: string
-  generate(opts: Selections, mode: GenerationMode): Promise<Omit<GenerationResult, 'generatedAt' | 'provider'>>
+  generate(opts: Selections, mode: GenerationMode, extras?: GenerationExtras): Promise<Omit<GenerationResult, 'generatedAt' | 'provider'>>
 }
 
 export function getProvider(modelOverride?: string): AIProvider {

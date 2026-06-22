@@ -1,6 +1,6 @@
 // app/api/generate/route.ts
 import { NextResponse } from 'next/server'
-import type { ApiError, ApiRequest, GenerationResult } from '@/types'
+import type { ApiError, ApiRequest, GenerationExtras, GenerationResult } from '@/types'
 import { getProvider } from '@/lib/ai/provider'
 import { isEmptySelections } from '@/lib/promptBuilder'
 
@@ -8,6 +8,12 @@ export const runtime = 'nodejs'
 
 function err(code: ApiError['error']['code'], message: string, status: number) {
   return NextResponse.json<ApiError>({ error: { code, message } }, { status })
+}
+
+function expectedCount(mode: GenerationResult['mode']): number {
+  if (mode === 'full') return 10
+  if (mode === 'single') return 1
+  return 0
 }
 
 export async function POST(req: Request) {
@@ -29,8 +35,21 @@ export async function POST(req: Request) {
     return err('MISSING_API_KEY', message, 500)
   }
 
+  const extras: GenerationExtras = {}
+  if (body.excludeTitles && body.excludeTitles.length > 0) extras.excludeTitles = body.excludeTitles
+
   try {
-    const partial = await provider.generate(body.selections, body.mode)
+    let partial = await provider.generate(body.selections, body.mode, extras)
+
+    const want = expectedCount(body.mode)
+    if (body.mode !== 'prompt-only' && want > 0) {
+      const got = partial.songs?.length ?? 0
+      if (got !== want) {
+        const retryHint = `이전 응답의 songs 배열은 ${got}개였습니다. 반드시 정확히 ${want}개여야 합니다. 누락된 곡을 채워 다시 만들고, 모든 곡의 콘셉트·제목·가사를 서로 다르게 작성하세요.`
+        partial = await provider.generate(body.selections, body.mode, { ...extras, retryHint })
+      }
+    }
+
     const result: GenerationResult = {
       ...partial,
       provider: provider.name,

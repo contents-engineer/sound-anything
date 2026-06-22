@@ -104,10 +104,27 @@ function SongSummaryChips({ selections }: { selections: Selections }) {
   )
 }
 
-export function ResultPanel({ result }: { result: GenerationResult }) {
+type ResultPanelProps = {
+  result: GenerationResult
+  onRegenerate?: (index: number) => void
+  regenerating?: number | null
+}
+
+export function ResultPanel({ result, onRegenerate, regenerating }: ResultPanelProps) {
+  const expected =
+    result.mode === 'full' ? 10 : result.mode === 'single' ? 1 : 0
+  const got = result.songs?.length ?? 0
+  const countMismatch = expected > 0 && got !== expected
+
   return (
     <div className="mt-6 flex flex-col gap-4">
       {result.selections && <SelectionMirror selections={result.selections} />}
+
+      {countMismatch && (
+        <div className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
+          ⚠ 요청은 {expected}곡이었지만 {got}곡만 반환됐습니다. 모델이 지시를 일부 무시한 케이스 — 다시 시도해 주세요.
+        </div>
+      )}
 
       <article className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
         <header className="mb-2 flex items-center justify-between">
@@ -126,11 +143,15 @@ export function ResultPanel({ result }: { result: GenerationResult }) {
             const hasKoreanInLyrics = HAS_KOREAN.test(s.lyrics)
             const isDuplicate = s.lyricsKr.trim() === s.lyrics.trim()
             const showTranslation = !!s.lyricsKr && !hasKoreanInLyrics && !isDuplicate
+            const isRegenerating = regenerating === i
             return (
               <details
                 key={i}
                 open={i === 0}
-                className="group overflow-hidden rounded-2xl border border-zinc-200 bg-white shadow-sm"
+                className={[
+                  'group overflow-hidden rounded-2xl border bg-white shadow-sm transition',
+                  isRegenerating ? 'border-violet-300 ring-2 ring-violet-200' : 'border-zinc-200',
+                ].join(' ')}
               >
                 <summary className="flex cursor-pointer select-none items-start justify-between gap-3 px-5 py-4">
                   <div className="min-w-0 flex-1">
@@ -139,9 +160,26 @@ export function ResultPanel({ result }: { result: GenerationResult }) {
                         {i + 1}. {s.title}
                       </h4>
                       {result.selections && <SongSummaryChips selections={result.selections} />}
+                      {isRegenerating && (
+                        <span className="inline-flex items-center gap-1.5 rounded-full bg-violet-100 px-2 py-0.5 text-[11px] font-medium text-violet-700">
+                          <span className="inline-block h-2.5 w-2.5 animate-spin rounded-full border border-violet-300 border-t-violet-600" aria-hidden />
+                          재생성 중
+                        </span>
+                      )}
                     </div>
                   </div>
                   <div className="flex shrink-0 items-center gap-2">
+                    {onRegenerate && (
+                      <button
+                        type="button"
+                        onClick={(e) => { e.stopPropagation(); e.preventDefault(); onRegenerate(i) }}
+                        disabled={regenerating !== null && regenerating !== undefined}
+                        title="이 곡만 다시 생성 (다른 곡과 겹치지 않도록)"
+                        className="rounded-md border border-violet-300 bg-violet-50 px-2 py-1 text-xs font-medium text-violet-700 hover:bg-violet-100 disabled:cursor-not-allowed disabled:opacity-50"
+                      >
+                        {isRegenerating ? '…' : '🔄 이 곡 다시'}
+                      </button>
+                    )}
                     <CopyButton
                       text={`${s.title}\n\n[KO] ${s.titles.ko}\n[EN] ${s.titles.en}\n[JA] ${s.titles.ja}\n\n${s.lyrics}${showTranslation ? `\n\n--- 한국어 번역 ---\n\n${s.lyricsKr}` : ''}`}
                     />

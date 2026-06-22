@@ -1,16 +1,19 @@
 // app/page.tsx
 'use client'
 
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { GenerationMode, GenerationResult, Selections, SectionKey } from '@/types'
 import { SECTIONS } from '@/lib/options'
 import { OptionSection } from '@/components/OptionSection'
 import { LengthSlider } from '@/components/LengthSlider'
 import { ResultPanel } from '@/components/ResultPanel'
+import { ResultSkeleton } from '@/components/ResultSkeleton'
 import { HistoryDrawer } from '@/components/HistoryDrawer'
 import { loadHistory, pushHistory, clearHistory } from '@/lib/history'
 import { isEmptySelections } from '@/lib/promptBuilder'
 import { DEFAULT_MODEL_ID, MODELS } from '@/lib/models'
+
+const TIMEOUT_MS = 60_000
 
 const EMPTY: Selections = {
   genre: null, mood: [], vocal: [], usage: null, instrument: [],
@@ -28,9 +31,13 @@ export default function Page() {
   const [history, setHistory] = useState<GenerationResult[]>([])
   const [historyOpen, setHistoryOpen] = useState(false)
   const [modelId, setModelId] = useState<string>(DEFAULT_MODEL_ID)
+  const [regenIndex, setRegenIndex] = useState<number | null>(null)
   const resultRef = useRef<HTMLDivElement>(null)
+  const abortRef = useRef<AbortController | null>(null)
   const isEmpty = useMemo(() => isEmptySelections(selections), [selections])
 
+  // Hydration-safe: load history after mount (localStorage unavailable on server).
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { setHistory(loadHistory()) }, [])
 
   useEffect(() => {
@@ -56,7 +63,17 @@ export default function Page() {
     setSelections((s) => ({ ...s, customInputs: { ...s.customInputs, [key]: value } }))
   }
 
+  function cancelInFlight() {
+    abortRef.current?.abort()
+    abortRef.current = null
+  }
+
   async function generate(mode: GenerationMode) {
+    cancelInFlight()
+    const controller = new AbortController()
+    abortRef.current = controller
+    const timer = window.setTimeout(() => controller.abort(), TIMEOUT_MS)
+
     setError(null)
     setLoading(mode)
     try {
@@ -64,6 +81,7 @@ export default function Page() {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
         body: JSON.stringify({ selections, mode, model: modelId }),
+        signal: controller.signal,
       })
       const data = await res.json()
       if (!res.ok) {
@@ -74,11 +92,72 @@ export default function Page() {
       setResult(enriched)
       setHistory(pushHistory(enriched))
     } catch (e: unknown) {
-      setError(e instanceof Error ? e.message : '네트워크 오류')
+      if (e instanceof Error && e.name === 'AbortError') {
+        setError('요청이 취소되었거나 시간 초과(60초)되었습니다')
+      } else {
+        setError(e instanceof Error ? e.message : '네트워크 오류')
+      }
     } finally {
+      window.clearTimeout(timer)
+      if (abortRef.current === controller) abortRef.current = null
       setLoading(null)
     }
   }
+
+  const regenerateSong = useCallback(async (index: number) => {
+    if (!result?.songs) return
+    cancelInFlight()
+    const controller = new AbortController()
+    abortRef.current = controller
+    const timer = window.setTimeout(() => controller.abort(), TIMEOUT_MS)
+
+    setError(null)
+    setRegenIndex(index)
+    try {
+      const excludeTitles = result.songs.map((s) => s.title)
+      const baseSelections = result.selections ?? selections
+      const res = await fetch('/api/generate', {
+        method: 'POST',
+        headers: { 'content-type': 'application/json' },
+        body: JSON.stringify({
+          selections: baseSelections,
+          mode: 'single',
+          model: modelId,
+          excludeTitles,
+        }),
+        signal: controller.signal,
+      })
+      const data = await res.json()
+      if (!res.ok) {
+        setError(data?.error?.message ?? '알 수 없는 오류')
+        return
+      }
+      const partial = data as GenerationResult
+      const newSong = partial.songs?.[0]
+      if (!newSong) {
+        setError('새 곡을 받지 못했습니다')
+        return
+      }
+      const merged: GenerationResult = {
+        ...result,
+        songs: result.songs.map((s, i) => (i === index ? newSong : s)),
+        generatedAt: partial.generatedAt,
+        provider: partial.provider,
+      }
+      setResult(merged)
+      setHistory(pushHistory(merged))
+    } catch (e: unknown) {
+      if (e instanceof Error && e.name === 'AbortError') {
+        setError('재생성이 취소되었거나 시간 초과되었습니다')
+      } else {
+        setError(e instanceof Error ? e.message : '네트워크 오류')
+      }
+    } finally {
+      window.clearTimeout(timer)
+      if (abortRef.current === controller) abortRef.current = null
+      setRegenIndex(null)
+    }
+  }, [result, selections, modelId])
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
@@ -147,9 +226,18 @@ export default function Page() {
           </div>
         </div>
         <div className="ml-auto flex items-center gap-3">
+          {(loading !== null || regenIndex !== null) && (
+            <button
+              type="button"
+              onClick={cancelInFlight}
+              className="rounded-xl border border-red-300 bg-white px-3 py-2 text-sm font-medium text-red-600 hover:bg-red-50"
+            >
+              취소
+            </button>
+          )}
           <button
             type="button"
-            disabled={loading !== null || isEmpty}
+            disabled={loading !== null || regenIndex !== null || isEmpty}
             title={isEmpty ? '먼저 옵션을 하나 이상 선택하세요' : undefined}
             onClick={() => generate('single')}
             className="rounded-xl border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50"
@@ -158,7 +246,7 @@ export default function Page() {
           </button>
           <button
             type="button"
-            disabled={loading !== null || isEmpty}
+            disabled={loading !== null || regenIndex !== null || isEmpty}
             title={isEmpty ? '먼저 옵션을 하나 이상 선택하세요' : undefined}
             onClick={() => generate('full')}
             className="rounded-xl bg-violet-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-50"
@@ -172,9 +260,17 @@ export default function Page() {
         {error && <span className="w-full text-sm text-red-600">⚠ {error}</span>}
       </div>
 
+      {!result && loading !== null && (
+        <ResultSkeleton count={loading === 'full' ? 10 : 1} />
+      )}
+
       {result && (
         <div ref={resultRef} className="scroll-mt-4">
-          <ResultPanel result={result} />
+          <ResultPanel
+            result={result}
+            onRegenerate={regenerateSong}
+            regenerating={regenIndex}
+          />
         </div>
       )}
 

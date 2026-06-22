@@ -51,4 +51,10 @@ export type ApiRequest = {
   selections: Selections
   mode: GenerationMode
   model?: string
+  excludeTitles?: string[]
+}
+
+export type GenerationExtras = {
+  excludeTitles?: string[]
+  retryHint?: string
 }
