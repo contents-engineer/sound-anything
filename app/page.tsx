@@ -163,7 +163,7 @@ export default function Page() {
     <div className="mx-auto max-w-5xl px-4 py-8">
       <header className="mb-6 flex items-start justify-between">
         <div>
-          <h1 className="text-2xl font-bold">Suno.ai Lyrics Generator</h1>
+          <h2 className="text-2xl font-bold">수노 제너레이터</h2>
           <p className="text-sm text-zinc-500">프롬프트 + 1곡 또는 10곡 콘셉트를 생성합니다</p>
         </div>
         <button
