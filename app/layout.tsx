@@ -4,7 +4,10 @@ import './globals.css'
 import { Sidebar } from '@/components/Sidebar'
 
 export const metadata: Metadata = {
-  title: '플레이리스트 유튜브 제너레이터',
+  title: {
+    default: '플레이리스트 유튜브 제너레이터',
+    template: '%s | 플레이리스트 유튜브 제너레이터',
+  },
   description: '유튜브 플레이리스트 제작을 위한 도구 모음 — Suno 가사 생성기, 제미나이 워터마크 제거',
 }
 

@@ -17,7 +17,7 @@ export function Sidebar() {
         <h1 className="mb-3 px-2 text-base font-bold leading-tight text-zinc-900">
           🎵 플레이리스트 유튜브 제너레이터
         </h1>
-        <nav className="flex gap-1 md:flex-col">
+        <nav className="flex flex-wrap gap-1 md:flex-col">
           {MENU.map((item) => {
             const active = pathname === item.href
             return (
