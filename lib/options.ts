@@ -139,6 +139,8 @@ export const LANGUAGES: Preset[] = [
   { emoji: '🇰🇷', label: '한국어' },
   { emoji: '🇺🇸', label: '영어' },
   { emoji: '🌏', label: '한국어+영어 섞어서' },
+  { emoji: '🇯🇵', label: '일본어' },
+  { emoji: '🎌', label: '일본어+영어 섞어서' },
 ]
 
 export const TOPICS: Preset[] = [
