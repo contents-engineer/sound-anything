@@ -20,10 +20,11 @@ const SONG_SCHEMA = {
     title:    { type: Type.STRING },
     titles:   TITLES_SCHEMA,
     concept:  { type: Type.STRING },
+    stylePrompt: { type: Type.STRING },
     lyrics:   { type: Type.STRING },
     lyricsKr: { type: Type.STRING },
   },
-  required: ['title', 'titles', 'concept', 'lyrics', 'lyricsKr'],
+  required: ['title', 'titles', 'concept', 'stylePrompt', 'lyrics', 'lyricsKr'],
 }
 
 export class GeminiProvider {

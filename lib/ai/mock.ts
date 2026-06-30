@@ -16,7 +16,9 @@ export class MockProvider {
       opts.language,
     ].filter(Boolean).join(' · ') || '기본 옵션'
 
-    const prompt = `[MOCK PROMPT] ${summary} | 길이 ${opts.lengthMin}분. 사용자의 모든 옵션을 자연스럽게 녹여낸 영문 음악 생성 프롬프트가 들어갈 자리입니다.`
+    const prompt = mode === 'prompt-only'
+      ? `[MOCK STYLE PROMPT] Playlist-ready song style, user-selected mood and arrangement, target duration about ${opts.lengthMin} minutes`
+      : ''
 
     if (mode === 'prompt-only') {
       return { mode, prompt, songs: null }
@@ -66,6 +68,7 @@ export class MockProvider {
         ja: `モックトラック ${i + 1}`,
       },
       concept: `${summary} 분위기를 살린 ${opts.lengthMin}분짜리 트랙의 콘셉트 메모 ${i + 1}번. 실제 LLM 응답은 분위기·이미지·훅 아이디어를 두세 문장으로 묘사합니다.`,
+      stylePrompt: `Mock playlist-ready style, distinct song concept ${i + 1}, cinematic hook, expressive vocal texture, target duration about ${opts.lengthMin} minutes`,
       lyrics: mockLyrics(i + 1),
       lyricsKr: needsKrTranslation ? mockLyricsKr(i + 1) : '',
     }))

@@ -126,17 +126,6 @@ export function ResultPanel({ result, onRegenerate, regenerating }: ResultPanelP
         </div>
       )}
 
-      <article className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
-        <header className="mb-2 flex items-center justify-between">
-          <h3 className="text-sm font-semibold text-zinc-700">통합 프롬프트</h3>
-          <div className="flex items-center gap-2">
-            <span className="rounded-full bg-zinc-100 px-2 py-0.5 text-xs text-zinc-600">{result.provider}</span>
-            <CopyButton text={result.prompt} />
-          </div>
-        </header>
-        <p className="whitespace-pre-wrap rounded-lg bg-zinc-50 p-3 font-mono text-sm text-zinc-800">{result.prompt}</p>
-      </article>
-
       {result.songs && (
         <div className="flex flex-col gap-3">
           {result.songs.map((s, i) => {
@@ -144,6 +133,7 @@ export function ResultPanel({ result, onRegenerate, regenerating }: ResultPanelP
             const isDuplicate = s.lyricsKr.trim() === s.lyrics.trim()
             const showTranslation = !!s.lyricsKr && !hasKoreanInLyrics && !isDuplicate
             const isRegenerating = regenerating === i
+            const stylePrompt = (s.stylePrompt ?? '').trim()
             return (
               <details
                 key={i}
@@ -181,7 +171,7 @@ export function ResultPanel({ result, onRegenerate, regenerating }: ResultPanelP
                       </button>
                     )}
                     <CopyButton
-                      text={`${s.title}\n\n[KO] ${s.titles.ko}\n[EN] ${s.titles.en}\n[JA] ${s.titles.ja}\n\n${s.lyrics}${showTranslation ? `\n\n--- 한국어 번역 ---\n\n${s.lyricsKr}` : ''}`}
+                      text={`${s.title}\n\n[KO] ${s.titles.ko}\n[EN] ${s.titles.en}\n[JA] ${s.titles.ja}${stylePrompt ? `\n\n--- Style Prompt ---\n${stylePrompt}` : ''}\n\n${s.lyrics}${showTranslation ? `\n\n--- 한국어 번역 ---\n\n${s.lyricsKr}` : ''}`}
                     />
                     <span className="text-zinc-400 transition group-open:rotate-180">▾</span>
                   </div>
@@ -192,6 +182,18 @@ export function ResultPanel({ result, onRegenerate, regenerating }: ResultPanelP
                     <section className="mb-3 rounded-lg border-l-2 border-violet-300 bg-violet-50/40 px-3 py-2">
                       <div className="mb-0.5 text-xs font-medium text-zinc-500">💡 곡 콘셉트</div>
                       <p className="text-sm leading-relaxed text-zinc-800">{s.concept}</p>
+                    </section>
+                  )}
+
+                  {stylePrompt && (
+                    <section className="mb-3 rounded-lg border-l-2 border-sky-300 bg-sky-50/50 px-3 py-2">
+                      <div className="mb-1 flex items-center justify-between gap-2">
+                        <span className="text-xs font-medium text-zinc-500">🎛️ Style Prompt (Suno style 입력란용)</span>
+                        <CopyButton text={stylePrompt} />
+                      </div>
+                      <p className="whitespace-pre-wrap font-mono text-sm leading-relaxed text-zinc-800" lang="en">
+                        {stylePrompt}
+                      </p>
                     </section>
                   )}
 

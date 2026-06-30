@@ -11,6 +11,11 @@ type Props = {
   onClear: () => void
 }
 
+function getPreview(entry: GenerationResult): string {
+  const firstSong = entry.songs?.[0]
+  return firstSong?.stylePrompt || firstSong?.title || entry.prompt || '생성 결과'
+}
+
 export function HistoryDrawer({ open, entries, onClose, onSelect, onClear }: Props) {
   return (
     <>
@@ -46,7 +51,7 @@ export function HistoryDrawer({ open, entries, onClose, onSelect, onClear }: Pro
                   <span>{new Date(e.generatedAt).toLocaleString('ko-KR')}</span>
                   <span className="rounded-full bg-zinc-100 px-2 py-0.5">{e.provider} · {e.mode}</span>
                 </div>
-                <p className="mt-1 truncate text-sm text-zinc-800">{e.prompt}</p>
+                <p className="mt-1 truncate text-sm text-zinc-800">{getPreview(e)}</p>
               </button>
             </li>
           ))}

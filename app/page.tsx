@@ -169,7 +169,7 @@ export default function Page() {
       <header className="mb-6 flex items-start justify-between">
         <div>
           <h2 className="text-2xl font-bold">수노 제너레이터</h2>
-          <p className="text-sm text-zinc-500">프롬프트 + 1곡 또는 10곡 콘셉트를 생성합니다</p>
+          <p className="text-sm text-zinc-500">곡별 스타일 프롬프트 + 1곡 또는 10곡 콘셉트를 생성합니다</p>
         </div>
         <button
           type="button"

@@ -30,6 +30,7 @@ export type SongConcept = {
   title: string
   titles: { ko: string; en: string; ja: string }
   concept: string
+  stylePrompt: string
   lyrics: string
   lyricsKr: string
 }
