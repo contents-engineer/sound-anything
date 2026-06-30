@@ -13,7 +13,11 @@ import { loadHistory, pushHistory, clearHistory } from '@/lib/history'
 import { isEmptySelections } from '@/lib/promptBuilder'
 import { DEFAULT_MODEL_ID, MODELS } from '@/lib/models'
 
-const TIMEOUT_MS = 60_000
+const TIMEOUT_MS: Record<GenerationMode, number> = {
+  'prompt-only': 60_000,
+  single: 60_000,
+  full: 120_000,
+}
 
 const EMPTY: Selections = {
   genre: null, mood: [], vocal: [], usage: null, instrument: [],
@@ -72,7 +76,8 @@ export default function Page() {
     cancelInFlight()
     const controller = new AbortController()
     abortRef.current = controller
-    const timer = window.setTimeout(() => controller.abort(), TIMEOUT_MS)
+    const timeoutMs = TIMEOUT_MS[mode]
+    const timer = window.setTimeout(() => controller.abort(), timeoutMs)
 
     setError(null)
     setLoading(mode)
@@ -93,7 +98,7 @@ export default function Page() {
       setHistory(pushHistory(enriched))
     } catch (e: unknown) {
       if (e instanceof Error && e.name === 'AbortError') {
-        setError('요청이 취소되었거나 시간 초과(60초)되었습니다')
+        setError(`요청이 취소되었거나 시간 초과(${timeoutMs / 1000}초)되었습니다`)
       } else {
         setError(e instanceof Error ? e.message : '네트워크 오류')
       }
@@ -109,7 +114,7 @@ export default function Page() {
     cancelInFlight()
     const controller = new AbortController()
     abortRef.current = controller
-    const timer = window.setTimeout(() => controller.abort(), TIMEOUT_MS)
+    const timer = window.setTimeout(() => controller.abort(), TIMEOUT_MS.single)
 
     setError(null)
     setRegenIndex(index)

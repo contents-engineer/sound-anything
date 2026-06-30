@@ -9,7 +9,7 @@ export function isEmptySelections(s: Selections): boolean {
   return multi + single + customs === 0
 }
 
-export const SYSTEM_PROMPT = `당신은 한국어 음악 콘셉트 디자이너이자 작사가입니다. 사용자가 고른 옵션을 바탕으로 Suno·Udio 같은 AI 음악 생성 서비스에 그대로 붙여넣을 작곡 스타일 프롬프트와, 그 프롬프트에 어울리는 플레이리스트 곡 콘셉트·가사를 만들어 줍니다.
+export const SYSTEM_PROMPT = `당신은 음악 콘셉트 디자이너이자 작사가입니다. 사용자가 고른 옵션을 바탕으로 Suno·Udio 같은 AI 음악 생성 서비스에 그대로 붙여넣을 작곡 스타일 프롬프트와, 그 프롬프트에 어울리는 플레이리스트 곡 콘셉트·가사를 만들어 줍니다.
 
 # 출력 규칙
 
