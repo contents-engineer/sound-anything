@@ -5,8 +5,6 @@ import { useState } from 'react'
 import type { GenerationResult, SectionKey, Selections } from '@/types'
 import { SECTIONS } from '@/lib/options'
 
-const HAS_KOREAN = /[가-힣]/
-
 function CopyButton({ text }: { text: string }) {
   const [copied, setCopied] = useState(false)
   return (
@@ -129,9 +127,6 @@ export function ResultPanel({ result, onRegenerate, regenerating }: ResultPanelP
       {result.songs && (
         <div className="flex flex-col gap-3">
           {result.songs.map((s, i) => {
-            const hasKoreanInLyrics = HAS_KOREAN.test(s.lyrics)
-            const isDuplicate = s.lyricsKr.trim() === s.lyrics.trim()
-            const showTranslation = !!s.lyricsKr && !hasKoreanInLyrics && !isDuplicate
             const isRegenerating = regenerating === i
             const stylePrompt = (s.stylePrompt ?? '').trim()
             return (
@@ -171,7 +166,7 @@ export function ResultPanel({ result, onRegenerate, regenerating }: ResultPanelP
                       </button>
                     )}
                     <CopyButton
-                      text={`${s.title}\n\n[KO] ${s.titles.ko}\n[EN] ${s.titles.en}\n[JA] ${s.titles.ja}${stylePrompt ? `\n\n--- Style Prompt ---\n${stylePrompt}` : ''}\n\n${s.lyrics}${showTranslation ? `\n\n--- 한국어 번역 ---\n\n${s.lyricsKr}` : ''}`}
+                      text={`${s.title}\n\n[KO] ${s.titles.ko}\n[EN] ${s.titles.en}\n[JA] ${s.titles.ja}${stylePrompt ? `\n\n--- Style Prompt ---\n${stylePrompt}` : ''}\n\n${s.lyrics}`}
                     />
                     <span className="text-zinc-400 transition group-open:rotate-180">▾</span>
                   </div>
@@ -222,16 +217,6 @@ export function ResultPanel({ result, onRegenerate, regenerating }: ResultPanelP
                     </div>
                     <pre className="overflow-x-auto whitespace-pre-wrap rounded-lg bg-zinc-50 p-3 font-mono text-sm leading-relaxed text-zinc-800">{s.lyrics}</pre>
                   </section>
-
-                  {showTranslation && (
-                    <section className="mt-3">
-                      <div className="mb-1 flex items-center justify-between">
-                        <span className="text-xs font-medium text-zinc-500">🇰🇷 한국어 번역</span>
-                        <CopyButton text={s.lyricsKr} />
-                      </div>
-                      <pre className="overflow-x-auto whitespace-pre-wrap rounded-lg bg-zinc-50 p-3 font-mono text-sm leading-relaxed text-zinc-800">{s.lyricsKr}</pre>
-                    </section>
-                  )}
                 </div>
               </details>
             )

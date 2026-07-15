@@ -36,7 +36,7 @@ export class OpenAIProvider {
     try {
       parsed = await call()
     } catch {
-      parsed = await call('이전 응답이 JSON 스키마를 어겼습니다. 반드시 {"prompt": string, "songs": null | Array<{title,titles,concept,stylePrompt,lyrics,lyricsKr}>} 형태로만 답하세요.')
+      parsed = await call('이전 응답이 JSON 스키마를 어겼습니다. 반드시 {"prompt": string, "songs": null | Array<{title,titles,concept,stylePrompt,lyrics}>} 형태로만 답하세요.')
     }
     return { mode, prompt: parsed.prompt, songs: mode !== 'prompt-only' ? parsed.songs : null }
   }

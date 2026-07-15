@@ -1,5 +1,5 @@
 // lib/ai/gemini.ts
-import { GoogleGenAI, Type } from '@google/genai'
+import { GoogleGenAI, ThinkingLevel, Type } from '@google/genai'
 import type { GenerationExtras, GenerationMode, GenerationResult, Selections } from '@/types'
 import { DEFAULT_MODEL_ID } from '@/lib/models'
 import { SYSTEM_PROMPT, buildUserPrompt } from '@/lib/promptBuilder'
@@ -22,9 +22,8 @@ const SONG_SCHEMA = {
     concept:  { type: Type.STRING },
     stylePrompt: { type: Type.STRING },
     lyrics:   { type: Type.STRING },
-    lyricsKr: { type: Type.STRING },
   },
-  required: ['title', 'titles', 'concept', 'stylePrompt', 'lyrics', 'lyricsKr'],
+  required: ['title', 'titles', 'concept', 'stylePrompt', 'lyrics'],
 }
 
 export class GeminiProvider {
@@ -72,7 +71,12 @@ export class GeminiProvider {
         systemInstruction: SYSTEM_PROMPT,
         responseMimeType: 'application/json',
         responseSchema: schema,
-        temperature: 0.9,
+        // Gemini 3.x is tuned for default sampling — do not set temperature/topP/topK.
+        thinkingConfig: {
+          // Flash-Lite already defaults to MINIMAL; heavier models default up to HIGH,
+          // which inflates time-to-first-token past this app's client timeout.
+          thinkingLevel: this.model.includes('lite') ? ThinkingLevel.MINIMAL : ThinkingLevel.LOW,
+        },
         maxOutputTokens: mode === 'full' ? 32768 : 8192,
       },
     })

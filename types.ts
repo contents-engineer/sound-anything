@@ -32,7 +32,6 @@ export type SongConcept = {
   concept: string
   stylePrompt: string
   lyrics: string
-  lyricsKr: string
 }
 
 export type GenerationResult = {
