@@ -193,7 +193,10 @@ export function ResultPanel({ result, onRegenerate, regenerating }: ResultPanelP
                   )}
 
                   <section>
-                    <div className="mb-1 text-xs font-medium text-zinc-500">🌐 언어별 타이틀</div>
+                    <div className="mb-1 flex items-center justify-between">
+                      <span className="text-xs font-medium text-zinc-500">🌐 언어별 타이틀</span>
+                      <CopyButton text={`${s.titles.ko}\n${s.titles.en}\n${s.titles.ja}`} />
+                    </div>
                     <dl className="grid gap-1 rounded-lg bg-zinc-50 p-3 text-sm">
                       <div className="flex gap-3">
                         <dt className="w-16 shrink-0 text-zinc-500">한국어</dt>
