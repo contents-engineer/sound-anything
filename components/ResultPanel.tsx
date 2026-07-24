@@ -129,6 +129,7 @@ export function ResultPanel({ result, onRegenerate, regenerating }: ResultPanelP
           {result.songs.map((s, i) => {
             const isRegenerating = regenerating === i
             const stylePrompt = (s.stylePrompt ?? '').trim()
+            const excludeStyles = s.excludeStyles ?? []
             return (
               <details
                 key={i}
@@ -166,7 +167,7 @@ export function ResultPanel({ result, onRegenerate, regenerating }: ResultPanelP
                       </button>
                     )}
                     <CopyButton
-                      text={`${s.title}\n\n[KO] ${s.titles.ko}\n[EN] ${s.titles.en}\n[JA] ${s.titles.ja}${stylePrompt ? `\n\n--- Style Prompt ---\n${stylePrompt}` : ''}\n\n${s.lyrics}`}
+                      text={`${s.title}\n\n[KO] ${s.titles.ko}\n[EN] ${s.titles.en}\n[JA] ${s.titles.ja}${stylePrompt ? `\n\n--- Style Prompt ---\n${stylePrompt}` : ''}${excludeStyles.length > 0 ? `\n\n--- Exclude Styles ---\n${excludeStyles.join(', ')}` : ''}\n\n${s.lyrics}`}
                     />
                     <span className="text-zinc-400 transition group-open:rotate-180">▾</span>
                   </div>
@@ -189,6 +190,41 @@ export function ResultPanel({ result, onRegenerate, regenerating }: ResultPanelP
                       <p className="whitespace-pre-wrap font-mono text-sm leading-relaxed text-zinc-800" lang="en">
                         {stylePrompt}
                       </p>
+                    </section>
+                  )}
+
+                  {excludeStyles.length > 0 && (
+                    <section className="mb-3 rounded-lg border-l-2 border-rose-300 bg-rose-50/50 px-3 py-2">
+                      <div className="mb-1 flex items-center justify-between gap-2">
+                        <span className="text-xs font-medium text-zinc-500">🚫 Exclude Styles (Suno Exclude 입력란용)</span>
+                        <CopyButton text={excludeStyles.join(', ')} />
+                      </div>
+                      <div className="flex flex-wrap gap-1.5">
+                        {excludeStyles.map((x, j) => (
+                          <span
+                            key={j}
+                            lang="en"
+                            className="inline-flex items-center rounded-full bg-white px-2.5 py-0.5 font-mono text-xs text-zinc-800 ring-1 ring-rose-200"
+                          >
+                            {x}
+                          </span>
+                        ))}
+                      </div>
+                    </section>
+                  )}
+
+                  {s.sliderHint && (
+                    <section className="mb-3 rounded-lg border-l-2 border-amber-300 bg-amber-50/50 px-3 py-2">
+                      <div className="mb-1 text-xs font-medium text-zinc-500">🎚️ 슬라이더 추천</div>
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        <span className="inline-flex items-center rounded-full bg-white px-2.5 py-0.5 text-xs font-medium text-zinc-800 ring-1 ring-amber-200">
+                          Weirdness {s.sliderHint.weirdness}
+                        </span>
+                        <span className="inline-flex items-center rounded-full bg-white px-2.5 py-0.5 text-xs font-medium text-zinc-800 ring-1 ring-amber-200">
+                          Style Influence {s.sliderHint.styleInfluence}
+                        </span>
+                      </div>
+                      <p className="mt-1 text-xs leading-relaxed text-zinc-600">{s.sliderHint.note}</p>
                     </section>
                   )}
 
