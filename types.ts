@@ -26,11 +26,22 @@ export type Selections = {
   customInputs: Partial<Record<SectionKey, string>>
 }
 
+export const WEIRDNESS_LEVELS = ['0-20%', '20-40%', '40-60%', '60-80%'] as const
+export const STYLE_INFLUENCE_LEVELS = ['30-50%', '50-70%', '70-100%'] as const
+
+export type SliderHint = {
+  weirdness: (typeof WEIRDNESS_LEVELS)[number]
+  styleInfluence: (typeof STYLE_INFLUENCE_LEVELS)[number]
+  note: string
+}
+
 export type SongConcept = {
   title: string
   titles: { ko: string; en: string; ja: string }
   concept: string
   stylePrompt: string
+  excludeStyles?: string[]
+  sliderHint?: SliderHint
   lyrics: string
 }
 
