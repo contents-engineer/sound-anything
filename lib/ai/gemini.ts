@@ -1,6 +1,7 @@
 // lib/ai/gemini.ts
 import { GoogleGenAI, ThinkingLevel, Type } from '@google/genai'
 import type { GenerationExtras, GenerationMode, GenerationResult, Selections } from '@/types'
+import { STYLE_INFLUENCE_LEVELS, WEIRDNESS_LEVELS } from '@/types'
 import { DEFAULT_MODEL_ID } from '@/lib/models'
 import { SYSTEM_PROMPT, buildUserPrompt } from '@/lib/promptBuilder'
 
@@ -14,6 +15,16 @@ const TITLES_SCHEMA = {
   required: ['ko', 'en', 'ja'],
 }
 
+const SLIDER_HINT_SCHEMA = {
+  type: Type.OBJECT,
+  properties: {
+    weirdness: { type: Type.STRING, enum: [...WEIRDNESS_LEVELS] },
+    styleInfluence: { type: Type.STRING, enum: [...STYLE_INFLUENCE_LEVELS] },
+    note: { type: Type.STRING },
+  },
+  required: ['weirdness', 'styleInfluence', 'note'],
+}
+
 const SONG_SCHEMA = {
   type: Type.OBJECT,
   properties: {
@@ -21,9 +32,16 @@ const SONG_SCHEMA = {
     titles:   TITLES_SCHEMA,
     concept:  { type: Type.STRING },
     stylePrompt: { type: Type.STRING },
+    excludeStyles: {
+      type: Type.ARRAY,
+      items: { type: Type.STRING },
+      minItems: '2',
+      maxItems: '5',
+    },
+    sliderHint: SLIDER_HINT_SCHEMA,
     lyrics:   { type: Type.STRING },
   },
-  required: ['title', 'titles', 'concept', 'stylePrompt', 'lyrics'],
+  required: ['title', 'titles', 'concept', 'stylePrompt', 'excludeStyles', 'sliderHint', 'lyrics'],
 }
 
 export class GeminiProvider {
