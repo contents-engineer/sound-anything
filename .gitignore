@@ -43,3 +43,6 @@ next-env.d.ts
 # editor swap files
 *.swp
 *.swo
+
+# Claude Code personal settings
+.claude/settings.local.json
