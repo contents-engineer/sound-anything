@@ -1,6 +1,7 @@
 // lib/ai/anthropic.ts
 import Anthropic from '@anthropic-ai/sdk'
 import type { GenerationExtras, GenerationMode, GenerationResult, Selections } from '@/types'
+import { STYLE_INFLUENCE_LEVELS, WEIRDNESS_LEVELS } from '@/types'
 import { SYSTEM_PROMPT, buildUserPrompt } from '@/lib/promptBuilder'
 
 const TOOL = {
@@ -27,9 +28,24 @@ const TOOL = {
             },
             concept: { type: 'string' },
             stylePrompt: { type: 'string' },
+            excludeStyles: {
+              type: 'array',
+              items: { type: 'string' },
+              minItems: 2,
+              maxItems: 5,
+            },
+            sliderHint: {
+              type: 'object',
+              properties: {
+                weirdness: { type: 'string', enum: [...WEIRDNESS_LEVELS] },
+                styleInfluence: { type: 'string', enum: [...STYLE_INFLUENCE_LEVELS] },
+                note: { type: 'string' },
+              },
+              required: ['weirdness', 'styleInfluence', 'note'],
+            },
             lyrics: { type: 'string' },
           },
-          required: ['title', 'titles', 'concept', 'stylePrompt', 'lyrics'],
+          required: ['title', 'titles', 'concept', 'stylePrompt', 'excludeStyles', 'sliderHint', 'lyrics'],
         },
       },
     },

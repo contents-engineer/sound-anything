@@ -54,7 +54,7 @@ export async function POST(req: Request) {
       ...partial,
       songs: partial.songs
         ? partial.songs.map((s) =>
-            s.excludeStyles ? { ...s, excludeStyles: s.excludeStyles.slice(0, 5) } : s,
+            Array.isArray(s.excludeStyles) ? { ...s, excludeStyles: s.excludeStyles.slice(0, 5) } : s,
           )
         : partial.songs,
       provider: provider.name,

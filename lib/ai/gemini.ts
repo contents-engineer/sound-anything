@@ -18,8 +18,8 @@ const TITLES_SCHEMA = {
 const SLIDER_HINT_SCHEMA = {
   type: Type.OBJECT,
   properties: {
-    weirdness: { type: Type.STRING, enum: [...WEIRDNESS_LEVELS] },
-    styleInfluence: { type: Type.STRING, enum: [...STYLE_INFLUENCE_LEVELS] },
+    weirdness: { type: Type.STRING, format: 'enum', enum: [...WEIRDNESS_LEVELS] },
+    styleInfluence: { type: Type.STRING, format: 'enum', enum: [...STYLE_INFLUENCE_LEVELS] },
     note: { type: Type.STRING },
   },
   required: ['weirdness', 'styleInfluence', 'note'],
