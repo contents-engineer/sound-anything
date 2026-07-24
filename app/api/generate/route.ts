@@ -52,6 +52,11 @@ export async function POST(req: Request) {
 
     const result: GenerationResult = {
       ...partial,
+      songs: partial.songs
+        ? partial.songs.map((s) =>
+            s.excludeStyles ? { ...s, excludeStyles: s.excludeStyles.slice(0, 5) } : s,
+          )
+        : partial.songs,
       provider: provider.name,
       generatedAt: new Date().toISOString(),
     }
