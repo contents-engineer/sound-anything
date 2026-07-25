@@ -15,7 +15,7 @@ export function LengthSlider({ value, onChange }: Props) {
           <span>10. 노래 길이</span>
           <span className="text-sm font-normal text-zinc-500">(1분~10분)</span>
         </h2>
-        <p className="mt-1 text-xs text-zinc-500">가사 분량과 생성 프롬프트에 반영됩니다</p>
+        <p className="mt-1 text-xs text-zinc-500">가사 분량과 생성 프롬프트에 반영됩니다 · 6분 이상은 Suno에서 한 번에 생성되지 않을 수 있어 Extend용 후반부 복사가 함께 제공됩니다</p>
       </header>
       <div className="flex items-center gap-3">
         <span className="w-8 text-xs text-zinc-500">1분</span>

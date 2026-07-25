@@ -109,7 +109,7 @@ export default function Page() {
     }
   }
 
-  const regenerateSong = useCallback(async (index: number) => {
+  const regenerateSong = useCallback(async (index: number, retryHint?: string) => {
     if (!result?.songs) return
     cancelInFlight()
     const controller = new AbortController()
@@ -129,6 +129,7 @@ export default function Page() {
           mode: 'single',
           model: modelId,
           excludeTitles,
+          ...(retryHint ? { retryHint } : {}),
         }),
         signal: controller.signal,
       })
