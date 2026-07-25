@@ -1,6 +1,6 @@
 // lib/promptBuilder.ts
 import type { GenerationExtras, GenerationMode, Selections } from '@/types'
-import { STYLE_INFLUENCE_LEVELS, WEIRDNESS_LEVELS } from '@/types'
+import { STYLE_INFLUENCE_LEVELS, TRACK_ROLES, WEIRDNESS_LEVELS } from '@/types'
 import { SECTIONS } from '@/lib/options'
 
 export function isEmptySelections(s: Selections): boolean {
@@ -47,7 +47,7 @@ Suno는 명령을 수행하는 엔진이 아니라 분위기(vibe)를 조합하�
 - 저중역 질감 계열 디스크립터(dark, warm, lush, heavy, thick, reverb-heavy 등)는 곡당 **최대 2개** — 뭉개진(muddy) 믹스를 예방합니다. 무드상 이 계열이 몰리면 하나를 clean mix 또는 hi-fi production으로 대체합니다.
 - 금지: 추상어(epic, beautiful, amazing, emotional), 명령문(make the drums louder), 실제 아티스트명, "Target duration ..." 같은 길이 지시, 무한 루프 유발어(hypnotic, looping, endless).
 - 예시: "Dream Pop, slow 70-90 BPM, Juno-106 pad and clean electric guitar, breathy female vocals singing in Korean, Clear Korean Pronunciation, 2010s reverb-heavy production, wistful"
-- mode가 "full"이면 10곡의 stylePrompt가 서로 명확히 달라야 하며, 곡마다 차별화 레버 중 최소 1개를 다르게 씁니다.
+- mode가 "full"이면 10곡의 stylePrompt가 서로 명확히 달라야 하며, 곡마다 차별화 레버 중 최소 1개를 다르게 씁니다. 단, 그 차이는 아래 "플레이리스트 일관성" 섹션의 앵커를 깨지 않는 범위에서 만듭니다.
 
 # 각 song의 excludeStyles 필드 (Suno Exclude Styles 입력란용)
 
@@ -71,6 +71,7 @@ Suno는 명령을 수행하는 엔진이 아니라 분위기(vibe)를 조합하�
 - "title": 1~6단어의 짧고 시적인 원작 제목. 시각적·은유적 표현 사용. 사용자가 고른 가사 언어에 맞춰 작성합니다.
 - "titles": 같은 곡의 제목을 한국어·영어·일본어 세 언어로 각각 작성한 객체. 키는 정확히 ko, en, ja 세 개. 단순 직역이 아니라 각 언어의 노래 제목 톤에 맞춰 자연스럽게 표현하되, 원곡 분위기와 의미를 유지합니다. 가사 언어와 무관하게 세 언어 모두 채웁니다.
 - "concept": 2~3문장의 한국어 설명. 곡의 분위기·이미지·훅 아이디어 마케팅 메모처럼. 가사 본문을 인용하지 마세요.
+- "trackRole": mode가 "full"이면 아래 "플레이리스트 일관성" 규칙에 따라 배정합니다. mode가 "single"이면 null로 둡니다.
 - "lyrics": Suno 가사 입력란에 그대로 붙여넣는 형식의 새 가사. 아래 규칙을 정확히 따릅니다.
 
 # 가사 구조 (노래 길이별로 다름 — 반드시 준수)
@@ -130,6 +131,16 @@ Suno는 명령을 수행하는 엔진이 아니라 분위기(vibe)를 조합하�
   - "한국어+영어 섞어서": [Chorus] 또는 [Bridge] 중 **하나의 섹션 전체**를 영어(라틴 문자)로 쓰고, 나머지 섹션은 모두 한글로 씁니다.
   - "일본어+영어 섞어서": 위와 동일하게 영어 섹션 1개, 나머지는 일본어 문자(히라가나·가타카나·한자)로 씁니다. 일본어 부분은 절대 로마자로 바꾸지 마세요.
 
+# 플레이리스트 일관성 (mode: "full" 전용)
+
+10곡은 각각 따로 노는 곡이 아니라, 한 채널에서 연속 재생되는 **하나의 플레이리스트**입니다.
+
+- 앵커 고정: 모든 곡이 같은 장르 패밀리 안에 있고, 핵심 악기 1~2개와 보컬 캐릭터를 공유합니다(사용자 선택에서 도출).
+- 변수 분리: 곡 간 차이는 템포·에너지·편곡 밀도·마이크로장르 변형·무드의 폭으로 만듭니다. 앵커를 바꾸는 차별화는 금지.
+- trackRole 배정(정확히 10곡 합계): "opener" 1곡 — 반드시 1번째, "closer" 1곡 — 반드시 10번째, "climax" 1곡 — 7~9번째 중, "interlude" 1~2곡, "energy lift" 2~3곡, "depth" 나머지 2~3곡.
+- songs 배열 순서 = 재생 순서. 3막 구조로 배열합니다: 1~3번 도입(arrival), 4~7번 여정(journey), 8~10번 해소(resolution).
+- 역할이 곡에 드러나야 합니다: interlude는 편곡 밀도를 낮추고, climax는 에너지 정점, closer는 해소감으로 마무리.
+
 # 저작권
 
 - 모든 가사·제목·콘셉트는 사용자의 옵션에서 파생된 새 창작이어야 합니다.
@@ -177,9 +188,9 @@ export function buildUserPrompt(s: Selections, mode: GenerationMode, extras?: Ge
   lines.push(`- 노래 길이: ${s.lengthMin}분 (가사 분량과 곡 구성에 반영)`)
   lines.push(`- mode: ${mode}`)
   if (mode === 'full') {
-    lines.push('- songs 배열은 반드시 정확히 10개. 9개나 11개는 허용되지 않습니다. 각 곡의 콘셉트·stylePrompt·excludeStyles·가사를 모두 다르게 작성하세요.')
+    lines.push('- songs 배열은 반드시 정확히 10개. 9개나 11개는 허용되지 않습니다. 각 곡의 콘셉트·stylePrompt·excludeStyles·가사를 모두 다르게 작성하되, 하나의 플레이리스트로서 앵커(장르 패밀리·핵심 악기·보컬 캐릭터)를 공유하고 trackRole을 규칙대로 배정하세요.')
   } else if (mode === 'single') {
-    lines.push('- songs 배열은 반드시 정확히 1개. 해당 곡 전용 영문 stylePrompt·excludeStyles·sliderHint를 포함하세요.')
+    lines.push('- songs 배열은 반드시 정확히 1개. 해당 곡 전용 영문 stylePrompt·excludeStyles·sliderHint를 포함하고, trackRole은 null로 둡니다.')
   }
   if (extras?.excludeTitles && extras.excludeTitles.length > 0) {
     lines.push(`- 다음 제목들과 겹치지 마세요 (의미·콘셉트도 명확히 달라야 함): ${extras.excludeTitles.map((t) => `"${t}"`).join(', ')}`)
@@ -228,9 +239,10 @@ export const RESPONSE_SCHEMA = {
             },
             required: ['weirdness', 'styleInfluence', 'note'],
           },
+          trackRole: { type: ['string', 'null'], enum: [...TRACK_ROLES, null] },
           lyrics: { type: 'string' },
         },
-        required: ['title', 'titles', 'concept', 'stylePrompt', 'excludeStyles', 'sliderHint', 'lyrics'],
+        required: ['title', 'titles', 'concept', 'stylePrompt', 'excludeStyles', 'sliderHint', 'trackRole', 'lyrics'],
       },
     },
   },
