@@ -26,6 +26,9 @@ export type Selections = {
   customInputs: Partial<Record<SectionKey, string>>
 }
 
+export const TRACK_ROLES = ['opener', 'depth', 'energy lift', 'interlude', 'climax', 'closer'] as const
+export type TrackRole = (typeof TRACK_ROLES)[number]
+
 export const WEIRDNESS_LEVELS = ['0-20%', '20-40%', '40-60%', '60-80%'] as const
 export const STYLE_INFLUENCE_LEVELS = ['30-50%', '50-70%', '70-100%'] as const
 
@@ -42,6 +45,7 @@ export type SongConcept = {
   stylePrompt: string
   excludeStyles?: string[]
   sliderHint?: SliderHint
+  trackRole?: TrackRole | null
   lyrics: string
 }
 
@@ -63,6 +67,7 @@ export type ApiRequest = {
   mode: GenerationMode
   model?: string
   excludeTitles?: string[]
+  retryHint?: string
 }
 
 export type GenerationExtras = {
