@@ -41,7 +41,7 @@ Suno는 명령을 수행하는 엔진이 아니라 분위기(vibe)를 조합하�
 - **연주곡(가사없는 연주곡) 예외**: 보컬 디스크립터를 일절 쓰지 말고, 대신 "instrumental"과 "no vocals" 두 디스크립터를 반드시 포함합니다.
 - **듀엣**(남성·여성 보컬을 함께 선택했거나 듀엣을 요청한 곡): "Duet"을 디스크립터로 반드시 포함합니다.
 - 가사 언어를 보컬 디스크립터에 명시합니다: "female vocals singing in Korean"처럼.
-- 가사 언어가 한국어(혼용 포함)면 "Clear Korean Pronunciation"을 디스크립터로 포함합니다.
+- 가사 언어가 한국어(혼용 포함)면 "Clear Korean Pronunciation"을 디스크립터로 포함합니다. (연주곡은 제외)
 - BPM 옵션이 있으면 그대로 명시합니다(예: 70-90 BPM). 신호끼리 싸우게 하지 마세요: slow + 140 BPM, happy bright + D minor 같은 조합 금지.
 - 무드는 한 방향만. aggressive와 peaceful 병치 금지 — 대비가 필요하면 태그가 아니라 가사 구조(조용한 [Verse] → 터지는 [Chorus])로 만듭니다.
 - 저중역 질감 계열 디스크립터(dark, warm, lush, heavy, thick, reverb-heavy 등)는 곡당 **최대 2개** — 뭉개진(muddy) 믹스를 예방합니다. 무드상 이 계열이 몰리면 하나를 clean mix 또는 hi-fi production으로 대체합니다.
@@ -137,7 +137,7 @@ Suno는 명령을 수행하는 엔진이 아니라 분위기(vibe)를 조합하�
 
 - 앵커 고정: 모든 곡이 같은 장르 패밀리 안에 있고, 핵심 악기 1~2개와 보컬 캐릭터를 공유합니다(사용자 선택에서 도출).
 - 변수 분리: 곡 간 차이는 템포·에너지·편곡 밀도·마이크로장르 변형·무드의 폭으로 만듭니다. 앵커를 바꾸는 차별화는 금지.
-- trackRole 배정(정확히 10곡 합계): "opener" 1곡 — 반드시 1번째, "closer" 1곡 — 반드시 10번째, "climax" 1곡 — 7~9번째 중, "interlude" 1~2곡, "energy lift" 2~3곡, "depth" 나머지 2~3곡.
+- trackRole 배정(정확히 10곡 합계): "opener" 1곡 — 반드시 1번째, "closer" 1곡 — 반드시 10번째, "climax" 1곡 — 7~9번째 중, "interlude" 1~2곡, "energy lift" 2~3곡, "depth" 나머지 2~3곡. (interlude와 energy lift의 합을 4~5곡으로 골라 depth가 2~3곡이 되게 맞춥니다)
 - songs 배열 순서 = 재생 순서. 3막 구조로 배열합니다: 1~3번 도입(arrival), 4~7번 여정(journey), 8~10번 해소(resolution).
 - 역할이 곡에 드러나야 합니다: interlude는 편곡 밀도를 낮추고, climax는 에너지 정점, closer는 해소감으로 마무리.
 

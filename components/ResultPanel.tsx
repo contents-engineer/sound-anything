@@ -33,10 +33,11 @@ const ROLE_LABELS: Record<string, string> = {
 }
 
 // M5 증상→처방 매핑표 기반 재생성 힌트
-const RETRY_PRESCRIPTIONS: { label: string; hint: string }[] = [
+const RETRY_PRESCRIPTIONS: { label: string; hint: string; vocalOnly?: boolean }[] = [
   {
     label: '🩺 보컬이 웅얼거림',
     hint: '이전 곡은 보컬이 웅얼거렸습니다. 가사를 1~3음절 단어 위주로 다시 쓰고, stylePrompt에 crisp enunciation을 추가하고 hazy·dreamy·distant 계열 디스크립터를 제거하세요.',
+    vocalOnly: true,
   },
   {
     label: '🩺 장르가 튐',
@@ -49,12 +50,13 @@ const RETRY_PRESCRIPTIONS: { label: string; hint: string }[] = [
   {
     label: '🩺 훅이 약함',
     hint: '이전 곡은 후렴 훅이 약했습니다. 더 반복적이고 따라 부르기 쉬운 훅 라인으로 후렴을 다시 쓰고, 후렴에 배킹보컬(소괄호) 콜앤리스폰스를 1~2회 넣으세요.',
+    vocalOnly: true,
   },
 ]
 
 // Suno 초기 생성 상한(약 4~8분) 대응: [Verse 3]부터를 Extend용으로 분리
 function getExtendChunk(lyrics: string): string | null {
-  const idx = lyrics.indexOf('[Verse 3]')
+  const idx = lyrics.indexOf('[Verse 3')
   return idx > 0 ? lyrics.slice(idx).trim() : null
 }
 
@@ -166,6 +168,7 @@ export function ResultPanel({ result, onRegenerate, regenerating }: ResultPanelP
             const stylePrompt = (s.stylePrompt ?? '').trim()
             const excludeStyles = s.excludeStyles ?? []
             const extendChunk = getExtendChunk(s.lyrics)
+            const isInstrumental = s.lyrics.trim() === '[Instrumental]' || s.lyrics.trim() === '(Instrumental)'
             return (
               <details
                 key={i}
@@ -315,7 +318,7 @@ export function ResultPanel({ result, onRegenerate, regenerating }: ResultPanelP
                     <section className="mt-3">
                       <div className="mb-1 text-xs font-medium text-zinc-500">🔄 문제가 있나요? 증상을 골라 이 곡만 다시 생성</div>
                       <div className="flex flex-wrap gap-1.5">
-                        {RETRY_PRESCRIPTIONS.map((p) => (
+                        {RETRY_PRESCRIPTIONS.filter((p) => !(isInstrumental && p.vocalOnly)).map((p) => (
                           <button
                             key={p.label}
                             type="button"

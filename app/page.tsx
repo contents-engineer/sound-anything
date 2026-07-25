@@ -146,7 +146,7 @@ export default function Page() {
       }
       const merged: GenerationResult = {
         ...result,
-        songs: result.songs.map((s, i) => (i === index ? newSong : s)),
+        songs: result.songs.map((s, i) => (i === index ? { ...newSong, trackRole: s.trackRole ?? null } : s)),
         generatedAt: partial.generatedAt,
         provider: partial.provider,
       }

@@ -38,7 +38,7 @@ export async function POST(req: Request) {
 
   const extras: GenerationExtras = {}
   if (body.excludeTitles && body.excludeTitles.length > 0) extras.excludeTitles = body.excludeTitles
-  if (typeof body.retryHint === 'string' && body.retryHint.trim().length > 0) extras.retryHint = body.retryHint.trim()
+  if (typeof body.retryHint === 'string' && body.retryHint.trim().length > 0) extras.retryHint = body.retryHint.trim().slice(0, 500)
 
   try {
     let partial = await provider.generate(body.selections, body.mode, extras)
