@@ -1,7 +1,7 @@
 // lib/ai/gemini.ts
 import { GoogleGenAI, ThinkingLevel, Type } from '@google/genai'
 import type { GenerationExtras, GenerationMode, GenerationResult, Selections } from '@/types'
-import { STYLE_INFLUENCE_LEVELS, WEIRDNESS_LEVELS } from '@/types'
+import { STYLE_INFLUENCE_LEVELS, TRACK_ROLES, WEIRDNESS_LEVELS } from '@/types'
 import { DEFAULT_MODEL_ID } from '@/lib/models'
 import { SYSTEM_PROMPT, buildUserPrompt } from '@/lib/promptBuilder'
 
@@ -39,9 +39,10 @@ const SONG_SCHEMA = {
       maxItems: '5',
     },
     sliderHint: SLIDER_HINT_SCHEMA,
+    trackRole: { type: Type.STRING, format: 'enum', enum: [...TRACK_ROLES], nullable: true },
     lyrics:   { type: Type.STRING },
   },
-  required: ['title', 'titles', 'concept', 'stylePrompt', 'excludeStyles', 'sliderHint', 'lyrics'],
+  required: ['title', 'titles', 'concept', 'stylePrompt', 'excludeStyles', 'sliderHint', 'trackRole', 'lyrics'],
 }
 
 export class GeminiProvider {
