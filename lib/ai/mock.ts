@@ -1,5 +1,5 @@
 // lib/ai/mock.ts
-import type { GenerationExtras, GenerationMode, GenerationResult, Selections, SongConcept } from '@/types'
+import type { GenerationExtras, GenerationMode, GenerationResult, Selections, SongConcept, TrackRole } from '@/types'
 
 export class MockProvider {
   name = 'mock'
@@ -41,6 +41,15 @@ export class MockProvider {
       ].join('\n\n')
     }
 
+    const instrumental =
+      opts.vocal.includes('가사없는 연주곡') || opts.topic.includes('가사없는(연주곡)')
+
+    // opener 1(1번째)·closer 1(10번째)·climax 1(7번째)·interlude 1·energy lift 3·depth 3
+    const MOCK_ROLES: TrackRole[] = [
+      'opener', 'depth', 'energy lift', 'interlude', 'depth',
+      'energy lift', 'climax', 'depth', 'energy lift', 'closer',
+    ]
+
     const songCount = mode === 'single' ? 1 : 10
     const songs: SongConcept[] = Array.from({ length: songCount }, (_, i) => ({
       title: `목업 트랙 ${i + 1}`,
@@ -50,14 +59,19 @@ export class MockProvider {
         ja: `モックトラック ${i + 1}`,
       },
       concept: `${summary} 분위기를 살린 ${opts.lengthMin}분짜리 트랙의 콘셉트 메모 ${i + 1}번. 실제 LLM 응답은 분위기·이미지·훅 아이디어를 두세 문장으로 묘사합니다.`,
-      stylePrompt: `Mock playlist-ready style, distinct song concept ${i + 1}, cinematic hook, expressive vocal texture`,
-      excludeStyles: ['edm drops', 'distorted guitar', 'crowd noise'].slice(0, 2 + (i % 2)),
+      stylePrompt: instrumental
+        ? `Mock ambient instrumental ${i + 1}, instrumental, no vocals, warm analog production`
+        : `Mock playlist-ready style, distinct song concept ${i + 1}, cinematic hook, expressive vocal texture`,
+      excludeStyles: instrumental
+        ? ['vocals', 'singing', 'chanting', 'vocal samples']
+        : ['edm drops', 'distorted guitar', 'crowd noise'].slice(0, 2 + (i % 2)),
       sliderHint: {
         weirdness: '40-60%',
         styleInfluence: '50-70%',
         note: `목업 추천 ${i + 1}: 창의성과 일관성의 기본 균형 구간입니다.`,
       },
-      lyrics: mockLyrics(i + 1),
+      trackRole: mode === 'full' ? MOCK_ROLES[i] : null,
+      lyrics: instrumental ? '[Instrumental]' : mockLyrics(i + 1),
     }))
 
     return { mode, prompt, songs }
