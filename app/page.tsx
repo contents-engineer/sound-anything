@@ -3,7 +3,7 @@
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import type { GenerationMode, GenerationResult, Selections, SectionKey } from '@/types'
-import { SECTIONS } from '@/lib/options'
+import { INSTRUMENTAL_VOCAL_LABEL, SECTIONS } from '@/lib/options'
 import { OptionSection } from '@/components/OptionSection'
 import { LengthSlider } from '@/components/LengthSlider'
 import { ResultPanel } from '@/components/ResultPanel'
@@ -55,7 +55,13 @@ export default function Page() {
     setSelections((s) => {
       if (MULTI_KEYS.includes(key)) {
         const arr = s[key] as string[]
-        const next = arr.includes(label) ? arr.filter((x) => x !== label) : [...arr, label]
+        let next = arr.includes(label) ? arr.filter((x) => x !== label) : [...arr, label]
+        // 보컬: "연주곡 (보컬 없음)"은 다른 보컬과 공존 불가 — 상호 배타
+        if (key === 'vocal' && next.includes(label)) {
+          next = label === INSTRUMENTAL_VOCAL_LABEL
+            ? [INSTRUMENTAL_VOCAL_LABEL]
+            : next.filter((x) => x !== INSTRUMENTAL_VOCAL_LABEL)
+        }
         return { ...s, [key]: next }
       }
       const cur = s[key] as string | null

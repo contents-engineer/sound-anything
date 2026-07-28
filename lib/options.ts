@@ -35,17 +35,17 @@ export const GENRES: Preset[] = [
   { emoji: '🪕', label: '포크' },
   { emoji: '🏝️', label: '레게' },
   { emoji: '✨', label: '디스코' },
-  { emoji: '🎸', label: '록' },
+  { emoji: '🤘', label: '록' },
   { emoji: '🔊', label: '전자음악' },
   { emoji: '🎼', label: 'R&B' },
-  { emoji: '🎹', label: '소울' },
+  { emoji: '🕺', label: '소울' },
   { emoji: '🎛️', label: '신스팝' },
   { emoji: '☁️', label: '드림 팝' },
   { emoji: '🎨', label: '인디팝' },
   { emoji: '🙏', label: '가스펠' },
-  { emoji: '🎺', label: '스윙' },
+  { emoji: '🎩', label: '스윙' },
   { emoji: '💃', label: '라틴' },
-  { emoji: '🎵', label: '이지리스닝' },
+  { emoji: '🛋️', label: '이지리스닝' },
   { emoji: '👶', label: '자장가' },
   { emoji: '🧸', label: '동요' },
   { emoji: '🎄', label: '캐롤' },
@@ -67,9 +67,11 @@ export const MOODS: Preset[] = [
   { emoji: '🍃', label: '시원한 바람' },
   { emoji: '🚗', label: '강력한 드라이브' },
   { emoji: '💪', label: '도전적인' },
-  { emoji: '🏔️', label: '웅장한 대서사시' },
+  { emoji: '🏔️', label: '웅장한 오케스트라' },
   { emoji: '🥰', label: '귀여운' },
 ]
+
+export const INSTRUMENTAL_VOCAL_LABEL = '연주곡 (보컬 없음)'
 
 export const VOCALS: Preset[] = [
   { emoji: '👶', label: '어린이 합창단' },
@@ -89,7 +91,7 @@ export const VOCALS: Preset[] = [
   { emoji: '🎭', label: '오페라틱 (남성)' },
   { emoji: '🎭', label: '오페라틱 (여성)' },
   { emoji: '🌬️', label: '공기반 사운드반' },
-  { emoji: '🎼', label: '가사없는 연주곡' },
+  { emoji: '🎼', label: INSTRUMENTAL_VOCAL_LABEL },
 ]
 
 export const USAGES: Preset[] = [
@@ -160,7 +162,6 @@ export const TOPICS: Preset[] = [
   { emoji: '🌧️', label: '비 오는 날' },
   { emoji: '✈️', label: '여행' },
   { emoji: '🙏', label: '감사와 기도' },
-  { emoji: '🎼', label: '가사없는(연주곡)' },
   { emoji: '🎄', label: '크리스마스' },
 ]
 

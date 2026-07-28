@@ -1,5 +1,6 @@
 // lib/ai/mock.ts
 import type { GenerationExtras, GenerationMode, GenerationResult, Selections, SongConcept, TrackRole } from '@/types'
+import { INSTRUMENTAL_VOCAL_LABEL } from '@/lib/options'
 
 export class MockProvider {
   name = 'mock'
@@ -41,8 +42,7 @@ export class MockProvider {
       ].join('\n\n')
     }
 
-    const instrumental =
-      opts.vocal.includes('가사없는 연주곡') || opts.topic.includes('가사없는(연주곡)')
+    const instrumental = opts.vocal.includes(INSTRUMENTAL_VOCAL_LABEL)
 
     // opener 1(1번째)·closer 1(10번째)·climax 1(7번째)·interlude 1·energy lift 3·depth 3
     const MOCK_ROLES: TrackRole[] = [
