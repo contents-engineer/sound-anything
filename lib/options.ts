@@ -84,6 +84,7 @@ export const VOCALS: Preset[] = [
   { emoji: '👧', label: '맑은 소녀 보컬' },
   { emoji: '🔥', label: '열정적인 남성 보컬' },
   { emoji: '🎵', label: '남녀 코러스 합창' },
+  { emoji: '👫', label: '남녀 듀엣' },
   { emoji: '🤖', label: '보코더 효과' },
   { emoji: '🤫', label: '속삭이는 여성' },
   { emoji: '🎤', label: '랩 (남성)' },
@@ -112,9 +113,16 @@ export const INSTRUMENTS: Preset[] = [
   { emoji: '🎵', label: '오르골' },
   { emoji: '🎷', label: '색소폰' },
   { emoji: '🎻', label: '바이올린' },
-  { emoji: '🎻', label: '첼로' },
+  { emoji: '🎼', label: '첼로' },
   { emoji: '🔔', label: '싱잉볼' },
   { emoji: '🎛️', label: '신디사이저' },
+  { emoji: '🥁', label: '드럼/퍼커션' },
+  { emoji: '🔊', label: '베이스' },
+  { emoji: '🎚️', label: '808 비트' },
+  { emoji: '🎺', label: '브라스 섹션' },
+  { emoji: '🪗', label: '오르간' },
+  { emoji: '🪈', label: '플루트' },
+  { emoji: '🎶', label: '하프' },
 ]
 
 export const BPMS: Preset[] = [
@@ -143,6 +151,8 @@ export const LANGUAGES: Preset[] = [
   { emoji: '🌏', label: '한국어+영어 섞어서' },
   { emoji: '🇯🇵', label: '일본어' },
   { emoji: '🎌', label: '일본어+영어 섞어서' },
+  { emoji: '🇨🇳', label: '중국어' },
+  { emoji: '🇪🇸', label: '스페인어' },
 ]
 
 export const TOPICS: Preset[] = [
@@ -162,15 +172,21 @@ export const TOPICS: Preset[] = [
   { emoji: '🌧️', label: '비 오는 날' },
   { emoji: '✈️', label: '여행' },
   { emoji: '🙏', label: '감사와 기도' },
+  { emoji: '🫂', label: '우정' },
+  { emoji: '👨‍👩‍👧', label: '가족' },
+  { emoji: '🎓', label: '청춘·졸업' },
+  { emoji: '🌃', label: '밤과 도시' },
+  { emoji: '📣', label: '응원가' },
+  { emoji: '🍂', label: '사계절' },
   { emoji: '🎄', label: '크리스마스' },
 ]
 
 export const SECTIONS: SectionMeta[] = [
-  { key: 'genre',      number: 1, emoji: '🎸', title: '장르 선택',        subtitle: '음악의 색깔',     placeholder: '원하는 장르를 직접 입력하세요',          multi: false, presets: GENRES },
+  { key: 'genre',      number: 1, emoji: '🎸', title: '장르 선택',        subtitle: '음악의 색깔',     placeholder: '예: shoegaze, 시티팝, phonk — 좁고 뾰족한 장르일수록 좋아요',          multi: false, presets: GENRES },
   { key: 'mood',       number: 2, emoji: '✨', title: '분위기 및 감성',    subtitle: '감정의 깊이',     placeholder: '원하는 분위기를 직접 입력하세요',        multi: true,  presets: MOODS },
   { key: 'vocal',      number: 3, emoji: '🎤', title: '보컬 및 창법',      subtitle: '목소리의 질감',   placeholder: '원하는 보컬 스타일을 직접 입력하세요',   multi: true,  presets: VOCALS },
   { key: 'usage',      number: 4, emoji: '🎬', title: '사용 용도',         subtitle: '공간의 울림',     placeholder: '사용 용도를 직접 입력하세요',            multi: false, presets: USAGES },
-  { key: 'instrument', number: 5, emoji: '🎹', title: '주요 악기',         subtitle: '소리의 도구',     placeholder: '원하는 악기를 직접 입력하세요',          multi: true,  presets: INSTRUMENTS },
+  { key: 'instrument', number: 5, emoji: '🎹', title: '주요 악기',         subtitle: '소리의 도구',     placeholder: '예: Rhodes 피아노, Juno-106, Moog 베이스, TR-808',          multi: true,  presets: INSTRUMENTS },
   { key: 'bpm',        number: 6, emoji: '⚡', title: '속도 (BPM)',        subtitle: '리듬의 맥박',     placeholder: '원하는 BPM을 직접 입력하세요',           multi: false, presets: BPMS },
   { key: 'age',        number: 7, emoji: '👥', title: '타겟 연령대',       subtitle: '청중의 공감',     placeholder: '타겟 연령대를 직접 입력하세요',          multi: false, presets: AGES },
   { key: 'language',   number: 8, emoji: '🌐', title: '가사 언어',         subtitle: '글로벌 소통',     placeholder: '원하는 언어를 직접 입력하세요',          multi: false, presets: LANGUAGES },
