@@ -10,9 +10,9 @@ export interface AIProvider {
   generate(opts: Selections, mode: GenerationMode, extras?: GenerationExtras): Promise<Omit<GenerationResult, 'generatedAt' | 'provider'>>
 }
 
-export function getProvider(modelOverride?: string): AIProvider {
+export function getProvider(modelOverride?: string, apiKey?: string): AIProvider {
   if (modelOverride && modelOverride.startsWith('gemini-')) {
-    return new GeminiProvider(modelOverride)
+    return new GeminiProvider(modelOverride, apiKey)
   }
   const name = (process.env.AI_PROVIDER ?? 'mock').toLowerCase()
   switch (name) {
@@ -23,7 +23,7 @@ export function getProvider(modelOverride?: string): AIProvider {
     case 'anthropic':
       return new AnthropicProvider()
     case 'gemini':
-      return new GeminiProvider()
+      return new GeminiProvider(undefined, apiKey)
     default:
       throw new Error(`Unknown AI_PROVIDER: ${name}`)
   }

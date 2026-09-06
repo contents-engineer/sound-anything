@@ -22,9 +22,9 @@ Set `AI_PROVIDER` in `.env.local` to one of:
 | `mock`    | none — deterministic dummy data, useful for UI work |
 | `openai`  | `OPENAI_API_KEY`, optional `OPENAI_MODEL`      |
 | `anthropic` | `ANTHROPIC_API_KEY`, optional `ANTHROPIC_MODEL` |
-| `gemini`  | `GOOGLE_API_KEY`, optional `GEMINI_MODEL`      |
+| `gemini`  | 브라우저에서 키 등록 (env 불필요), optional `GEMINI_MODEL` |
 
-The API key never leaves the server — all LLM calls go through `/api/generate`.
+`gemini`는 서버에 API 키를 두지 않습니다. 화면 우측 상단의 "Gemini API 키 등록" 버튼으로 [Google AI Studio](https://aistudio.google.com/apikey)에서 발급한 키를 입력하면 브라우저 `localStorage`에만 저장되고, 생성 요청마다 서버로 전달되어 해당 요청 처리에만 사용됩니다(서버 저장/로깅 없음). 무료 티어 키(결제 미연결 프로젝트)도 동작하며, 분당 한도 초과(429) 시 서버가 자동으로 잠시 대기 후 재시도하고 일일 한도 소진 시 에러 메시지로 안내합니다.
 
 ## What this app generates
 

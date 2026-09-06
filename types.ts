@@ -59,13 +59,15 @@ export type GenerationResult = {
 }
 
 export type ApiError = {
-  error: { code: 'EMPTY_SELECTION' | 'MISSING_API_KEY' | 'LLM_ERROR' | 'INVALID_RESPONSE'; message: string }
+  error: { code: 'EMPTY_SELECTION' | 'MISSING_API_KEY' | 'LLM_ERROR' | 'INVALID_RESPONSE' | 'RATE_LIMITED'; message: string }
 }
 
 export type ApiRequest = {
   selections: Selections
   mode: GenerationMode
   model?: string
+  /** 브라우저에서 등록한 Gemini API 키. 서버는 요청 처리에만 사용하고 저장하지 않는다. */
+  apiKey?: string
   excludeTitles?: string[]
   retryHint?: string
 }

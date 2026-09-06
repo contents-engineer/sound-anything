@@ -2,6 +2,7 @@
 import { NextResponse } from 'next/server'
 import type { ApiError, ApiRequest, GenerationExtras, GenerationResult } from '@/types'
 import { TRACK_ROLES } from '@/types'
+import { RateLimitError } from '@/lib/ai/errors'
 import { getProvider } from '@/lib/ai/provider'
 import { isEmptySelections } from '@/lib/promptBuilder'
 
@@ -28,9 +29,11 @@ export async function POST(req: Request) {
   if (!body?.selections || !body?.mode) return err('LLM_ERROR', 'selections and mode are required', 400)
   if (isEmptySelections(body.selections)) return err('EMPTY_SELECTION', '최소 1개 옵션을 선택해주세요', 400)
 
+  const apiKey = typeof body.apiKey === 'string' && body.apiKey.trim().length > 0 ? body.apiKey.trim() : undefined
+
   let provider
   try {
-    provider = getProvider(body.model)
+    provider = getProvider(body.model, apiKey)
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : 'Unknown provider error'
     return err('MISSING_API_KEY', message, 500)
@@ -68,6 +71,7 @@ export async function POST(req: Request) {
     }
     return NextResponse.json(result)
   } catch (e: unknown) {
+    if (e instanceof RateLimitError) return err('RATE_LIMITED', e.message, 429)
     const message = e instanceof Error ? e.message : 'LLM error'
     return err('LLM_ERROR', message, 502)
   }

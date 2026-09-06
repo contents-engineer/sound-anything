@@ -1,9 +1,32 @@
 // lib/ai/gemini.ts
-import { GoogleGenAI, ThinkingLevel, Type } from '@google/genai'
+import { ApiError, GoogleGenAI, ThinkingLevel, Type } from '@google/genai'
 import type { GenerationExtras, GenerationMode, GenerationResult, Selections } from '@/types'
 import { STYLE_INFLUENCE_LEVELS, TRACK_ROLES, WEIRDNESS_LEVELS } from '@/types'
+import { RateLimitError } from '@/lib/ai/errors'
 import { DEFAULT_MODEL_ID } from '@/lib/models'
 import { SYSTEM_PROMPT, buildUserPrompt } from '@/lib/promptBuilder'
+
+// Free-tier (AI Studio, no billing) keys hit low per-minute quotas; retry 429s
+// instead of failing outright. The client aborts at 60s (single) / 120s (full),
+// so total retry wait must stay well under that.
+const MAX_RETRIES = 2
+const MAX_RETRY_DELAY_MS = 20_000
+
+function isRateLimit(e: unknown): e is ApiError {
+  return e instanceof ApiError && e.status === 429
+}
+
+function isDailyQuota(e: ApiError): boolean {
+  // Quota violation details name the exceeded metric, e.g. "GenerateRequestsPerDayPerProjectPerModel".
+  return /perday|per day|daily/i.test(e.message)
+}
+
+function retryDelayMs(e: ApiError, attempt: number): number {
+  // The 429 body suggests a wait via RetryInfo, serialized as `"retryDelay":"7s"`.
+  const m = e.message.match(/retryDelay"?\s*:\s*"?(\d+(?:\.\d+)?)s/)
+  const suggested = m ? Math.ceil(parseFloat(m[1]) * 1000) : (attempt + 1) * 5_000
+  return Math.min(suggested, MAX_RETRY_DELAY_MS)
+}
 
 const TITLES_SCHEMA = {
   type: Type.OBJECT,
@@ -50,9 +73,8 @@ export class GeminiProvider {
   private client: GoogleGenAI
   private model: string
 
-  constructor(modelOverride?: string) {
-    const apiKey = process.env.GOOGLE_API_KEY
-    if (!apiKey) throw new Error('GOOGLE_API_KEY is not set')
+  constructor(modelOverride?: string, apiKey?: string) {
+    if (!apiKey) throw new Error('Gemini API 키가 없습니다. 화면 우측 상단에서 API 키를 등록해주세요.')
     this.model = modelOverride ?? process.env.GEMINI_MODEL ?? DEFAULT_MODEL_ID
     this.client = new GoogleGenAI({ apiKey })
   }
@@ -83,7 +105,7 @@ export class GeminiProvider {
           required: ['prompt'],
         }
 
-    const resp = await this.client.models.generateContent({
+    const request = {
       model: this.model,
       contents: [{ role: 'user', parts: [{ text: userPrompt }] }],
       config: {
@@ -98,7 +120,27 @@ export class GeminiProvider {
         },
         maxOutputTokens: mode === 'full' ? 32768 : 8192,
       },
-    })
+    }
+
+    let resp
+    for (let attempt = 0; ; attempt++) {
+      try {
+        resp = await this.client.models.generateContent(request)
+        break
+      } catch (e: unknown) {
+        if (e instanceof ApiError && (e.status === 400 || e.status === 403) && /api[ _]?key/i.test(e.message)) {
+          throw new Error('Gemini API 키가 유효하지 않습니다. 우측 상단에서 키를 다시 등록해주세요.')
+        }
+        if (!isRateLimit(e)) throw e
+        if (isDailyQuota(e)) {
+          throw new RateLimitError('Gemini API 일일 무료 사용량을 모두 사용했습니다. 내일 다시 시도하거나 다른 모델을 선택해주세요.')
+        }
+        if (attempt >= MAX_RETRIES) {
+          throw new RateLimitError('Gemini API 분당 요청 한도를 초과했습니다. 잠시(약 1분) 후 다시 시도해주세요.')
+        }
+        await new Promise((r) => setTimeout(r, retryDelayMs(e, attempt)))
+      }
+    }
 
     const text = resp.text ?? ''
     const parsed = JSON.parse(text) as { prompt: string; songs?: GenerationResult['songs'] }

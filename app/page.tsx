@@ -9,7 +9,9 @@ import { LengthSlider } from '@/components/LengthSlider'
 import { ResultPanel } from '@/components/ResultPanel'
 import { ResultSkeleton } from '@/components/ResultSkeleton'
 import { HistoryDrawer } from '@/components/HistoryDrawer'
+import { ApiKeySettings } from '@/components/ApiKeySettings'
 import { loadHistory, pushHistory, clearHistory } from '@/lib/history'
+import { loadApiKey, saveApiKey, clearApiKey } from '@/lib/apiKey'
 import { isEmptySelections } from '@/lib/promptBuilder'
 import { DEFAULT_MODEL_ID, MODELS } from '@/lib/models'
 
@@ -35,6 +37,7 @@ export default function Page() {
   const [history, setHistory] = useState<GenerationResult[]>([])
   const [historyOpen, setHistoryOpen] = useState(false)
   const [modelId, setModelId] = useState<string>(DEFAULT_MODEL_ID)
+  const [apiKey, setApiKey] = useState('')
   const [regenIndex, setRegenIndex] = useState<number | null>(null)
   const resultRef = useRef<HTMLDivElement>(null)
   const abortRef = useRef<AbortController | null>(null)
@@ -42,7 +45,7 @@ export default function Page() {
 
   // Hydration-safe: load history after mount (localStorage unavailable on server).
   // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => { setHistory(loadHistory()) }, [])
+  useEffect(() => { setHistory(loadHistory()); setApiKey(loadApiKey()) }, [])
 
   useEffect(() => {
     if (!result) return
@@ -91,7 +94,7 @@ export default function Page() {
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ selections, mode, model: modelId }),
+        body: JSON.stringify({ selections, mode, model: modelId, apiKey }),
         signal: controller.signal,
       })
       const data = await res.json()
@@ -117,6 +120,10 @@ export default function Page() {
 
   const regenerateSong = useCallback(async (index: number, retryHint?: string) => {
     if (!result?.songs) return
+    if (!apiKey) {
+      setError('먼저 우측 상단에서 Gemini API 키를 등록해주세요')
+      return
+    }
     cancelInFlight()
     const controller = new AbortController()
     abortRef.current = controller
@@ -134,6 +141,7 @@ export default function Page() {
           selections: baseSelections,
           mode: 'single',
           model: modelId,
+          apiKey,
           excludeTitles,
           ...(retryHint ? { retryHint } : {}),
         }),
@@ -169,7 +177,7 @@ export default function Page() {
       if (abortRef.current === controller) abortRef.current = null
       setRegenIndex(null)
     }
-  }, [result, selections, modelId])
+  }, [result, selections, modelId, apiKey])
 
   return (
     <div className="mx-auto max-w-5xl px-4 py-8">
@@ -178,13 +186,20 @@ export default function Page() {
           <h2 className="text-2xl font-bold">수노 제너레이터</h2>
           <p className="text-sm text-zinc-500">곡별 스타일 프롬프트 + 1곡 또는 10곡 콘셉트를 생성합니다</p>
         </div>
-        <button
-          type="button"
-          onClick={() => setHistoryOpen(true)}
-          className="rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50"
-        >
-          히스토리 {history.length}
-        </button>
+        <div className="flex flex-wrap items-center justify-end gap-2">
+          <ApiKeySettings
+            apiKey={apiKey}
+            onSave={(k) => { saveApiKey(k); setApiKey(k) }}
+            onClear={() => { clearApiKey(); setApiKey('') }}
+          />
+          <button
+            type="button"
+            onClick={() => setHistoryOpen(true)}
+            className="rounded-xl border border-zinc-300 bg-white px-3 py-2 text-sm font-medium text-zinc-700 hover:bg-zinc-50"
+          >
+            히스토리 {history.length}
+          </button>
+        </div>
       </header>
 
       <div className="flex flex-col gap-4">
@@ -249,8 +264,8 @@ export default function Page() {
           )}
           <button
             type="button"
-            disabled={loading !== null || regenIndex !== null || isEmpty}
-            title={isEmpty ? '먼저 옵션을 하나 이상 선택하세요' : undefined}
+            disabled={loading !== null || regenIndex !== null || isEmpty || !apiKey}
+            title={!apiKey ? '먼저 우측 상단에서 Gemini API 키를 등록하세요' : isEmpty ? '먼저 옵션을 하나 이상 선택하세요' : undefined}
             onClick={() => generate('single')}
             className="rounded-xl border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50"
           >
@@ -258,15 +273,18 @@ export default function Page() {
           </button>
           <button
             type="button"
-            disabled={loading !== null || regenIndex !== null || isEmpty}
-            title={isEmpty ? '먼저 옵션을 하나 이상 선택하세요' : undefined}
+            disabled={loading !== null || regenIndex !== null || isEmpty || !apiKey}
+            title={!apiKey ? '먼저 우측 상단에서 Gemini API 키를 등록하세요' : isEmpty ? '먼저 옵션을 하나 이상 선택하세요' : undefined}
             onClick={() => generate('full')}
             className="rounded-xl bg-violet-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-50"
           >
             {loading === 'full' ? '생성 중…' : '10곡 생성'}
           </button>
         </div>
-        {isEmpty && !error && (
+        {!apiKey && !error && (
+          <span className="w-full text-xs text-amber-700">우측 상단에서 Gemini API 키를 등록해야 생성할 수 있습니다 (키는 브라우저에만 저장됩니다)</span>
+        )}
+        {apiKey && isEmpty && !error && (
           <span className="w-full text-xs text-zinc-500">옵션을 1개 이상 선택해 주세요</span>
         )}
         {error && <span className="w-full text-sm text-red-600">⚠ {error}</span>}
