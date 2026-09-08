@@ -23,6 +23,12 @@ export const GENRES: Preset[] = [
   { emoji: '🧘', label: '명상/치유' },
   { emoji: '✝️', label: 'CCM/찬양' },
   { emoji: '💫', label: 'K-pop' },
+  { emoji: '🌸', label: 'J-pop' },
+  { emoji: '🛍️', label: '시부야케이' },
+  { emoji: '📺', label: '애니송' },
+  { emoji: '💠', label: '보컬로이드' },
+  { emoji: '🎐', label: '카요쿄쿠 (쇼와 가요)' },
+  { emoji: '🎙️', label: 'J-록 (밴드 사운드)' },
   { emoji: '💔', label: '발라드' },
   { emoji: '🎺', label: '재즈' },
   { emoji: '🎤', label: '팝' },
@@ -95,6 +101,8 @@ export const VOCALS: Preset[] = [
   { emoji: '🎼', label: INSTRUMENTAL_VOCAL_LABEL },
 ]
 
+export const VOCAL_STEM_USAGE_LABEL = '보컬 스템 추출용'
+
 export const USAGES: Preset[] = [
   { emoji: '📹', label: '유튜브 브이로그 BGM' },
   { emoji: '🎮', label: '게임 방송 배경음' },
@@ -104,6 +112,23 @@ export const USAGES: Preset[] = [
   { emoji: '☕', label: '카페 분위기' },
   { emoji: '📱', label: '감성 쇼츠/틱톡' },
   { emoji: '⛪', label: '교회 예배/묵상' },
+  { emoji: '🎚️', label: VOCAL_STEM_USAGE_LABEL },
+]
+
+export const ERAS: Preset[] = [
+  { emoji: '🎐', label: '1970-80s 쇼와 가요' },
+  { emoji: '🕶️', label: '1980s 시티팝/버블' },
+  { emoji: '🛍️', label: '1990s 시부야케이' },
+  { emoji: '💿', label: '2000s J-pop' },
+  { emoji: '📱', label: '2010s' },
+  { emoji: '✨', label: '2020s 현대' },
+]
+
+export const PRODUCTIONS: Preset[] = [
+  { emoji: '💎', label: '깨끗한 현대 믹스' },
+  { emoji: '🎚️', label: '아날로그 따뜻함' },
+  { emoji: '📼', label: '로파이 테이프' },
+  { emoji: '🎙️', label: '라이브 밴드 (원테이크)' },
 ]
 
 export const INSTRUMENTS: Preset[] = [
@@ -145,6 +170,13 @@ export const AGES: Preset[] = [
   { emoji: '🌍', label: '전 연령대' },
 ]
 
+export const FORMS: Preset[] = [
+  { emoji: '🎼', label: '표준 (벌스 → 후렴)' },
+  { emoji: '💥', label: '후렴 선행 (90년대식)' },
+  { emoji: '🌅', label: '점층형 (후렴 아끼기)' },
+  { emoji: '🎐', label: 'AABA (쇼와 가요/재즈)' },
+]
+
 export const LANGUAGES: Preset[] = [
   { emoji: '🇰🇷', label: '한국어' },
   { emoji: '🇺🇸', label: '영어' },
@@ -182,13 +214,16 @@ export const TOPICS: Preset[] = [
 ]
 
 export const SECTIONS: SectionMeta[] = [
-  { key: 'genre',      number: 1, emoji: '🎸', title: '장르 선택',        subtitle: '음악의 색깔',     placeholder: '예: shoegaze, 시티팝, phonk — 좁고 뾰족한 장르일수록 좋아요',          multi: false, presets: GENRES },
-  { key: 'mood',       number: 2, emoji: '✨', title: '분위기 및 감성',    subtitle: '감정의 깊이',     placeholder: '원하는 분위기를 직접 입력하세요',        multi: true,  presets: MOODS },
-  { key: 'vocal',      number: 3, emoji: '🎤', title: '보컬 및 창법',      subtitle: '목소리의 질감',   placeholder: '원하는 보컬 스타일을 직접 입력하세요',   multi: true,  presets: VOCALS },
-  { key: 'usage',      number: 4, emoji: '🎬', title: '사용 용도',         subtitle: '공간의 울림',     placeholder: '사용 용도를 직접 입력하세요',            multi: false, presets: USAGES },
-  { key: 'instrument', number: 5, emoji: '🎹', title: '주요 악기',         subtitle: '소리의 도구',     placeholder: '예: Rhodes 피아노, Juno-106, Moog 베이스, TR-808',          multi: true,  presets: INSTRUMENTS },
-  { key: 'bpm',        number: 6, emoji: '⚡', title: '속도 (BPM)',        subtitle: '리듬의 맥박',     placeholder: '원하는 BPM을 직접 입력하세요',           multi: false, presets: BPMS },
-  { key: 'age',        number: 7, emoji: '👥', title: '타겟 연령대',       subtitle: '청중의 공감',     placeholder: '타겟 연령대를 직접 입력하세요',          multi: false, presets: AGES },
-  { key: 'language',   number: 8, emoji: '🌐', title: '가사 언어',         subtitle: '글로벌 소통',     placeholder: '원하는 언어를 직접 입력하세요',          multi: false, presets: LANGUAGES },
-  { key: 'topic',      number: 9, emoji: '📝', title: '가사 주제 및 요청', subtitle: '창작의 핵심',     placeholder: '원하는 가사 주제나 요청사항을 자유롭게 입력하세요', multi: true, presets: TOPICS },
+  { key: 'genre',      number: 1,  emoji: '🎸', title: '장르 선택',        subtitle: '음악의 색깔',     placeholder: '예: shoegaze, 시티팝, phonk — 좁고 뾰족한 장르일수록 좋아요',          multi: false, presets: GENRES },
+  { key: 'era',        number: 2,  emoji: '🕰️', title: '시대 앵커',         subtitle: '시대의 공기',     placeholder: '예: 1985년 도쿄, late 2010s minimal production',                        multi: false, presets: ERAS },
+  { key: 'mood',       number: 3,  emoji: '✨', title: '분위기 및 감성',    subtitle: '감정의 깊이',     placeholder: '원하는 분위기를 직접 입력하세요',        multi: true,  presets: MOODS },
+  { key: 'vocal',      number: 4,  emoji: '🎤', title: '보컬 및 창법',      subtitle: '목소리의 질감',   placeholder: '원하는 보컬 스타일을 직접 입력하세요',   multi: true,  presets: VOCALS },
+  { key: 'usage',      number: 5,  emoji: '🎬', title: '사용 용도',         subtitle: '공간의 울림',     placeholder: '사용 용도를 직접 입력하세요',            multi: false, presets: USAGES },
+  { key: 'instrument', number: 6,  emoji: '🎹', title: '주요 악기',         subtitle: '소리의 도구',     placeholder: '예: Rhodes 피아노, Juno-106, Moog 베이스, TR-808',          multi: true,  presets: INSTRUMENTS },
+  { key: 'production', number: 7,  emoji: '🎛️', title: '프로덕션·믹스',     subtitle: '녹음의 질감',     placeholder: '예: gated reverb drums, 카세트 테이프 질감',                            multi: false, presets: PRODUCTIONS },
+  { key: 'bpm',        number: 8,  emoji: '⚡', title: '속도 (BPM)',        subtitle: '리듬의 맥박',     placeholder: '원하는 BPM을 직접 입력하세요',           multi: false, presets: BPMS },
+  { key: 'age',        number: 9,  emoji: '👥', title: '타겟 연령대',       subtitle: '청중의 공감',     placeholder: '타겟 연령대를 직접 입력하세요',          multi: false, presets: AGES },
+  { key: 'form',       number: 10, emoji: '🧩', title: '곡 진행 방식',      subtitle: '구성의 설계',     placeholder: '예: 후렴으로 시작해서 벌스로 떨어지는 구성',                            multi: false, presets: FORMS },
+  { key: 'language',   number: 11, emoji: '🌐', title: '가사 언어',         subtitle: '글로벌 소통',     placeholder: '원하는 언어를 직접 입력하세요',          multi: false, presets: LANGUAGES },
+  { key: 'topic',      number: 12, emoji: '📝', title: '가사 주제 및 요청', subtitle: '창작의 핵심',     placeholder: '원하는 가사 주제나 요청사항을 자유롭게 입력하세요', multi: true, presets: TOPICS },
 ]

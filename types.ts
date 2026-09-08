@@ -3,23 +3,29 @@ export type GenerationMode = 'prompt-only' | 'single' | 'full'
 
 export type SectionKey =
   | 'genre'
+  | 'era'
   | 'mood'
   | 'vocal'
   | 'usage'
   | 'instrument'
+  | 'production'
   | 'bpm'
   | 'age'
+  | 'form'
   | 'language'
   | 'topic'
 
 export type Selections = {
   genre: string | null
+  era: string | null
   mood: string[]
   vocal: string[]
   usage: string | null
   instrument: string[]
+  production: string | null
   bpm: string | null
   age: string | null
+  form: string | null
   language: string | null
   topic: string[]
   lengthMin: number

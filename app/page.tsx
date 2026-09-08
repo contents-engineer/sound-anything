@@ -22,8 +22,8 @@ const TIMEOUT_MS: Record<GenerationMode, number> = {
 }
 
 const EMPTY: Selections = {
-  genre: null, mood: [], vocal: [], usage: null, instrument: [],
-  bpm: null, age: null, language: null,
+  genre: null, era: null, mood: [], vocal: [], usage: null, instrument: [],
+  production: null, bpm: null, age: null, form: null, language: null,
   topic: [], lengthMin: 3, customInputs: {},
 }
 

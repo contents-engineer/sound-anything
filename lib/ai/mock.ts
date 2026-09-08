@@ -1,6 +1,6 @@
 // lib/ai/mock.ts
 import type { GenerationExtras, GenerationMode, GenerationResult, Selections, SongConcept, TrackRole } from '@/types'
-import { INSTRUMENTAL_VOCAL_LABEL } from '@/lib/options'
+import { INSTRUMENTAL_VOCAL_LABEL, VOCAL_STEM_USAGE_LABEL } from '@/lib/options'
 
 export class MockProvider {
   name = 'mock'
@@ -43,6 +43,7 @@ export class MockProvider {
     }
 
     const instrumental = opts.vocal.includes(INSTRUMENTAL_VOCAL_LABEL)
+    const stemMode = opts.usage === VOCAL_STEM_USAGE_LABEL && !instrumental
 
     // opener 1(1번째)·closer 1(10번째)·climax 1(7번째)·interlude 1·energy lift 3·depth 3
     const MOCK_ROLES: TrackRole[] = [
@@ -61,14 +62,20 @@ export class MockProvider {
       concept: `${summary} 분위기를 살린 ${opts.lengthMin}분짜리 트랙의 콘셉트 메모 ${i + 1}번. 실제 LLM 응답은 분위기·이미지·훅 아이디어를 두세 문장으로 묘사합니다.`,
       stylePrompt: instrumental
         ? `Mock ambient instrumental ${i + 1}, instrumental, no vocals, warm analog production`
-        : `Mock playlist-ready style, distinct song concept ${i + 1}, cinematic hook, expressive vocal texture`,
+        : stemMode
+          ? `Mock stem-ready style ${i + 1}, 90-110 BPM, sparse arrangement, expressive vocals, dry vocals, no reverb`
+          : `Mock playlist-ready style, distinct song concept ${i + 1}, cinematic hook, expressive vocal texture`,
       excludeStyles: instrumental
         ? ['vocals', 'singing', 'chanting', 'vocal samples']
-        : ['edm drops', 'distorted guitar', 'crowd noise'].slice(0, 2 + (i % 2)),
+        : stemMode
+          ? ['reverb', 'background noise', 'low quality audio']
+          : ['edm drops', 'distorted guitar', 'crowd noise'].slice(0, 2 + (i % 2)),
       sliderHint: {
-        weirdness: '40-60%',
-        styleInfluence: '50-70%',
-        note: `목업 추천 ${i + 1}: 창의성과 일관성의 기본 균형 구간입니다.`,
+        weirdness: stemMode ? '20-40%' : '40-60%',
+        styleInfluence: stemMode ? '70-100%' : '50-70%',
+        note: stemMode
+          ? `목업 추천 ${i + 1}: 스템 분리를 위해 보수적·뾰족하게 잡은 구간입니다.`
+          : `목업 추천 ${i + 1}: 창의성과 일관성의 기본 균형 구간입니다.`,
       },
       trackRole: mode === 'full' ? MOCK_ROLES[i] : null,
       lyrics: instrumental ? '[Instrumental]' : mockLyrics(i + 1),
