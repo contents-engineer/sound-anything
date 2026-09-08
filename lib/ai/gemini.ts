@@ -133,7 +133,7 @@ export class GeminiProvider {
         }
         if (!isRateLimit(e)) throw e
         if (isDailyQuota(e)) {
-          throw new RateLimitError('Gemini API 일일 무료 사용량을 모두 사용했습니다. 내일 다시 시도하거나 다른 모델을 선택해주세요.')
+          throw new RateLimitError('Gemini API 일일 사용량을 모두 사용했습니다. 한도는 미국 태평양시 자정(한국시간 오후 4~5시경)에 초기화됩니다.')
         }
         if (attempt >= MAX_RETRIES) {
           throw new RateLimitError('Gemini API 분당 요청 한도를 초과했습니다. 잠시(약 1분) 후 다시 시도해주세요.')

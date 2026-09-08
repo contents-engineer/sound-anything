@@ -13,7 +13,7 @@ import { ApiKeySettings } from '@/components/ApiKeySettings'
 import { loadHistory, pushHistory, clearHistory } from '@/lib/history'
 import { loadApiKey, saveApiKey, clearApiKey } from '@/lib/apiKey'
 import { isEmptySelections } from '@/lib/promptBuilder'
-import { DEFAULT_MODEL_ID, MODELS } from '@/lib/models'
+import { DEFAULT_MODEL_ID, MODELS, formatPricing, formatPromo } from '@/lib/models'
 
 const TIMEOUT_MS: Record<GenerationMode, number> = {
   'prompt-only': 60_000,
@@ -37,6 +37,7 @@ export default function Page() {
   const [history, setHistory] = useState<GenerationResult[]>([])
   const [historyOpen, setHistoryOpen] = useState(false)
   const [modelId, setModelId] = useState<string>(DEFAULT_MODEL_ID)
+  const selectedModel = MODELS.find((m) => m.id === modelId)
   const [apiKey, setApiKey] = useState('')
   const [regenIndex, setRegenIndex] = useState<number | null>(null)
   const resultRef = useRef<HTMLDivElement>(null)
@@ -226,31 +227,53 @@ export default function Page() {
       </div>
 
       <div className="sticky bottom-4 z-10 mt-6 flex flex-wrap items-center gap-3 rounded-2xl border border-zinc-200 bg-white/90 p-4 shadow-lg backdrop-blur">
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <span className="text-xs font-medium text-zinc-500">모델</span>
-          <div role="radiogroup" aria-label="생성 모델 선택" className="inline-flex rounded-lg border border-zinc-300 bg-zinc-50 p-0.5">
-            {MODELS.map((m) => {
-              const active = modelId === m.id
-              return (
-                <button
-                  key={m.id}
-                  type="button"
-                  role="radio"
-                  aria-checked={active}
-                  disabled={loading !== null}
-                  onClick={() => setModelId(m.id)}
-                  className={[
-                    'rounded-md px-3 py-1.5 text-xs font-medium transition disabled:cursor-not-allowed disabled:opacity-50',
-                    active
-                      ? 'bg-violet-600 text-white shadow'
-                      : 'text-zinc-700 hover:bg-white',
-                  ].join(' ')}
-                >
-                  {m.label}
-                </button>
-              )
-            })}
-          </div>
+          {MODELS.length > 1 ? (
+            <div role="radiogroup" aria-label="생성 모델 선택" className="inline-flex rounded-lg border border-zinc-300 bg-zinc-50 p-0.5">
+              {MODELS.map((m) => {
+                const active = modelId === m.id
+                return (
+                  <button
+                    key={m.id}
+                    type="button"
+                    role="radio"
+                    aria-checked={active}
+                    disabled={loading !== null}
+                    onClick={() => setModelId(m.id)}
+                    className={[
+                      'rounded-md px-3 py-1.5 text-xs font-medium transition disabled:cursor-not-allowed disabled:opacity-50',
+                      active
+                        ? 'bg-violet-600 text-white shadow'
+                        : 'text-zinc-700 hover:bg-white',
+                    ].join(' ')}
+                  >
+                    {m.label}
+                  </button>
+                )
+              })}
+            </div>
+          ) : (
+            <span className="rounded-lg border border-zinc-300 bg-zinc-50 px-3 py-1.5 text-xs font-medium text-zinc-700">
+              {selectedModel?.label}
+            </span>
+          )}
+          {selectedModel && (
+            <div className="basis-full text-[11px] leading-relaxed text-zinc-500">
+              <span className="font-medium text-zinc-600">{formatPricing(selectedModel)}</span>
+              {selectedModel.freeTier && (
+                <span className="ml-1.5 rounded bg-emerald-50 px-1.5 py-0.5 font-medium text-emerald-700">
+                  무료 티어 사용 가능
+                </span>
+              )}
+              {formatPromo(selectedModel) && (
+                <span className="ml-1.5 rounded bg-amber-50 px-1.5 py-0.5 font-medium text-amber-700">
+                  {formatPromo(selectedModel)}
+                </span>
+              )}
+              <span className="ml-1.5">{selectedModel.note}</span>
+            </div>
+          )}
         </div>
         <div className="ml-auto flex items-center gap-3">
           {(loading !== null || regenIndex !== null) && (
