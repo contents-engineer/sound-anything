@@ -15,6 +15,8 @@ export type ModelOption = {
   }
   /** 무료 티어(요금 없이 사용, 비율 제한 있음) 지원 여부 */
   freeTier: boolean
+  /** 무료 티어의 실제 한도 안내. "사용 가능"만 알리면 하루 몇 건인지 모른 채 막힌다. */
+  freeTierLimit?: string
   note: string
 }
 
@@ -28,6 +30,7 @@ export const MODELS: ModelOption[] = [
       promo: { until: '2026-12-31', afterInput: 1.5, afterOutput: 7.5 },
     },
     freeTier: true,
+    freeTierLimit: '무료 티어는 하루 약 20건(모델별) — 실제 한도는 AI Studio에서 확인',
     note: '최신 Flash. 프로모션가 적용 중',
   },
 ]
