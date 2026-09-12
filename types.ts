@@ -38,9 +38,13 @@ export type TrackRole = (typeof TRACK_ROLES)[number]
 export const WEIRDNESS_LEVELS = ['0-20%', '20-40%', '40-60%', '60-80%'] as const
 export const STYLE_INFLUENCE_LEVELS = ['30-50%', '50-70%', '70-100%'] as const
 
+export const SUNO_MODELS = ['v6', 'v6-wild', 'v6-mini'] as const
+export type SunoModel = (typeof SUNO_MODELS)[number]
+
 export type SliderHint = {
   weirdness: (typeof WEIRDNESS_LEVELS)[number]
   styleInfluence: (typeof STYLE_INFLUENCE_LEVELS)[number]
+  durationSliderNote?: string
   note: string
 }
 
@@ -51,6 +55,7 @@ export type SongConcept = {
   stylePrompt: string
   excludeStyles?: string[]
   sliderHint?: SliderHint
+  recommendedModel?: SunoModel
   trackRole?: TrackRole | null
   lyrics: string
 }

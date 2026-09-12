@@ -14,12 +14,7 @@ import { loadHistory, pushHistory, clearHistory } from '@/lib/history'
 import { loadApiKey, saveApiKey, clearApiKey } from '@/lib/apiKey'
 import { isEmptySelections } from '@/lib/promptBuilder'
 import { DEFAULT_MODEL_ID, MODELS, formatPricing, formatPromo } from '@/lib/models'
-
-const TIMEOUT_MS: Record<GenerationMode, number> = {
-  'prompt-only': 60_000,
-  single: 60_000,
-  full: 120_000,
-}
+import { CLIENT_TIMEOUT_MS as TIMEOUT_MS } from '@/lib/timeouts'
 
 const EMPTY: Selections = {
   genre: null, era: null, mood: [], vocal: [], usage: null, instrument: [],
@@ -185,7 +180,7 @@ export default function Page() {
       <header className="mb-6 flex items-start justify-between">
         <div>
           <h2 className="text-2xl font-bold">수노 제너레이터</h2>
-          <p className="text-sm text-zinc-500">곡별 스타일 프롬프트 + 1곡 또는 10곡 콘셉트를 생성합니다</p>
+          <p className="text-sm text-zinc-500">Suno v6 최적화 · 곡별 스타일 프롬프트 + 1곡 또는 10곡 콘셉트를 생성합니다</p>
         </div>
         <div className="flex flex-wrap items-center justify-end gap-2">
           <ApiKeySettings
@@ -264,6 +259,11 @@ export default function Page() {
               {selectedModel.freeTier && (
                 <span className="ml-1.5 rounded bg-emerald-50 px-1.5 py-0.5 font-medium text-emerald-700">
                   무료 티어 사용 가능
+                </span>
+              )}
+              {selectedModel.freeTierLimit && (
+                <span className="ml-1.5 rounded bg-zinc-100 px-1.5 py-0.5 text-zinc-600">
+                  {selectedModel.freeTierLimit}
                 </span>
               )}
               {formatPromo(selectedModel) && (

@@ -1,6 +1,6 @@
 // lib/promptBuilder.ts
 import type { GenerationExtras, GenerationMode, Selections } from '@/types'
-import { STYLE_INFLUENCE_LEVELS, TRACK_ROLES, WEIRDNESS_LEVELS } from '@/types'
+import { STYLE_INFLUENCE_LEVELS, SUNO_MODELS, TRACK_ROLES, WEIRDNESS_LEVELS } from '@/types'
 import { SECTIONS, VOCAL_STEM_USAGE_LABEL } from '@/lib/options'
 
 export function isEmptySelections(s: Selections): boolean {
@@ -10,9 +10,9 @@ export function isEmptySelections(s: Selections): boolean {
   return multi + single + customs === 0
 }
 
-export const SYSTEM_PROMPT = `당신은 음악 콘셉트 디자이너이자 작사가입니다. 사용자가 고른 옵션을 바탕으로 Suno·Udio 같은 AI 음악 생성 서비스에 그대로 붙여넣을 곡별 작곡 스타일 프롬프트와, 그 프롬프트에 어울리는 플레이리스트 곡 콘셉트·가사·제외 스타일·슬라이더 추천을 만들어 줍니다.
+export const SYSTEM_PROMPT = `당신은 음악 콘셉트 디자이너이자 작사가입니다. 사용자가 고른 옵션을 바탕으로 Suno v6(플래그십 v6, 탐색형 v6-wild, 경량 v6-mini) 및 Udio 같은 최신 AI 음악 생성 서비스에 그대로 붙여넣을 곡별 작곡 스타일 프롬프트와, 그 프롬프트에 어울리는 플레이리스트 곡 콘셉트·가사·제외 스타일·슬라이더 및 v6 모델 추천을 만들어 줍니다.
 
-Suno는 명령을 수행하는 엔진이 아니라 분위기(vibe)를 조합하는 확률 모델입니다. 소리로 번역되는 묘사만 작동하고, 추상어·명령문은 무시됩니다. 모든 출력 필드는 이 전제 위에서 작성합니다.
+Suno v6는 소리로 번역되는 구체적 음악 구성 요소(보컬 캐릭터와 전달력, 핵심 악기, 편곡 밀도, 믹스 질감)와 정서적 무드 레퍼런스를 정교하게 조합합니다. 추상적인 지시문이나 모호한 표현 대신 귀에 들리는 구체적인 사운드 묘사를 제공해야 합니다.
 
 # 출력 규칙
 
@@ -75,19 +75,28 @@ Suno는 명령을 수행하는 엔진이 아니라 분위기(vibe)를 조합하�
 - 편성을 얇게: "sparse arrangement" 또는 "minimal instrumentation"을 핵심 악기 자리에 함께 쓸 수 있습니다. 악기를 2개 이상 나열하지 마세요.
 - **금지**: reverb-drenched, gated reverb drums, tape saturation, vinyl crackle, lo-fi, wall of sound 등 공간계·질감계 디스크립터 전부. 보컬 이펙트(Effects) 계층도 쓰지 않습니다.
 - excludeStyles에는 "reverb", "background noise", "low quality audio" 3개를 반드시 포함하고, 보컬 성별이 고정된 곡이면 반대 성별을 더합니다(최대 5개 유지).
-- sliderHint는 weirdness "20-40%", styleInfluence "70-100%"로 고정하고, note에 스템 분리를 위해 보수적·뾰족하게 잡았다고 한 문장으로 적습니다.
+- recommendedModel은 반드시 "v6"로 고정합니다.
+- sliderHint는 weirdness "20-40%", styleInfluence "70-100%"로 고정하고, note에 스템 분리를 위해 플래그십 v6 모델과 보수적·뾰족한 슬라이더를 적용했다고 한 문장으로 적습니다.
 - 프로덕션·믹스에서 "로파이 테이프"가 함께 선택돼도 **이 모드가 우선**합니다. 로파이 질감을 버리고 dry·클린으로 가되, concept 마지막에 스템 분리를 위해 로파이 질감을 생략했다고 한 문장 적습니다.
 - **연주곡이 함께 선택된 곡은 이 모드를 무시**하고 연주곡 규칙을 그대로 따릅니다(분리할 보컬이 없음).
 - 남녀 듀엣이 선택된 경우 "Duet" 규칙은 유지하되, concept 마지막에 두 목소리가 겹치면 분리가 어려워질 수 있다는 안내를 한 문장 덧붙입니다.
 - 가사·구조 규칙(섹션 라벨, 길이별 구성)은 이 모드에서도 그대로 지킵니다.
 
-# 각 song의 sliderHint 필드 (Suno 슬라이더 추천)
+# 각 song의 recommendedModel 필드 (Suno v6 모델 추천)
+
+Suno v6 모델군 중 이 곡의 음악적 성격에 가장 부합하는 모델 하나를 고릅니다:
+- "v6": 정밀한 컨트롤과 높은 완성도, 안정적이고 정제된 상업 음원 퀄리티를 내는 플래그십 모델. 대부분의 팝, 발라드, 댄스, 힙합, 록, K-pop 및 **보컬 스템 추출 모드(반드시 v6)**에 기본 적용합니다.
+- "v6-wild": 덜 예측 가능하며 다채롭고 과감한 텍스처, 실험적인 악기 구성, 즉흥적인 변주를 이끌어내는 모델. 앰비언트, 글리치, 아방가르드, 사이키델릭 또는 높은 Weirdness가 필요한 실험적 트랙에 배정합니다. (mode가 "full"일 때 10곡 중 1~2곡에 변화구로 배정 추천)
+- "v6-mini": 가볍고 빠른 생성에 특화된 모델. 단순한 루프나 미니멀 배경음 스케치용 곡에 선택적으로 배정합니다.
+
+# 각 song의 sliderHint 필드 (Suno v6 슬라이더 및 Duration 추천)
 
 - weirdness: "0-20%", "20-40%", "40-60%", "60-80%" 중 하나.
-  - 극도로 보수적·교과서적 사운드(동요·자장가 등)만 "0-20%", 상업적·안전 지향이면 "20-40%", 대부분의 곡은 "40-60%", 실험적 장르(앰비언트·글리치 등)만 "60-80%".
+  - 극도로 보수적·교과서적 사운드(동요·자장가 등)만 "0-20%", 상업적·안전 지향이면 "20-40%", 대부분의 곡은 "40-60%", 실험적 장르(앰비언트·글리치 등 또는 v6-wild 모델)는 "60-80%".
 - styleInfluence: "30-50%", "50-70%", "70-100%" 중 하나.
   - 기본 "50-70%". stylePrompt가 4~5개로 적고 뾰족하면 "70-100%", 태그를 느슨한 참고로만 쓸 곡은 "30-50%".
-- note: 이 곡에 이 값을 추천하는 이유를 한국어 한 문장으로.
+- durationSliderNote: Suno Create의 Duration Slider에 권장하는 설정 (예: 사용자가 3분을 골랐으면 "Duration Slider: 3분 (180초) 전후 설정 권장").
+- note: 이 곡에 이 모델과 슬라이더 값을 추천하는 이유를 한국어 한 문장으로.
 
 # 각 song의 나머지 필드
 
@@ -208,6 +217,7 @@ Suno는 명령을 수행하는 엔진이 아니라 분위기(vibe)를 조합하�
 - 편곡 파라미터 태그가 곡당 1~2개 이내이고, 기호·배킹보컬 합계가 3~6회 이내인가.
 - stylePrompt 디스크립터가 4~7개이고 주 장르가 맨 앞인가. 추상어·명령문·아티스트명·길이 지시·루프 유발어가 없는가. 저중역 질감 계열이 3개 이상 겹치지 않는가.
 - excludeStyles가 2~5개이고 stylePrompt와 모순되지 않는가.
+- recommendedModel이 v6, v6-wild, v6-mini 중 하나이며 곡 콘셉트에 적절한가(보컬 스템 추출은 반드시 v6).
 - 시대·프로덕션 옵션이 선택됐으면 stylePrompt에 각각 정확히 1개씩 반영됐고, full 모드에서 10곡이 같은 값을 공유하는가.
 - 명료도 계열(professional studio vocal recording·high fidelity·clean mix, background noise·low quality audio 제외)과 로파이 계열(lo-fi·tape saturation·vinyl crackle)이 같은 곡에 섞이지 않았는가.
 - 보컬 스템 추출 모드이고 연주곡이 아니면: stylePrompt에 dry vocals·no reverb가 있고 공간계·질감계 디스크립터가 하나도 없는가, excludeStyles에 reverb·background noise·low quality audio가 모두 있는가, sliderHint가 20-40% / 70-100%인가.
@@ -247,9 +257,9 @@ export function buildUserPrompt(s: Selections, mode: GenerationMode, extras?: Ge
     lines.push('- 보컬 스템 추출 모드가 켜졌습니다. 시스템 프롬프트의 "보컬 스템 추출 모드" 규칙을 모든 곡에 적용하세요.')
   }
   if (mode === 'full') {
-    lines.push('- songs 배열은 반드시 정확히 10개. 9개나 11개는 허용되지 않습니다. 각 곡의 콘셉트·stylePrompt·excludeStyles·가사를 모두 다르게 작성하되, 하나의 플레이리스트로서 앵커(장르 패밀리·핵심 악기·보컬 캐릭터)를 공유하고 trackRole을 규칙대로 배정하세요.')
+    lines.push('- songs 배열은 반드시 정확히 10개. 9개나 11개는 허용되지 않습니다. 각 곡의 콘셉트·stylePrompt·excludeStyles·recommendedModel·가사를 모두 다르게 작성하되, 하나의 플레이리스트로서 앵커(장르 패밀리·핵심 악기·보컬 캐릭터)를 공유하고 trackRole을 규칙대로 배정하세요.')
   } else if (mode === 'single') {
-    lines.push('- songs 배열은 반드시 정확히 1개. 해당 곡 전용 영문 stylePrompt·excludeStyles·sliderHint를 포함하고, trackRole은 null로 둡니다.')
+    lines.push('- songs 배열은 반드시 정확히 1개. 해당 곡 전용 영문 stylePrompt·excludeStyles·sliderHint·recommendedModel을 포함하고, trackRole은 null로 둡니다.')
   }
   if (extras?.excludeTitles && extras.excludeTitles.length > 0) {
     lines.push(`- 다음 제목들과 겹치지 마세요 (의미·콘셉트도 명확히 달라야 함): ${extras.excludeTitles.map((t) => `"${t}"`).join(', ')}`)
@@ -289,11 +299,13 @@ export const RESPONSE_SCHEMA = {
             minItems: 2,
             maxItems: 5,
           },
+          recommendedModel: { type: 'string', enum: [...SUNO_MODELS] },
           sliderHint: {
             type: 'object',
             properties: {
               weirdness: { type: 'string', enum: [...WEIRDNESS_LEVELS] },
               styleInfluence: { type: 'string', enum: [...STYLE_INFLUENCE_LEVELS] },
+              durationSliderNote: { type: 'string' },
               note: { type: 'string' },
             },
             required: ['weirdness', 'styleInfluence', 'note'],
@@ -301,7 +313,7 @@ export const RESPONSE_SCHEMA = {
           trackRole: { type: ['string', 'null'], enum: [...TRACK_ROLES, null] },
           lyrics: { type: 'string' },
         },
-        required: ['title', 'titles', 'concept', 'stylePrompt', 'excludeStyles', 'sliderHint', 'trackRole', 'lyrics'],
+        required: ['title', 'titles', 'concept', 'stylePrompt', 'excludeStyles', 'sliderHint', 'recommendedModel', 'trackRole', 'lyrics'],
       },
     },
   },

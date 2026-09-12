@@ -32,6 +32,24 @@ const ROLE_LABELS: Record<string, string> = {
   closer: '🌅 클로저',
 }
 
+const MODEL_BADGES: Record<string, { label: string; badgeClass: string; desc: string }> = {
+  v6: {
+    label: 'Suno v6 (Flagship)',
+    badgeClass: 'bg-violet-100 text-violet-800 ring-violet-300',
+    desc: '정밀한 사운드 제어와 높은 완성도의 플래그십 모델',
+  },
+  'v6-wild': {
+    label: 'Suno v6-wild (Exploration)',
+    badgeClass: 'bg-fuchsia-100 text-fuchsia-800 ring-fuchsia-300',
+    desc: '과감하고 다채로운 질감과 실험적인 사운드 탐색 모델',
+  },
+  'v6-mini': {
+    label: 'Suno v6-mini (Fast)',
+    badgeClass: 'bg-emerald-100 text-emerald-800 ring-emerald-300',
+    desc: '가볍고 빠른 스케치용 고속 모델',
+  },
+}
+
 // M5 증상→처방 매핑표 기반 재생성 힌트
 const RETRY_PRESCRIPTIONS: { label: string; hint: string; vocalOnly?: boolean }[] = [
   {
@@ -189,6 +207,13 @@ export function ResultPanel({ result, onRegenerate, regenerating }: ResultPanelP
                           {ROLE_LABELS[s.trackRole]}
                         </span>
                       )}
+                      {s.recommendedModel && (
+                        <span className={`inline-flex shrink-0 items-center rounded-full px-2 py-0.5 text-[11px] font-semibold ring-1 ${
+                          s.recommendedModel === 'v6-wild' ? 'bg-fuchsia-50 text-fuchsia-700 ring-fuchsia-300' : 'bg-violet-50 text-violet-700 ring-violet-300'
+                        }`}>
+                          {s.recommendedModel}
+                        </span>
+                      )}
                       {result.selections && <SongSummaryChips selections={result.selections} />}
                       {isRegenerating && (
                         <span className="inline-flex items-center gap-1.5 rounded-full bg-violet-100 px-2 py-0.5 text-[11px] font-medium text-violet-700">
@@ -211,7 +236,7 @@ export function ResultPanel({ result, onRegenerate, regenerating }: ResultPanelP
                       </button>
                     )}
                     <CopyButton
-                      text={`${s.title}\n\n[KO] ${s.titles.ko}\n[EN] ${s.titles.en}\n[JA] ${s.titles.ja}${stylePrompt ? `\n\n--- Style Prompt ---\n${stylePrompt}` : ''}${excludeStyles.length > 0 ? `\n\n--- Exclude Styles ---\n${excludeStyles.join(', ')}` : ''}${s.sliderHint ? `\n\n--- Slider ---\nWeirdness ${s.sliderHint.weirdness} / Style Influence ${s.sliderHint.styleInfluence}\n${s.sliderHint.note}` : ''}\n\n${s.lyrics}`}
+                      text={`${s.title}\n\n[KO] ${s.titles.ko}\n[EN] ${s.titles.en}\n[JA] ${s.titles.ja}${stylePrompt ? `\n\n--- Style Prompt ---\n${stylePrompt}` : ''}${excludeStyles.length > 0 ? `\n\n--- Exclude Styles ---\n${excludeStyles.join(', ')}` : ''}\n\n--- Suno v6 Settings ---\nModel: ${s.recommendedModel ?? 'v6'}${s.sliderHint ? `\nWeirdness ${s.sliderHint.weirdness} / Style Influence ${s.sliderHint.styleInfluence}${s.sliderHint.durationSliderNote ? ` / ${s.sliderHint.durationSliderNote}` : ''}\n${s.sliderHint.note}` : ''}\n\n${s.lyrics}`}
                     />
                     <span className="text-zinc-400 transition group-open:rotate-180">▾</span>
                   </div>
@@ -257,18 +282,46 @@ export function ResultPanel({ result, onRegenerate, regenerating }: ResultPanelP
                     </section>
                   )}
 
-                  {s.sliderHint && (
+                  {(s.sliderHint || s.recommendedModel) && (
                     <section className="mb-3 rounded-lg border-l-2 border-amber-300 bg-amber-50/50 px-3 py-2">
-                      <div className="mb-1 text-xs font-medium text-zinc-500">🎚️ 슬라이더 추천</div>
-                      <div className="flex flex-wrap items-center gap-1.5">
-                        <span className="inline-flex items-center rounded-full bg-white px-2.5 py-0.5 text-xs font-medium text-zinc-800 ring-1 ring-amber-200">
-                          Weirdness {s.sliderHint.weirdness}
-                        </span>
-                        <span className="inline-flex items-center rounded-full bg-white px-2.5 py-0.5 text-xs font-medium text-zinc-800 ring-1 ring-amber-200">
-                          Style Influence {s.sliderHint.styleInfluence}
-                        </span>
+                      <div className="mb-1.5 flex items-center justify-between">
+                        <span className="text-xs font-medium text-zinc-500">🎛️ Suno v6 생성 설정 추천</span>
+                        {s.recommendedModel && (
+                          <span className="text-[11px] text-zinc-500">
+                            모델: <strong className="font-semibold text-zinc-700">{s.recommendedModel}</strong>
+                          </span>
+                        )}
                       </div>
-                      <p className="mt-1 text-xs leading-relaxed text-zinc-600">{s.sliderHint.note}</p>
+                      <div className="flex flex-wrap items-center gap-1.5">
+                        {s.recommendedModel && (
+                          <span
+                            title={MODEL_BADGES[s.recommendedModel]?.desc}
+                            className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-semibold ring-1 ${
+                              MODEL_BADGES[s.recommendedModel]?.badgeClass ?? 'bg-violet-100 text-violet-800 ring-violet-300'
+                            }`}
+                          >
+                            🎯 {MODEL_BADGES[s.recommendedModel]?.label ?? s.recommendedModel}
+                          </span>
+                        )}
+                        {s.sliderHint && (
+                          <>
+                            <span className="inline-flex items-center rounded-full bg-white px-2.5 py-0.5 text-xs font-medium text-zinc-800 ring-1 ring-amber-200">
+                              Weirdness {s.sliderHint.weirdness}
+                            </span>
+                            <span className="inline-flex items-center rounded-full bg-white px-2.5 py-0.5 text-xs font-medium text-zinc-800 ring-1 ring-amber-200">
+                              Style Influence {s.sliderHint.styleInfluence}
+                            </span>
+                            {s.sliderHint.durationSliderNote && (
+                              <span className="inline-flex items-center rounded-full bg-white px-2.5 py-0.5 text-xs font-medium text-zinc-800 ring-1 ring-amber-200">
+                                ⏱️ {s.sliderHint.durationSliderNote}
+                              </span>
+                            )}
+                          </>
+                        )}
+                      </div>
+                      {s.sliderHint?.note && (
+                        <p className="mt-1.5 text-xs leading-relaxed text-zinc-600">{s.sliderHint.note}</p>
+                      )}
                     </section>
                   )}
 
@@ -308,8 +361,7 @@ export function ResultPanel({ result, onRegenerate, regenerating }: ResultPanelP
                         <CopyButton text={extendChunk} />
                       </div>
                       <p className="text-xs leading-relaxed text-zinc-600">
-                        Suno 초기 생성은 보통 4~8분에서 끊깁니다. 곡이 끝까지 나오지 않으면 마지막 안정 구간에서
-                        Extend를 누르고 이 후반부만 붙여넣으세요.
+                        Suno v6 Create에서는 <strong>Duration Slider</strong>로 목표 길이를 설정할 수 있습니다. 6분 이상의 대곡에서 후반부 디테일 전개가 끊기거나 확장이 필요할 때는 곡의 마지막 안정 구간에서 Extend를 선택하고 이 후반부를 붙여넣으세요.
                       </p>
                     </section>
                   )}
