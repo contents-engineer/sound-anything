@@ -23,16 +23,30 @@
 //      so the corner is also searched for the mark itself: the brightest
 //      compact blob standing above its own local background proposes a position
 //      and size of its own, which then has to survive the same checks.
-//   5. Validation — a candidate is only accepted when the opacity of the blend
+//   5. Layout sweep — and if that finds nothing either, every plausible logo
+//      size is tried against every margin on a coarse grid, the best few
+//      refined. This is the answer to Google moving the mark: a new layout is
+//      found the week it ships rather than the week somebody measures it.
+//   6. Validation — a candidate is only accepted when the opacity of the blend
 //      can actually be measured from its semi-transparent edge pixels, and
 //      either the correlation is strong or simulated removal verifiably erases
 //      the sparkle.
 //
 // Removal is exact inverse alpha blending: the watermark is composited as
 // result = α·255 + (1−α)·original, so original = (result − α·255) / (1 − α).
-// That recovers the pixels exactly where the file is lossless; on a JPEG the
-// ringing the encoder left around the mark's edges is not recoverable by any
-// alpha model, and stays as a faint speckle.
+// That recovers the pixels exactly where the file is lossless.
+//
+// `eraseWatermark` wraps all of it in a check that the removal worked, because
+// detection alone cannot tell: a layout overlapping part of a mark it does not
+// fit scores well enough to be accepted, and removing with it scrubs picture
+// detail while leaving the mark. So the mark is erased on a copy and the copy is
+// measured — the mask's own shape must be gone from it — and only then does the
+// edit reach the image. A failed check falls through to the sweep, and if that
+// fails too the upload is returned untouched. Where the blend cannot be undone
+// at all — the ringing a JPEG encoder wrapped around the mark's edges is not a
+// blend of anything any more — the affected pixels are filled by diffusing the
+// surrounding ones inward, which invents no detail, only the flattest
+// continuation of what is already there.
 
 export interface PixelImage {
   data: Uint8ClampedArray
@@ -78,6 +92,8 @@ export interface Detection {
   residual: number
   /** How much sparkle amplitude the removal eliminates (before − after). */
   suppression: number
+  /** Whether a catalogued layout proposed this, rather than the corner sweep. */
+  fromCatalog: boolean
   /**
    * Whether the match is trustworthy enough to remove: either the blended
    * confidence clears CONFIDENCE_THRESHOLD, or removal verifiably suppresses a
@@ -766,6 +782,8 @@ interface Candidate extends Score {
   alphaMap: Float32Array
   x: number
   y: number
+  /** Whether a catalogued layout proposed this, rather than the corner sweep. */
+  fromCatalog: boolean
 }
 
 /** Coarse-then-fine offset scan around `anchor`, keeping the best score. */
@@ -783,7 +801,7 @@ function scanAround(
       const score = scoreAt(image, alphaMap, alphaGrad, anchor.x + dx, anchor.y + dy, config.logoSize)
       if (!score) continue
       if (!best || score.confidence > best.confidence) {
-        best = { config, alphaMap, x: anchor.x + dx, y: anchor.y + dy, ...score }
+        best = { config, alphaMap, x: anchor.x + dx, y: anchor.y + dy, fromCatalog: true, ...score }
       }
     }
   }
@@ -794,7 +812,7 @@ function scanAround(
       if (dx === 0 && dy === 0) continue
       const score = scoreAt(image, alphaMap, alphaGrad, best.x + dx, best.y + dy, config.logoSize)
       if (score && score.confidence > best.confidence) {
-        best = { config, alphaMap, x: best.x + dx, y: best.y + dy, ...score }
+        best = { config, alphaMap, x: best.x + dx, y: best.y + dy, fromCatalog: true, ...score }
       }
     }
   }
@@ -839,6 +857,135 @@ function selectionKey(d: Detection): number {
   return d.suppression + d.confidence * 0.5
 }
 
+/** Best of a set by `selectionKey`, with an accepted match always beating an unaccepted one. */
+function selectBest(candidates: Detection[]): Detection | null {
+  let winner: Detection | null = null
+  for (const detection of candidates) {
+    if (winner?.accepted && !detection.accepted) continue
+    if (!winner || (detection.accepted && !winner.accepted) || selectionKey(detection) > selectionKey(winner)) {
+      winner = detection
+    }
+  }
+  return winner
+}
+
+// --- Layout sweep ------------------------------------------------------------
+
+// The catalog is a snapshot of where Google has put the mark so far, and it has
+// moved four times in a year. Rather than wait for each new layout to be
+// measured, the bottom-right corner is swept outright: every plausible logo size
+// against every margin on a coarse grid, and only the best few of those are
+// refined. The catalog still runs first and still wins ties — it is a prior, not
+// the search space.
+
+/**
+ * Logo sizes worth sweeping: the sizes Gemini has actually stamped, plus the
+ * rungs a downstream resize tends to land on. A size in between shows up as a
+ * near-miss on the neighbouring rung and is recovered by the refinement pass.
+ */
+const SWEEP_SIZES = [24, 28, 32, 36, 44, 48, 56, 72, 96] as const
+/** Sweep margins out to here; past it the mark would not read as a corner stamp. */
+const SWEEP_MARGIN_MAX = 208
+/** Margin grid step. The refinement pass covers the gaps. */
+const SWEEP_MARGIN_STEP = 6
+/** Logo sizes tried around a surviving hit, as deltas. */
+const SWEEP_SIZE_DELTAS = [-2, -1, 1, 2] as const
+/** Coarse hits refined, across all variants and sizes. */
+const SWEEP_REFINE = 8
+/** Sweep candidates carried into removal validation, most confident first. */
+const SWEEP_VALIDATE = 16
+/** A sparkle never takes up more than this fraction of the short edge. */
+const SWEEP_MAX_SIZE_FRACTION = 0.25
+
+const SWEEP_VARIANTS: readonly AlphaVariant[] = ['default', '20260520', 'v2']
+
+/**
+ * Cheap presence score for the coarse pass: spatial correlation only. The edge
+ * and texture terms in `scoreAt` cost three more passes over the patch, and at
+ * this stage their job — separating a real mark from a bright blob — is not
+ * needed yet, because everything that survives is re-scored in full.
+ */
+function coarseScore(image: PixelImage, alphaMap: Float32Array, x: number, y: number, size: number): number {
+  const patch = lumaRegion(image, x, y, size, size)
+  if (patch.length === 0) return -1
+  return zeroMeanNCC(patch, alphaMap)
+}
+
+/**
+ * Score every (variant, size, margin) on a coarse grid in the bottom-right
+ * corner, refine the best few by position and size, and return the candidates
+ * worth validating, most confident first.
+ */
+function sweepCandidates(image: PixelImage, maps: AlphaMaps): Candidate[] {
+  const { width, height } = image
+  const maxSize = Math.min(width, height) * SWEEP_MAX_SIZE_FRACTION
+
+  interface Seed {
+    alphaVariant: AlphaVariant
+    logoSize: number
+    alphaMap: Float32Array
+    x: number
+    y: number
+    score: number
+  }
+  const seeds: Seed[] = []
+
+  for (const alphaVariant of SWEEP_VARIANTS) {
+    for (const logoSize of SWEEP_SIZES) {
+      if (logoSize > maxSize) continue
+      const alphaMap = alphaMapFor({ logoSize, marginRight: 0, marginBottom: 0, alphaVariant }, maps)
+      let best: Seed | null = null
+      for (let margin = 0; margin <= SWEEP_MARGIN_MAX; margin += SWEEP_MARGIN_STEP) {
+        const x = width - margin - logoSize
+        const y = height - margin - logoSize
+        if (x < 0 || y < 0) break
+        const score = coarseScore(image, alphaMap, x, y, logoSize)
+        if (!best || score > best.score) best = { alphaVariant, logoSize, alphaMap, x, y, score }
+      }
+      if (best) seeds.push(best)
+    }
+  }
+
+  seeds.sort((a, b) => b.score - a.score)
+
+  const out: Candidate[] = []
+  const configAt = (variant: AlphaVariant, size: number, x: number, y: number): WatermarkConfig => ({
+    logoSize: size,
+    marginRight: width - x - size,
+    marginBottom: height - y - size,
+    alphaVariant: variant,
+  })
+
+  for (const seed of seeds.slice(0, SWEEP_REFINE)) {
+    // Off-grid margins, asymmetric margins, and the pixel of drift a resize
+    // leaves all live inside this window; the anchor scan handles it the same
+    // way the catalog path does.
+    const anchored = scanAround(
+      image,
+      configAt(seed.alphaVariant, seed.logoSize, seed.x, seed.y),
+      seed.alphaMap,
+      { x: seed.x, y: seed.y },
+    )
+    if (!anchored) continue
+    out.push({ ...anchored, fromCatalog: false, config: configAt(seed.alphaVariant, seed.logoSize, anchored.x, anchored.y) })
+
+    // A size the ladder skipped reads as a near-miss on the rung next to it, so
+    // the neighbouring sizes get a look at the anchor that won.
+    for (const delta of SWEEP_SIZE_DELTAS) {
+      const size = seed.logoSize + delta
+      if (size < MIN_LOGO_SIZE || size > maxSize) continue
+      const config = configAt(seed.alphaVariant, size, anchored.x, anchored.y)
+      if (config.marginRight < 0 || config.marginBottom < 0) continue
+      const alphaMap = alphaMapFor(config, maps)
+      const score = scoreAt(image, alphaMap, sobelMagnitude(alphaMap, size), anchored.x, anchored.y, size)
+      if (score) out.push({ config, alphaMap, x: anchored.x, y: anchored.y, fromCatalog: false, ...score })
+    }
+  }
+
+  out.sort((a, b) => b.confidence - a.confidence)
+  return out.slice(0, SWEEP_VALIDATE)
+}
+
 /**
  * Find the watermark in three stages: (1) per-layout coarse-then-fine anchor
  * scan scored by NCC blend, (2) removal simulation on the top candidates —
@@ -847,11 +994,27 @@ function selectionKey(d: Detection): number {
  * watermarks, (3) acceptance by confidence or by verified suppression.
  *
  * If no known layout survives that, the corner is searched for the mark
- * directly and the winning blob goes through the same validation under a
- * stricter bar. Always returns the best candidate (or null if none fit);
- * check `accepted`.
+ * directly — first as the brightest compact blob, then by sweeping every
+ * plausible logo size against every margin — and those go through the same
+ * validation under a stricter bar, having no layout prior behind them. Always
+ * returns the best candidate (or null if none fit); check `accepted`.
  */
-export function detectWatermark(image: PixelImage, maps: AlphaMaps): Detection | null {
+export interface DetectOptions {
+  /**
+   * Sweep the corner even when a catalogued layout was accepted. The erase
+   * pipeline turns this on for its second attempt: a catalogued layout that
+   * overlaps part of a mark it does not really fit can look convincing enough
+   * to be accepted, and the only way to find that out is to remove with it and
+   * see that the sparkle is still there.
+   */
+  forceSweep?: boolean
+}
+
+export function detectWatermark(
+  image: PixelImage,
+  maps: AlphaMaps,
+  options: DetectOptions = {},
+): Detection | null {
   const candidates: Candidate[] = []
   for (const config of candidateConfigs(image.width, image.height)) {
     const cand = scanAround(image, config, alphaMapFor(config, maps), anchorFor(image.width, image.height, config))
@@ -872,13 +1035,23 @@ export function detectWatermark(image: PixelImage, maps: AlphaMaps): Detection |
   const blind = detectBlind(image, maps)
   if (blind) validated.push(blind)
 
-  let winner: Detection | null = null
-  for (const detection of validated) {
-    if (winner?.accepted && !detection.accepted) continue
-    if (!winner || (detection.accepted && !winner.accepted) || selectionKey(detection) > selectionKey(winner)) {
-      winner = detection
-    }
+  const known = selectBest(validated)
+  if (known?.accepted && !options.forceSweep) return known
+
+  // Nothing catalogued explains the corner, so sweep it: every plausible logo
+  // size against every margin. This runs as a fallback rather than alongside the
+  // catalog because its masks are resampled approximations of the baked
+  // sparkles. The renders are close cousins — several of them correlate with the
+  // same mark — so a resampled one allowed to compete can outscore the layout
+  // Gemini actually stamped, and removing with a mask of the wrong shape leaves
+  // a ghost. Finding geometry the catalog lacks is the sweep's job; second-
+  // guessing the catalog where it already fits is not.
+  for (const cand of sweepCandidates(image, maps)) {
+    if (cand.confidence < VALIDATION_MIN_CONFIDENCE) continue
+    validated.push(validate(image, cand, BLIND_CONFIDENCE_THRESHOLD, false))
   }
+
+  const winner = selectBest(validated)
   if (winner) return winner
 
   if (candidates.length > 0) {
@@ -911,6 +1084,7 @@ function detectBlind(image: PixelImage, maps: AlphaMaps): Detection | null {
     // Keep the layout honest: the scan may have drifted off the proposed box.
     const found: Candidate = {
       ...cand,
+      fromCatalog: false,
       config: {
         ...config,
         marginRight: image.width - cand.x - size,
@@ -920,9 +1094,9 @@ function detectBlind(image: PixelImage, maps: AlphaMaps): Detection | null {
     return validate(image, found, BLIND_CONFIDENCE_THRESHOLD, false)
   }
 
-  let winner: Detection | null = null
+  const found: Detection[] = []
   const consider = (detection: Detection | null) => {
-    if (detection && (!winner || selectionKey(detection) > selectionKey(winner))) winner = detection
+    if (detection) found.push(detection)
   }
 
   // The blob's extent is where its glow fades into the background, which reads
@@ -930,10 +1104,10 @@ function detectBlind(image: PixelImage, maps: AlphaMaps): Detection | null {
   // sweep sizes around it rather than trusting the measurement, then refine by
   // a pixel or two — the sparkle's thin points are where a size error shows.
   for (const factor of BLIND_SIZE_LADDER) consider(trySize(Math.round(blob.size * factor)))
-  if (!winner) return null
-  const coarse = (winner as Detection).config.logoSize
-  for (const delta of [-2, -1, 1, 2]) consider(trySize(coarse + delta))
-  return winner
+  const coarse = selectBest(found)
+  if (!coarse) return null
+  for (const delta of [-2, -1, 1, 2]) consider(trySize(coarse.config.logoSize + delta))
+  return selectBest(found)
 }
 
 // --- Removal ----------------------------------------------------------------
@@ -963,4 +1137,273 @@ export function removeWatermarkRegion(
       }
     }
   }
+}
+
+// --- Residual measurement ----------------------------------------------------
+
+/** Below this mask gradient a pixel is not on the sparkle's outline. */
+const OUTLINE_GRADIENT_MIN = 0.08
+/** Half-width of the reference ring sampled just outside the logo box. */
+const RESIDUAL_RING = 6
+
+/**
+ * How strongly the sparkle's outline still stands out, as a ratio.
+ *
+ * Averages the Laplacian magnitude over the pixels where the mask has an edge,
+ * and divides by the same average over a ring just outside the logo box. A
+ * patch of ordinary picture reads ≈ 1; anything the removal left behind — a
+ * ghost, a mis-scaled blend, the ringing a JPEG encoder wrapped around the
+ * mark — reads well above it, because it is shaped like the mask and the
+ * surroundings are not.
+ */
+export function markResidual(
+  image: PixelImage,
+  alphaMap: Float32Array,
+  x: number,
+  y: number,
+  size: number,
+): number {
+  const laplacian = (px: number, py: number): number | null => {
+    if (px < 1 || py < 1 || px >= image.width - 1 || py >= image.height - 1) return null
+    const at = (qx: number, qy: number) => {
+      const i = (qy * image.width + qx) * 4
+      return 0.299 * image.data[i] + 0.587 * image.data[i + 1] + 0.114 * image.data[i + 2]
+    }
+    return Math.abs(4 * at(px, py) - at(px - 1, py) - at(px + 1, py) - at(px, py - 1) - at(px, py + 1))
+  }
+
+  let markSum = 0
+  let markCount = 0
+  for (let row = 1; row < size - 1; row++) {
+    for (let col = 1; col < size - 1; col++) {
+      const gx = alphaMap[row * size + col + 1] - alphaMap[row * size + col - 1]
+      const gy = alphaMap[(row + 1) * size + col] - alphaMap[(row - 1) * size + col]
+      if (Math.hypot(gx, gy) <= OUTLINE_GRADIENT_MIN) continue
+      const value = laplacian(x + col, y + row)
+      if (value !== null) {
+        markSum += value
+        markCount++
+      }
+    }
+  }
+  if (markCount === 0) return 1
+
+  let ringSum = 0
+  let ringCount = 0
+  for (let py = y - RESIDUAL_RING; py < y + size + RESIDUAL_RING; py++) {
+    for (let px = x - RESIDUAL_RING; px < x + size + RESIDUAL_RING; px++) {
+      if (px >= x && px < x + size && py >= y && py < y + size) continue
+      const value = laplacian(px, py)
+      if (value !== null) {
+        ringSum += value
+        ringCount++
+      }
+    }
+  }
+  const mark = markSum / markCount
+  // Nothing to compare against: call it raised only if the outline is strong in
+  // absolute terms.
+  if (ringCount === 0) return mark > 6 ? 3 : 1
+  // One luma level of floor under the divisor. A flat sky or a black backdrop
+  // has no Laplacian energy at all, and dividing by that turns a half-level of
+  // dither into a screaming residual; with the floor, such a patch simply reads
+  // its ghost's height in luma levels, which is the number that matters there.
+  return mark / Math.max(1, ringSum / ringCount)
+}
+
+/**
+ * How much luma still tracks the mask's alpha, in luma per unit alpha [0, 1].
+ *
+ * The companion to `markResidual`, and the one that answers "is the mark still
+ * there". Because it regresses on the mask's own shape, isotropic noise around
+ * the region — the ringing a JPEG encoder leaves, film grain, a busy picture —
+ * averages out of it, while a sparkle that survived removal does not.
+ */
+export function markLeftover(
+  image: PixelImage,
+  alphaMap: Float32Array,
+  x: number,
+  y: number,
+  size: number,
+): number {
+  const patch = lumaRegion(image, x, y, size, size)
+  if (patch.length === 0) return 0
+  return Math.abs(alphaSlope(patch, alphaMap))
+}
+
+// --- Erase pipeline ----------------------------------------------------------
+
+export interface EraseResult {
+  status: 'clean' | 'inpainted' | 'not-detected'
+  reason?: 'no-match' | 'not-removed'
+  detection: Detection | null
+}
+
+/** Outline strength above which removal is followed by a repair pass. */
+const INPAINT_RESIDUAL = 1.5
+/** Above this the outline is not ringing but a failed removal: fill it all. */
+const INPAINT_WHOLE_RESIDUAL = 2.5
+/**
+ * Sparkle-shaped signal a finished region has to be under. This is the check
+ * that decides whether the edit is allowed out, and it is deliberately not the
+ * outline measure above: on a flat backdrop a re-encoded download keeps ringing
+ * that reads loud there while the mark itself is gone. What must be gone is the
+ * mask's own shape.
+ */
+const VERIFY_LEFTOVER = RESIDUAL_CLEARED
+
+function copyImage(image: PixelImage): PixelImage {
+  return { data: new Uint8ClampedArray(image.data), width: image.width, height: image.height }
+}
+
+/**
+ * Detect and erase the watermark, mutating `image` in place.
+ *
+ * Detection is checked by doing it: the mark is removed on a copy and the copy
+ * is measured, and the edit only reaches `image` once the sparkle's outline has
+ * actually gone flat. A layout that overlaps part of a mark it does not fit can
+ * score well enough to be accepted, and removing with it scrubs picture detail
+ * while leaving the mark — so a failed check falls through to the corner sweep,
+ * and if that fails too the upload comes back untouched. An image that is
+ * returned edited is one that was verified clean.
+ */
+export function eraseWatermark(image: PixelImage, maps: AlphaMaps): EraseResult {
+  let lastDetection: Detection | null = null
+
+  // The second attempt exists for one case: a catalogued layout scored well
+  // enough to be accepted and so short-circuited the corner sweep, then failed
+  // to actually clean the mark. Anywhere else the sweep has already run inside
+  // the first detect, and running it again would only cost the same work twice.
+  for (const options of [{}, { forceSweep: true }] as DetectOptions[]) {
+    const detection = detectWatermark(image, maps, options)
+    if (detection) lastDetection = detection
+    if (!detection?.accepted) break
+
+    const { alphaMap, x, y } = detection
+    const { logoSize } = detection.config
+    const working = copyImage(image)
+    removeWatermarkRegion(working, alphaMap, x, y, logoSize, detection.strength)
+
+    const residual = markResidual(working, alphaMap, x, y, logoSize)
+    let status: EraseResult['status'] = 'clean'
+    if (residual > INPAINT_RESIDUAL) {
+      inpaintMarkRegion(working, alphaMap, x, y, logoSize, residual > INPAINT_WHOLE_RESIDUAL)
+      status = 'inpainted'
+    }
+
+    if (markLeftover(working, alphaMap, x, y, logoSize) <= VERIFY_LEFTOVER) {
+      image.data.set(working.data)
+      return { status, detection }
+    }
+    if (!detection.fromCatalog) break
+  }
+
+  return {
+    status: 'not-detected',
+    reason: lastDetection?.accepted ? 'not-removed' : 'no-match',
+    detection: lastDetection,
+  }
+}
+
+// --- Inpainting --------------------------------------------------------------
+
+/** Iterations of Laplace diffusion used to fill a hole. */
+const INPAINT_ITERATIONS = 60
+/** Mask alpha above which a pixel counts as covered by the mark at all. */
+const INPAINT_ALPHA_MIN = 0.02
+
+/**
+ * Fill the pixels `hole` marks by diffusing the surrounding ones inward —
+ * repeated 4-neighbour averaging, which converges on the smooth (Laplace)
+ * surface that meets the known border. Nothing is invented: the result is the
+ * flattest continuation of what is already there.
+ */
+function diffuseInto(image: PixelImage, hole: Uint8Array, x: number, y: number, size: number): void {
+  // One ring of known pixels around the box gives the diffusion a boundary.
+  const pad = 1
+  const w = size + pad * 2
+  const h = size + pad * 2
+  const originX = x - pad
+  const originY = y - pad
+  const field = new Float32Array(w * h * 3)
+  const fixed = new Uint8Array(w * h)
+  const clampX = (v: number) => Math.min(Math.max(v, 0), image.width - 1)
+  const clampY = (v: number) => Math.min(Math.max(v, 0), image.height - 1)
+
+  for (let row = 0; row < h; row++) {
+    for (let col = 0; col < w; col++) {
+      const src = (clampY(originY + row) * image.width + clampX(originX + col)) * 4
+      const dst = (row * w + col) * 3
+      field[dst] = image.data[src]
+      field[dst + 1] = image.data[src + 1]
+      field[dst + 2] = image.data[src + 2]
+      const inside = col >= pad && row >= pad && col < pad + size && row < pad + size
+      fixed[row * w + col] = inside && hole[(row - pad) * size + (col - pad)] ? 0 : 1
+    }
+  }
+
+  for (let pass = 0; pass < INPAINT_ITERATIONS; pass++) {
+    for (let row = 1; row < h - 1; row++) {
+      for (let col = 1; col < w - 1; col++) {
+        if (fixed[row * w + col]) continue
+        const at = (r: number, c: number, channel: number) => field[(r * w + c) * 3 + channel]
+        const dst = (row * w + col) * 3
+        for (let channel = 0; channel < 3; channel++) {
+          field[dst + channel] =
+            (at(row, col - 1, channel) + at(row, col + 1, channel) +
+              at(row - 1, col, channel) + at(row + 1, col, channel)) / 4
+        }
+      }
+    }
+  }
+
+  for (let row = pad; row < pad + size; row++) {
+    for (let col = pad; col < pad + size; col++) {
+      if (fixed[row * w + col]) continue
+      const src = (row * w + col) * 3
+      const dst = ((originY + row) * image.width + originX + col) * 4
+      for (let channel = 0; channel < 3; channel++) {
+        const value = field[src + channel]
+        image.data[dst + channel] = value < 0 ? 0 : value > 255 ? 255 : Math.round(value)
+      }
+    }
+  }
+}
+
+/**
+ * Repair what the inverse blend could not.
+ *
+ * `whole` fills everything the mark covered; otherwise only the band along its
+ * outline, which is where a re-encoded download keeps the ringing the encoder
+ * wrapped around the sparkle's edges — no alpha model can undo that, because
+ * those pixels are not a blend of the mark and the picture any more.
+ */
+export function inpaintMarkRegion(
+  image: PixelImage,
+  alphaMap: Float32Array,
+  x: number,
+  y: number,
+  size: number,
+  whole: boolean,
+): void {
+  const hole = new Uint8Array(size * size)
+  if (whole) {
+    for (let i = 0; i < hole.length; i++) if (alphaMap[i] > INPAINT_ALPHA_MIN) hole[i] = 1
+  } else {
+    for (let row = 1; row < size - 1; row++) {
+      for (let col = 1; col < size - 1; col++) {
+        const gx = alphaMap[row * size + col + 1] - alphaMap[row * size + col - 1]
+        const gy = alphaMap[(row + 1) * size + col] - alphaMap[(row - 1) * size + col]
+        if (Math.hypot(gx, gy) <= OUTLINE_GRADIENT_MIN) continue
+        // Dilate by one: the ringing straddles the edge the mask draws.
+        for (let dy = -1; dy <= 1; dy++) {
+          for (let dx = -1; dx <= 1; dx++) hole[(row + dy) * size + (col + dx)] = 1
+        }
+      }
+    }
+  }
+  let any = false
+  for (let i = 0; i < hole.length; i++) if (hole[i]) { any = true; break }
+  if (!any) return
+  diffuseInto(image, hole, x, y, size)
 }

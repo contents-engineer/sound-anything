@@ -8,8 +8,7 @@ import type { AlphaMaps } from '@/lib/watermark/core'
 import {
   CONFIDENCE_THRESHOLD,
   buildAlphaMap,
-  detectWatermark,
-  removeWatermarkRegion,
+  eraseWatermark,
 } from '@/lib/watermark/core'
 
 export { CONFIDENCE_THRESHOLD }
@@ -79,6 +78,10 @@ export function ensureMasksLoaded(): Promise<void> {
 /**
  * Detect and remove the Gemini watermark on a canvas, mutating it in place.
  * Returns whether a watermark was found and removed, plus the match confidence.
+ *
+ * The canvas is left exactly as it came in unless the removal verified clean —
+ * an upload that cannot be cleaned is better returned untouched than returned
+ * scrubbed in the wrong place.
  */
 export function processCanvas(canvas: HTMLCanvasElement): ProcessResult {
   if (!masks) {
@@ -91,23 +94,30 @@ export function processCanvas(canvas: HTMLCanvasElement): ProcessResult {
   }
 
   const image = ctx.getImageData(0, 0, canvas.width, canvas.height)
-  const detection = detectWatermark(image, masks)
+  const { status, reason, detection } = eraseWatermark(image, masks)
+  const confidence = detection?.confidence ?? 0
 
-  if (!detection || !detection.accepted) {
-    const pct = ((detection?.confidence ?? 0) * 100).toFixed(1)
+  if (status === 'not-detected') {
     return {
       success: false,
-      confidence: detection?.confidence ?? 0,
-      message: `워터마크가 감지되지 않았습니다. (신뢰도: ${pct}%)`,
+      confidence,
+      message:
+        reason === 'not-removed'
+          ? '워터마크를 찾았지만 깨끗하게 지울 수 없어 원본을 그대로 두었습니다. (리사이즈·재압축된 이미지일 수 있습니다.)'
+          : `워터마크가 감지되지 않았습니다. (신뢰도: ${(confidence * 100).toFixed(1)}%)`,
     }
   }
 
-  removeWatermarkRegion(image, detection.alphaMap, detection.x, detection.y, detection.config.logoSize, detection.strength)
   ctx.putImageData(image, 0, 0)
+  const size = detection?.config.logoSize ?? 0
+  const pct = (confidence * 100).toFixed(1)
   return {
     success: true,
-    confidence: detection.confidence,
-    message: `워터마크 제거 완료 (${detection.config.logoSize}px, 신뢰도: ${(detection.confidence * 100).toFixed(1)}%)`,
+    confidence,
+    message:
+      status === 'inpainted'
+        ? `워터마크 제거 완료 — 가장자리 자국까지 복원했습니다 (${size}px, 신뢰도: ${pct}%)`
+        : `워터마크 제거 완료 (${size}px, 신뢰도: ${pct}%)`,
   }
 }
 

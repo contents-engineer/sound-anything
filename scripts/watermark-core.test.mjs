@@ -19,7 +19,10 @@ import {
   buildAlphaMap,
   candidateConfigs,
   detectWatermark,
+  eraseWatermark,
   interpolateAlphaMap,
+  markLeftover,
+  markResidual,
   removeWatermarkRegion,
 } from '../lib/watermark/core.ts'
 
@@ -71,6 +74,17 @@ function makeImage(w, h, kind) {
 }
 
 const clone = (img) => ({ data: new Uint8ClampedArray(img.data), width: img.width, height: img.height })
+
+/** Encode to JPEG and decode back, so the mark's edges carry real ringing. */
+async function roundTripJpeg(image, quality) {
+  const buf = await sharp(Buffer.from(image.data), {
+    raw: { width: image.width, height: image.height, channels: 4 },
+  })
+    .jpeg({ quality })
+    .toBuffer()
+  const { data, info } = await sharp(buf).ensureAlpha().raw().toBuffer({ resolveWithObject: true })
+  return { data: new Uint8ClampedArray(data), width: info.width, height: info.height }
+}
 
 // Composite exactly as Gemini does: result = α·255 + (1−α)·original.
 // `strength` scales the mask alpha, mimicking Gemini's varying render opacity.
@@ -347,6 +361,166 @@ for (const { label, w, h, size, right, bottom } of unknownCases) {
     // the catalog path does and let the per-pixel tail be wider.
     check(err.max <= 40 && err.mean <= 3, `${label} on ${bg}: restored (maxErr=${err.max} meanErr=${err.mean.toFixed(2)})`)
   }
+}
+
+console.log('--- unlisted native layouts: found by sweeping the margin ---')
+// Gemini has moved the mark four times in a year. These three sit at native
+// sizes (so no resize factor can produce them) with margins and logo sizes the
+// catalog has never seen — the case a user hits the week Google ships a change.
+const sweepCases = [
+  { label: '1024x1024, 56px @ 93', w: 1024, h: 1024, size: 56, margin: 93 },
+  { label: '1024x1024, 48px @ 120', w: 1024, h: 1024, size: 48, margin: 120 },
+  { label: '2048x2048, 44px @ 83', w: 2048, h: 2048, size: 44, margin: 83 },
+]
+for (const { label, w, h, size, margin } of sweepCases) {
+  const fromCatalog = candidateConfigs(w, h).some(
+    (c) => c.logoSize === size && c.marginRight === margin && c.marginBottom === margin,
+  )
+  check(!fromCatalog, `${label}: genuinely absent from the catalog`)
+
+  const alphaMap = interpolateAlphaMap(maps.alpha48, 48, size)
+  const x = w - margin - size
+  const y = h - margin - size
+  for (const bg of ['dark', 'mid', 'photo']) {
+    const original = makeImage(w, h, bg)
+    const marked = clone(original)
+    stampWatermark(marked, alphaMap, x, y, size, 0.6)
+
+    // The sweep is a fallback: a catalogued layout that scores well enough gets
+    // the answer first, right or wrong. What is under test here is that the
+    // sweep recovers the geometry when it is asked; that a wrong catalog match
+    // does not survive is the erase pipeline's job, checked below.
+    const det = detectWatermark(marked, maps, { forceSweep: true })
+    check(det?.accepted, `${label} on ${bg}: detected (conf=${det?.confidence.toFixed(3)})`)
+    if (!det?.accepted) continue
+    check(
+      Math.abs(det.config.logoSize - size) <= 1,
+      `${label} on ${bg}: logo size ≈ ${size} (got ${det.config.logoSize})`,
+    )
+    check(
+      Math.abs(det.x - x) <= 1 && Math.abs(det.y - y) <= 1,
+      `${label} on ${bg}: position (off ${det.x - x},${det.y - y})`,
+    )
+  }
+}
+
+console.log('--- markResidual: reads the outline, not the picture ---')
+// The measure that decides whether a removal worked: energy along the mask's
+// outline over energy in the surrounding ring. ~1 on a picture with no mark.
+{
+  const size = 48
+  const alphaMap = maps.alpha48
+  // It is a ratio against the surroundings, so it sees a mark against a smooth
+  // backdrop and goes blind against per-pixel noise louder than the mark's own
+  // edges ('photo'). What must hold everywhere is the other direction: a patch
+  // with no mark in it never reads raised.
+  for (const bg of ['dark', 'mid', 'gradient', 'photo', 'busy']) {
+    const original = makeImage(1024, 1024, bg)
+    const clean = markResidual(original, alphaMap, 880, 880, size)
+    check(clean <= 1.6, `${bg}: clean patch reads flat (${clean.toFixed(2)})`)
+  }
+  for (const bg of ['dark', 'mid', 'gradient']) {
+    const original = makeImage(1024, 1024, bg)
+    const marked = clone(original)
+    stampWatermark(marked, alphaMap, 880, 880, size, 0.6)
+    const dirty = markResidual(marked, alphaMap, 880, 880, size)
+    check(dirty > 3, `${bg}: stamped patch reads raised (${dirty.toFixed(2)})`)
+  }
+  // markLeftover regresses luma on the mask's own shape, so unlike the outline
+  // ratio it sees the mark on every background and ignores noise that is not
+  // mask-shaped. It is the measure the erase gate trusts, at a bar of 0.04.
+  //
+  // A blend of p = sα + (1 − sα)·b reads back a slope of about s·(1 − b), so
+  // what the gate has to work with shrinks as the backdrop gets brighter: a
+  // 0.6-opacity mark gives ~0.56 on black and ~0.09 over a pale gradient. That
+  // last one is the tight case — the mark is barely visible there to begin with.
+  for (const bg of ['dark', 'mid', 'gradient', 'photo', 'busy']) {
+    const original = makeImage(1024, 1024, bg)
+    check(markLeftover(original, alphaMap, 880, 880, size) <= 0.04, `${bg}: clean patch has no sparkle signal`)
+    const marked = clone(original)
+    stampWatermark(marked, alphaMap, 880, 880, size, 0.6)
+    const dirty = markLeftover(marked, alphaMap, 880, 880, size)
+    check(dirty > 0.08, `${bg}: stamped patch has sparkle signal (${dirty.toFixed(3)})`)
+  }
+}
+
+console.log('--- eraseWatermark never returns a damaged image ---')
+// A layout that lines up with only part of the mark can score well enough to be
+// accepted, and removing at it scrubs picture detail while leaving the sparkle.
+// Whatever the detector believes, an image that comes back edited must be clean.
+for (const { label, w, h, size, margin } of sweepCases) {
+  const alphaMap = interpolateAlphaMap(maps.alpha48, 48, size)
+  const x = w - margin - size
+  const y = h - margin - size
+  for (const bg of ['dark', 'mid', 'photo']) {
+    const original = makeImage(w, h, bg)
+    const marked = clone(original)
+    stampWatermark(marked, alphaMap, x, y, size, 0.6)
+
+    const working = clone(marked)
+    const res = eraseWatermark(working, maps)
+    if (res.status === 'not-detected') {
+      let identical = true
+      for (let i = 0; i < working.data.length; i++) {
+        if (working.data[i] !== marked.data[i]) { identical = false; break }
+      }
+      check(identical, `${label} on ${bg}: not-detected leaves the upload untouched`)
+      continue
+    }
+    const left = markLeftover(working, alphaMap, x, y, size)
+    check(left <= 0.04, `${label} on ${bg}: ${res.status} — mark actually gone (leftover=${left.toFixed(4)})`)
+    const err = coreError(working, original, alphaMap, x, y, size)
+    check(err.mean <= 3, `${label} on ${bg}: core restored (meanErr=${err.mean.toFixed(2)})`)
+  }
+}
+
+console.log('--- clean images survive eraseWatermark byte-for-byte ---')
+for (const [w, h] of [[1024, 1024], [1344, 768]]) {
+  for (const bg of ['dark', 'mid', 'gradient', 'photo', 'busy']) {
+    const original = makeImage(w, h, bg)
+    const working = clone(original)
+    const res = eraseWatermark(working, maps)
+    let identical = true
+    for (let i = 0; i < working.data.length; i++) {
+      if (working.data[i] !== original.data[i]) { identical = false; break }
+    }
+    check(res.status === 'not-detected' && identical, `clean ${w}x${h} ${bg}: untouched (status=${res.status})`)
+  }
+}
+
+console.log('--- JPEG ringing: the outline is inpainted away ---')
+// Inverse alpha blending cannot undo what the encoder did to the mark's edges,
+// so a re-encoded download keeps a faint outline exactly where the sparkle was.
+// That is what a user sees as "it did not really work".
+for (const bg of ['dark', 'mid', 'photo']) {
+  const w = 1024, h = 1024
+  const config = candidateConfigs(w, h).find((c) => c.logoSize === 48 && c.marginRight === 96)
+  const alphaMap = alphaMapFor(config, maps)
+  const { x, y } = anchorFor(w, h, config)
+  const original = makeImage(w, h, bg)
+  const marked = clone(original)
+  stampWatermark(marked, alphaMap, x, y, config.logoSize, 0.6)
+  const jpeg = await roundTripJpeg(marked, 72)
+
+  // What the region should end up looking like: the same picture, encoded the
+  // same way, that never carried a mark.
+  const reference = await roundTripJpeg(original, 72)
+
+  const working = clone(jpeg)
+  const res = eraseWatermark(working, maps)
+  check(res.status !== 'not-detected', `jpeg72 ${bg}: detected (status=${res.status})`)
+  if (res.status === 'not-detected') continue
+  check(res.status === 'inpainted', `jpeg72 ${bg}: ringing triggered a repair pass (status=${res.status})`)
+
+  const left = markLeftover(working, alphaMap, x, y, config.logoSize)
+  check(left <= 0.04, `jpeg72 ${bg}: sparkle gone (leftover=${left.toFixed(4)})`)
+
+  const before = regionError(jpeg, reference, x - 6, y - 6, config.logoSize + 12)
+  const after = regionError(working, reference, x - 6, y - 6, config.logoSize + 12)
+  check(
+    after.mean <= 3 && after.mean < before.mean / 3,
+    `jpeg72 ${bg}: region matches an unmarked encode (mean ${before.mean.toFixed(2)} -> ${after.mean.toFixed(2)})`,
+  )
 }
 
 if (failures > 0) {
