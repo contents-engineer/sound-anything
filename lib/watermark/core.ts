@@ -6,18 +6,33 @@
 // implementation (github.com/GargantuaX/gemini-watermark-remover, © Jad,
 // AllenK):
 //
-//   1. Candidate catalog — Gemini stamps the sparkle at a handful of known
-//      layouts (logo size + bottom-right margins) that changed over 2025–2026,
-//      so every plausible layout for the image size is tried.
+//   1. Candidate layouts — Gemini stamps the sparkle at a handful of known
+//      layouts (logo size + bottom-right margins) that changed repeatedly over
+//      2025–2026, so every plausible layout for the image size is tried. A
+//      file whose dimensions are not one Gemini emits is a resized copy, and
+//      matching its aspect ratio back to a native size recovers the factor its
+//      sparkle was scaled by — 43px at 85px margins, and such.
 //   2. Zero-mean NCC scoring — spatial correlation on luma plus Sobel gradient
 //      correlation against the sparkle's edge structure, plus a local variance
 //      cue. Unlike a plain positive-vector dot product, zero-mean NCC actually
 //      discriminates: flat or bright regions score ≈ 0, not ≈ 1.
 //   3. Anchor search — coarse-then-fine offset scan around each candidate
 //      anchor, keeping the best-scoring (config, position) pair.
+//   4. Corner search — the layouts above are a snapshot of where Google has put
+//      the mark so far, and a cropped image has no margin any of them predicts,
+//      so the corner is also searched for the mark itself: the brightest
+//      compact blob standing above its own local background proposes a position
+//      and size of its own, which then has to survive the same checks.
+//   5. Validation — a candidate is only accepted when the opacity of the blend
+//      can actually be measured from its semi-transparent edge pixels, and
+//      either the correlation is strong or simulated removal verifiably erases
+//      the sparkle.
 //
 // Removal is exact inverse alpha blending: the watermark is composited as
 // result = α·255 + (1−α)·original, so original = (result − α·255) / (1 − α).
+// That recovers the pixels exactly where the file is lossless; on a JPEG the
+// ringing the encoder left around the mark's edges is not recoverable by any
+// alpha model, and stays as a faint speckle.
 
 export interface PixelImage {
   data: Uint8ClampedArray
@@ -73,10 +88,13 @@ export interface Detection {
 
 // --- Removal tuning ---------------------------------------------------------
 
-/** Alpha floor subtracted from every sample to ignore JPEG/encoding noise. */
-const ALPHA_FLOOR = 3 / 255
-/** Below this effective alpha a pixel is left untouched (nothing to undo). */
-const ALPHA_SKIP_THRESHOLD = 0.002
+/**
+ * Below this effective alpha the blend is within JPEG/encoding noise, so the
+ * pixel is left untouched. It is a skip test, never a subtraction: shaving a
+ * constant off every alpha under-removes the sparkle body by that much, which
+ * on a dark background is a ~5-level ghost in exactly the shape of the mark.
+ */
+const ALPHA_SKIP_THRESHOLD = 3 / 255
 /** Cap on alpha so the (1 − α) divisor never explodes near fully-opaque. */
 const ALPHA_CAP = 0.99
 /** Watermark logo color — opaque white. */
@@ -114,10 +132,36 @@ export function buildAlphaMap({ data, width, height }: PixelImage): Float32Array
   return alpha
 }
 
-/** Bilinear resample of a square alpha map (for 36/46px layout variants). */
+/**
+ * Resample a square alpha map to another size.
+ *
+ * Shrinking uses area averaging rather than bilinear point sampling: a resized
+ * Gemini download carries a sparkle that a real resampler box-filtered, and
+ * point sampling a 48px mask down to, say, 29px drops whole rows of the thin
+ * points and mismatches what is actually in the pixels. Growing stays bilinear.
+ */
 export function interpolateAlphaMap(source: Float32Array, sourceSize: number, targetSize: number): Float32Array {
   if (sourceSize === targetSize) return new Float32Array(source)
   const out = new Float32Array(targetSize * targetSize)
+
+  if (targetSize < sourceSize) {
+    const step = sourceSize / targetSize
+    for (let y = 0; y < targetSize; y++) {
+      const y0 = Math.floor(y * step)
+      const y1 = Math.min(sourceSize, Math.max(y0 + 1, Math.ceil((y + 1) * step)))
+      for (let x = 0; x < targetSize; x++) {
+        const x0 = Math.floor(x * step)
+        const x1 = Math.min(sourceSize, Math.max(x0 + 1, Math.ceil((x + 1) * step)))
+        let sum = 0
+        for (let sy = y0; sy < y1; sy++) {
+          for (let sx = x0; sx < x1; sx++) sum += source[sy * sourceSize + sx]
+        }
+        out[y * targetSize + x] = sum / ((y1 - y0) * (x1 - x0))
+      }
+    }
+    return out
+  }
+
   const scale = (sourceSize - 1) / Math.max(1, targetSize - 1)
   for (let y = 0; y < targetSize; y++) {
     const sy = y * scale
@@ -141,26 +185,125 @@ export function interpolateAlphaMap(source: Float32Array, sourceSize: number, ta
   return out
 }
 
-/** Resolve the alpha map for a layout, resampling for non-standard sizes. */
+/**
+ * Resolve the alpha map for a layout, resampling for non-standard sizes. The
+ * `default` variant ships at two baked sizes; resampling from whichever is
+ * closer keeps the least resampling error for the in-between sizes that resized
+ * downloads produce.
+ */
 export function alphaMapFor(config: WatermarkConfig, maps: AlphaMaps): Float32Array {
+  const { logoSize } = config
   if (config.alphaVariant === 'v2') {
-    return config.logoSize === 36 ? maps.alpha36V2 : interpolateAlphaMap(maps.alpha36V2, 36, config.logoSize)
+    return logoSize === 36 ? maps.alpha36V2 : interpolateAlphaMap(maps.alpha36V2, 36, logoSize)
   }
-  const base96 = config.alphaVariant === '20260520' ? maps.alpha96New : maps.alpha96
-  if (config.logoSize === 96) return base96
-  if (config.logoSize === 48 && config.alphaVariant === 'default') return maps.alpha48
-  return interpolateAlphaMap(base96, 96, config.logoSize)
+  if (config.alphaVariant === '20260520') {
+    return logoSize === 96 ? maps.alpha96New : interpolateAlphaMap(maps.alpha96New, 96, logoSize)
+  }
+  if (logoSize === 48) return maps.alpha48
+  if (logoSize === 96) return maps.alpha96
+  // Geometric midpoint of the two baked sizes.
+  return logoSize <= 68
+    ? interpolateAlphaMap(maps.alpha48, 48, logoSize)
+    : interpolateAlphaMap(maps.alpha96, 96, logoSize)
 }
 
 // --- Candidate layouts ------------------------------------------------------
 
 /**
+ * Layouts Gemini has stamped at native resolution, most common first. Margins
+ * are measured from the bottom-right corner to the logo box.
+ */
+const BASE_LAYOUTS: readonly WatermarkConfig[] = [
+  // Gemini 3.x, mid-2026 onward — the layout behind most current downloads.
+  { logoSize: 48, marginRight: 96, marginBottom: 96, alphaVariant: 'default' },
+  // Classic small mark, still used for 0.5k and some 1k outputs.
+  { logoSize: 48, marginRight: 32, marginBottom: 32, alphaVariant: 'default' },
+  // Classic large mark (1k legacy, 2k/4k).
+  { logoSize: 96, marginRight: 64, marginBottom: 64, alphaVariant: 'default' },
+  // 2026-05 re-render, pushed in to 192px margins.
+  { logoSize: 96, marginRight: 192, marginBottom: 192, alphaVariant: '20260520' },
+  // Gemini 3.5+ "V2" small sparkle.
+  { logoSize: 36, marginRight: 96, marginBottom: 96, alphaVariant: 'v2' },
+]
+
+/**
+ * Layouts confirmed by measurement on real downloads of exactly this size,
+ * which no tier rule predicts. 2752×1536 is the current 2k 16:9 export and its
+ * 89px margin sits 7px off the nearest tier layout — close enough that the
+ * anchor scan used to stumble onto it, far enough that it often did not.
+ */
+const FIXED_LAYOUTS_BY_SIZE: Readonly<Record<string, readonly WatermarkConfig[]>> = {
+  '2752x1536': [{ logoSize: 48, marginRight: 89, marginBottom: 89, alphaVariant: 'default' }],
+  '1408x768': [{ logoSize: 46, marginRight: 32, marginBottom: 32, alphaVariant: 'default' }],
+}
+
+/**
+ * The discrete set of sizes Gemini image models emit. An upload that is not one
+ * of these is a resized copy — saved through an editor, a messenger, or a CMS —
+ * and its sparkle was scaled with it. Matching the upload's aspect ratio back
+ * to a native size recovers that resize factor, and with it the logo size and
+ * margins, which no fixed integer catalog can express.
+ */
+const OFFICIAL_SIZES: readonly (readonly [number, number])[] = [
+  // gemini-3.x 0.5k
+  [512, 512], [256, 1024], [192, 1536], [424, 632], [632, 424], [448, 600],
+  [1024, 256], [600, 448], [464, 576], [576, 464], [1536, 192], [384, 688],
+  [688, 384], [792, 168],
+  // gemini-3.x 1k
+  [1024, 1024], [512, 2048], [384, 3072], [848, 1264], [1264, 848], [896, 1200],
+  [2048, 512], [1200, 896], [928, 1152], [1152, 928], [3072, 384], [768, 1376],
+  [1376, 768], [1408, 768], [1584, 672],
+  // gemini-3.x 2k
+  [2048, 2048], [1024, 4096], [768, 6144], [1696, 2528], [2528, 1696],
+  [1792, 2400], [4096, 1024], [2400, 1792], [1856, 2304], [2304, 1856],
+  [6144, 768], [1536, 2752], [2752, 1536], [3168, 1344], [2816, 1536],
+  // gemini-3.x 4k
+  [4096, 4096], [2048, 8192], [1536, 12288], [3392, 5056], [5056, 3392],
+  [3584, 4800], [8192, 2048], [4800, 3584], [3712, 4608], [4608, 3712],
+  [12288, 1536], [3072, 5504], [5504, 3072], [6336, 2688],
+  // gemini-2.5-flash-image 1k
+  [832, 1248], [1248, 832], [864, 1184], [1184, 864], [896, 1152], [1152, 896],
+  [768, 1344], [1344, 768], [1536, 672],
+]
+
+/**
+ * Smallest logo worth correlating against. Below roughly this the sparkle is a
+ * handful of pixels, matches almost any bright speck, and a heavily downscaled
+ * image would not show a visible mark anyway.
+ */
+const MIN_LOGO_SIZE = 24
+/** How far two resize factors may disagree between the axes, as a fraction. */
+const ASPECT_TOLERANCE = 0.012
+/** At most this many resize factors are tried, largest first. */
+const MAX_RESIZE_FACTORS = 3
+
+/**
+ * Resize factors that could have produced this image from a native Gemini size.
+ * Returns [1] when the size is native.
+ */
+export function resizeFactors(width: number, height: number): number[] {
+  const factors: number[] = []
+  for (const [ow, oh] of OFFICIAL_SIZES) {
+    if (ow === width && oh === height) return [1]
+    const kx = width / ow
+    const ky = height / oh
+    if (kx > 1.02 || kx < 0.2) continue
+    if (Math.abs(kx - ky) > ASPECT_TOLERANCE * Math.max(kx, ky)) continue
+    factors.push((kx + ky) / 2)
+  }
+  factors.sort((a, b) => b - a)
+  return factors.slice(0, MAX_RESIZE_FACTORS)
+}
+
+/**
  * Known Gemini watermark layouts plausible for an image of this size, most
- * likely first. Margins are measured from the bottom-right corner.
+ * likely first: the size's measured exceptions, then every base layout at
+ * native scale, then the base layouts scaled by each plausible resize factor.
  */
 export function candidateConfigs(width: number, height: number): WatermarkConfig[] {
   const configs: WatermarkConfig[] = []
   const push = (c: WatermarkConfig) => {
+    if (c.logoSize < MIN_LOGO_SIZE) return
     if (width - c.marginRight - c.logoSize < 0) return
     if (height - c.marginBottom - c.logoSize < 0) return
     const dup = configs.some(
@@ -172,36 +315,20 @@ export function candidateConfigs(width: number, height: number): WatermarkConfig
     )
     if (!dup) configs.push(c)
   }
-  const std48: WatermarkConfig = { logoSize: 48, marginRight: 32, marginBottom: 32, alphaVariant: 'default' }
-  const std96: WatermarkConfig = { logoSize: 96, marginRight: 64, marginBottom: 64, alphaVariant: 'default' }
 
-  // Historical default rule first, then the opposite standard layout — older
-  // and newer Gemini builds disagree about which one a given size gets.
-  if (width > 1024 && height > 1024) push(std96)
-  push(std48)
-  push(std96)
+  for (const c of FIXED_LAYOUTS_BY_SIZE[`${width}x${height}`] ?? []) push(c)
+  for (const c of BASE_LAYOUTS) push(c)
 
-  // 2026-06+ Gemini 3.x 1k/2k outputs: 48px logo pushed in to 96px margins.
-  push({ logoSize: 48, marginRight: 96, marginBottom: 96, alphaVariant: 'default' })
-
-  // Gemini 3.5+ "V2" small sparkle: 36px logo, margin scaled down from the
-  // 192px margin of its ~2.8k-wide source layout.
-  if (Math.max(width, height) <= 2048) {
-    const longSide = Math.max(width, height)
-    const shortSide = Math.min(width, height)
-    const sourceLongDim = shortSide >= 566 ? 2752 : shortSide >= 550 ? 2816 : 2848
-    const margin = Math.round(192 * (longSide / sourceLongDim))
-    push({ logoSize: 36, marginRight: margin, marginBottom: margin, alphaVariant: 'v2' })
-  }
-
-  // 2026-05+ large outputs: 96px logo at 192px margins, newer sparkle render.
-  if (Math.min(width, height) >= 1024) {
-    push({ logoSize: 96, marginRight: 192, marginBottom: 192, alphaVariant: '20260520' })
-  }
-
-  // Known fixed-size exception observed in the wild.
-  if (width === 1408 && height === 768) {
-    push({ logoSize: 46, marginRight: 32, marginBottom: 32, alphaVariant: 'default' })
+  for (const k of resizeFactors(width, height)) {
+    if (k === 1) break
+    for (const c of BASE_LAYOUTS) {
+      push({
+        logoSize: Math.round(c.logoSize * k),
+        marginRight: Math.round(c.marginRight * k),
+        marginBottom: Math.round(c.marginBottom * k),
+        alphaVariant: c.alphaVariant,
+      })
+    }
   }
 
   return configs
@@ -359,15 +486,27 @@ function median(values: number[]): number {
  * is robust to structures that overlap the watermark (text, highlights),
  * which break least-squares/correlation-based estimates.
  */
+export interface StrengthEstimate {
+  /** Opacity scale to remove at, clamped into the plausible range. */
+  value: number
+  /**
+   * Whether the votes actually landed in that range. A clamped or defaulted
+   * value means no measurable blend was found here — the region may be bright,
+   * flat, or simply not a watermark — so nothing downstream should treat the
+   * number as evidence that a mark is present.
+   */
+  measured: boolean
+}
+
 export function estimateStrength(
   image: PixelImage,
   alphaMap: Float32Array,
   x: number,
   y: number,
   size: number,
-): number {
+): StrengthEstimate {
   const patch = lumaRegion(image, x, y, size, size)
-  if (patch.length === 0) return 1
+  if (patch.length === 0) return { value: 1, measured: false }
 
   const votes: number[] = []
   const bg: number[] = []
@@ -390,8 +529,12 @@ export function estimateStrength(
       if (s > 0 && s < 2) votes.push(s)
     }
   }
-  if (votes.length < MIN_VOTES) return 1
-  return Math.min(STRENGTH_MAX, Math.max(STRENGTH_MIN, median(votes)))
+  if (votes.length < MIN_VOTES) return { value: 1, measured: false }
+  const vote = median(votes)
+  return {
+    value: Math.min(STRENGTH_MAX, Math.max(STRENGTH_MIN, vote)),
+    measured: vote >= STRENGTH_MIN && vote <= STRENGTH_MAX,
+  }
 }
 
 /**
@@ -429,6 +572,193 @@ function simulateRemoval(patch: Float32Array, alphaMap: Float32Array, strength: 
   return cleaned
 }
 
+// --- Layout-free corner search ----------------------------------------------
+
+// Gemini has moved the sparkle four times in a year, and a cropped download has
+// no margin any catalog could predict. When no known layout validates, find the
+// mark the way an eye does: a small bright blob sitting above its own local
+// background in the bottom-right corner. This proposes only a position and a
+// size — the usual correlation and removal-simulation checks still decide
+// whether it is really the sparkle, with a stricter bar since there is no
+// layout prior backing it up.
+
+/** Fraction of the long edge searched, and the bounds on that window. */
+const ROI_FRACTION = 0.4
+const ROI_MIN = 200
+const ROI_MAX = 600
+/** The corner scan works on a downsampled copy; background is smooth anyway. */
+const ROI_DOWNSCALE = 4
+/** Widest mark the background estimate must see past, in full-resolution px. */
+const MAX_BLOB_SIZE = 128
+/** A blob must stand at least this far above its background to be worth testing. */
+const MIN_PEAK_EXCESS = 6 / 255
+/** Blob extent is taken where excess crosses this fraction of its peak. */
+const BLOB_GROW_FRACTION = 0.25
+/** The sparkle is square; reject blobs further from square than this. */
+const MAX_BLOB_ASPECT = 1.5
+/** Layout-free matches clear this confidence instead of CONFIDENCE_THRESHOLD. */
+const BLIND_CONFIDENCE_THRESHOLD = 0.35
+/** Sizes tried around the blob's measured extent, as fractions of it. */
+const BLIND_SIZE_LADDER = [0.8, 0.9, 1, 1.1]
+
+/** Area-averaged downscale of a single-channel field. */
+function downscale(src: Float32Array, w: number, h: number, factor: number): {
+  data: Float32Array
+  width: number
+  height: number
+} {
+  const width = Math.max(1, Math.floor(w / factor))
+  const height = Math.max(1, Math.floor(h / factor))
+  const data = new Float32Array(width * height)
+  for (let y = 0; y < height; y++) {
+    const y0 = y * factor
+    const y1 = Math.min(h, y0 + factor)
+    for (let x = 0; x < width; x++) {
+      const x0 = x * factor
+      const x1 = Math.min(w, x0 + factor)
+      let sum = 0
+      for (let sy = y0; sy < y1; sy++) for (let sx = x0; sx < x1; sx++) sum += src[sy * w + sx]
+      data[y * width + x] = sum / ((y1 - y0) * (x1 - x0))
+    }
+  }
+  return { data, width, height }
+}
+
+/** Separable square min- or max-filter of half-width `r`. */
+function morphology(src: Float32Array, w: number, h: number, r: number, max: boolean): Float32Array {
+  const pick = max ? Math.max : Math.min
+  const mid = new Float32Array(w * h)
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      let acc = src[y * w + x]
+      for (let d = Math.max(0, x - r); d <= Math.min(w - 1, x + r); d++) acc = pick(acc, src[y * w + d])
+      mid[y * w + x] = acc
+    }
+  }
+  const out = new Float32Array(w * h)
+  for (let y = 0; y < h; y++) {
+    for (let x = 0; x < w; x++) {
+      let acc = mid[y * w + x]
+      for (let d = Math.max(0, y - r); d <= Math.min(h - 1, y + r); d++) acc = pick(acc, mid[d * w + x])
+      out[y * w + x] = acc
+    }
+  }
+  return out
+}
+
+/** Bilinear upsample of a field back to `w`×`h`. */
+function upscale(src: Float32Array, sw: number, sh: number, w: number, h: number): Float32Array {
+  const out = new Float32Array(w * h)
+  const fx = sw / w
+  const fy = sh / h
+  for (let y = 0; y < h; y++) {
+    const sy = Math.min(sh - 1, Math.max(0, (y + 0.5) * fy - 0.5))
+    const y0 = Math.floor(sy)
+    const y1 = Math.min(sh - 1, y0 + 1)
+    const ty = sy - y0
+    for (let x = 0; x < w; x++) {
+      const sx = Math.min(sw - 1, Math.max(0, (x + 0.5) * fx - 0.5))
+      const x0 = Math.floor(sx)
+      const x1 = Math.min(sw - 1, x0 + 1)
+      const tx = sx - x0
+      const top = src[y0 * sw + x0] + (src[y0 * sw + x1] - src[y0 * sw + x0]) * tx
+      const bottom = src[y1 * sw + x0] + (src[y1 * sw + x1] - src[y1 * sw + x0]) * tx
+      out[y * w + x] = top + (bottom - top) * ty
+    }
+  }
+  return out
+}
+
+export interface BlobBox {
+  x: number
+  y: number
+  size: number
+  /** Peak excess over local background, in luma units [0, 1]. */
+  peak: number
+}
+
+/**
+ * Locate the brightest compact blob in the bottom-right corner, as a square box
+ * in image coordinates. Returns null when nothing there stands out enough or
+ * the blob is the wrong shape or size to be a sparkle.
+ */
+export function findCornerBlob(image: PixelImage): BlobBox | null {
+  const roi = Math.min(
+    image.width,
+    image.height,
+    Math.max(ROI_MIN, Math.min(ROI_MAX, Math.round(ROI_FRACTION * Math.max(image.width, image.height)))),
+  )
+  const originX = image.width - roi
+  const originY = image.height - roi
+  const luma = lumaRegion(image, originX, originY, roi, roi)
+  if (luma.length === 0) return null
+
+  const small = downscale(luma, roi, roi, ROI_DOWNSCALE)
+  const radius = Math.ceil(MAX_BLOB_SIZE / 2 / ROI_DOWNSCALE)
+  const opened = morphology(morphology(small.data, small.width, small.height, radius, false), small.width, small.height, radius, true)
+  const background = upscale(opened, small.width, small.height, roi, roi)
+
+  const excess = new Float32Array(roi * roi)
+  let seed = -1
+  let peak = 0
+  for (let i = 0; i < excess.length; i++) {
+    const e = luma[i] - background[i]
+    excess[i] = e > 0 ? e : 0
+    if (excess[i] > peak) {
+      peak = excess[i]
+      seed = i
+    }
+  }
+  if (seed < 0 || peak < MIN_PEAK_EXCESS) return null
+
+  // Region-grow the connected component around the peak.
+  const threshold = peak * BLOB_GROW_FRACTION
+  const seen = new Uint8Array(excess.length)
+  const stack = [seed]
+  seen[seed] = 1
+  let minX = roi
+  let maxX = -1
+  let minY = roi
+  let maxY = -1
+  let visited = 0
+  const limit = MAX_BLOB_SIZE * MAX_BLOB_SIZE * 2
+  while (stack.length > 0) {
+    const i = stack.pop() as number
+    const x = i % roi
+    const y = (i / roi) | 0
+    if (x < minX) minX = x
+    if (x > maxX) maxX = x
+    if (y < minY) minY = y
+    if (y > maxY) maxY = y
+    if (++visited > limit) return null
+    const neighbours = [x > 0 ? i - 1 : -1, x < roi - 1 ? i + 1 : -1, y > 0 ? i - roi : -1, y < roi - 1 ? i + roi : -1]
+    for (const j of neighbours) {
+      if (j < 0 || seen[j] === 1 || excess[j] < threshold) continue
+      seen[j] = 1
+      stack.push(j)
+    }
+  }
+
+  const blobW = maxX - minX + 1
+  const blobH = maxY - minY + 1
+  if (Math.max(blobW, blobH) / Math.min(blobW, blobH) > MAX_BLOB_ASPECT) return null
+  // A watermark is inset from the edges; a blob running off the search window
+  // is part of the picture, not a stamp.
+  if (minX === 0 || minY === 0 || maxX === roi - 1 || maxY === roi - 1) return null
+
+  const size = Math.max(blobW, blobH)
+  if (size < MIN_LOGO_SIZE || size > MAX_BLOB_SIZE) return null
+
+  const cx = originX + (minX + maxX) / 2
+  const cy = originY + (minY + maxY) / 2
+  return {
+    x: Math.round(cx - size / 2),
+    y: Math.round(cy - size / 2),
+    size,
+    peak,
+  }
+}
+
 // --- Detection --------------------------------------------------------------
 
 interface Candidate extends Score {
@@ -438,75 +768,171 @@ interface Candidate extends Score {
   y: number
 }
 
+/** Coarse-then-fine offset scan around `anchor`, keeping the best score. */
+function scanAround(
+  image: PixelImage,
+  config: WatermarkConfig,
+  alphaMap: Float32Array,
+  anchor: { x: number; y: number },
+): Candidate | null {
+  const alphaGrad = sobelMagnitude(alphaMap, config.logoSize)
+  let best: Candidate | null = null
+
+  for (let dy = -COARSE_RADIUS; dy <= COARSE_RADIUS; dy += COARSE_STEP) {
+    for (let dx = -COARSE_RADIUS; dx <= COARSE_RADIUS; dx += COARSE_STEP) {
+      const score = scoreAt(image, alphaMap, alphaGrad, anchor.x + dx, anchor.y + dy, config.logoSize)
+      if (!score) continue
+      if (!best || score.confidence > best.confidence) {
+        best = { config, alphaMap, x: anchor.x + dx, y: anchor.y + dy, ...score }
+      }
+    }
+  }
+  if (!best) return null
+
+  for (let dy = -FINE_RADIUS; dy <= FINE_RADIUS; dy++) {
+    for (let dx = -FINE_RADIUS; dx <= FINE_RADIUS; dx++) {
+      if (dx === 0 && dy === 0) continue
+      const score = scoreAt(image, alphaMap, alphaGrad, best.x + dx, best.y + dy, config.logoSize)
+      if (score && score.confidence > best.confidence) {
+        best = { config, alphaMap, x: best.x + dx, y: best.y + dy, ...score }
+      }
+    }
+  }
+  return best
+}
+
+/**
+ * Simulate removal of `cand` and decide whether it is really the sparkle.
+ * `minConfidence` is the bar the correlation has to clear on its own; a layout
+ * the catalog vouches for gets the normal bar and a second chance on verified
+ * suppression, a layout-free match has to clear a higher one outright.
+ */
+function validate(image: PixelImage, cand: Candidate, minConfidence: number, allowSuppressionRescue: boolean): Detection {
+  const { logoSize } = cand.config
+  const strength = estimateStrength(image, cand.alphaMap, cand.x, cand.y, logoSize)
+  const patch = lumaRegion(image, cand.x, cand.y, logoSize, logoSize)
+  const cleaned = simulateRemoval(patch, cand.alphaMap, strength.value)
+  const residual = Math.abs(alphaSlope(cleaned, cand.alphaMap))
+  const suppression = Math.abs(alphaSlope(patch, cand.alphaMap)) - residual
+  // Removal only counts as evidence when the opacity behind it was actually
+  // measured. A clamped estimate means the region never looked like a blend, so
+  // a strong "suppression" there is the simulation scrubbing away picture
+  // detail, not a watermark.
+  const cleared = suppression >= SUPPRESSION_ACCEPT && residual <= RESIDUAL_CLEARED
+  const looksBlended = cand.confidence >= minConfidence || cleared
+  return {
+    ...cand,
+    strength: strength.value,
+    residual,
+    suppression,
+    // Every real stamp has an opacity that can be read off its semi-transparent
+    // edge pixels. Where that reading clamps or runs out of votes there is no
+    // blend to undo, whatever the correlation says — and correlation alone gets
+    // less reliable the more layouts are on offer, since the best of many tries
+    // clears a fixed bar more often.
+    accepted: strength.measured && (allowSuppressionRescue ? looksBlended : cand.confidence >= minConfidence && cleared),
+  }
+}
+
+/** Rank validated candidates: erasing the sparkle wins, confidence breaks ties. */
+function selectionKey(d: Detection): number {
+  return d.suppression + d.confidence * 0.5
+}
+
 /**
  * Find the watermark in three stages: (1) per-layout coarse-then-fine anchor
  * scan scored by NCC blend, (2) removal simulation on the top candidates —
  * the right layout is the one whose inverse blend actually erases the sparkle
  * correlation, which disambiguates overlapping layouts and partially occluded
  * watermarks, (3) acceptance by confidence or by verified suppression.
- * Always returns the best candidate (or null if none fit); check `accepted`.
+ *
+ * If no known layout survives that, the corner is searched for the mark
+ * directly and the winning blob goes through the same validation under a
+ * stricter bar. Always returns the best candidate (or null if none fit);
+ * check `accepted`.
  */
 export function detectWatermark(image: PixelImage, maps: AlphaMaps): Detection | null {
   const candidates: Candidate[] = []
-
   for (const config of candidateConfigs(image.width, image.height)) {
-    const alphaMap = alphaMapFor(config, maps)
-    const alphaGrad = sobelMagnitude(alphaMap, config.logoSize)
-    const anchor = anchorFor(image.width, image.height, config)
-
-    let best: Candidate | null = null
-    for (let dy = -COARSE_RADIUS; dy <= COARSE_RADIUS; dy += COARSE_STEP) {
-      for (let dx = -COARSE_RADIUS; dx <= COARSE_RADIUS; dx += COARSE_STEP) {
-        const score = scoreAt(image, alphaMap, alphaGrad, anchor.x + dx, anchor.y + dy, config.logoSize)
-        if (!score) continue
-        if (!best || score.confidence > best.confidence) {
-          best = { config, alphaMap, x: anchor.x + dx, y: anchor.y + dy, ...score }
-        }
-      }
-    }
-    if (!best) continue
-
-    for (let dy = -FINE_RADIUS; dy <= FINE_RADIUS; dy++) {
-      for (let dx = -FINE_RADIUS; dx <= FINE_RADIUS; dx++) {
-        if (dx === 0 && dy === 0) continue
-        const score = scoreAt(image, alphaMap, alphaGrad, best.x + dx, best.y + dy, config.logoSize)
-        if (score && score.confidence > best.confidence) {
-          best = { config, alphaMap, x: best.x + dx, y: best.y + dy, ...score }
-        }
-      }
-    }
-    candidates.push(best)
+    const cand = scanAround(image, config, alphaMapFor(config, maps), anchorFor(image.width, image.height, config))
+    if (cand) candidates.push(cand)
   }
-  if (candidates.length === 0) return null
   candidates.sort((a, b) => b.confidence - a.confidence)
 
-  let winner: Detection | null = null
+  const validated: Detection[] = []
   for (const cand of candidates) {
     if (cand.confidence < VALIDATION_MIN_CONFIDENCE) continue
-    const strength = estimateStrength(image, cand.alphaMap, cand.x, cand.y, cand.config.logoSize)
-    const patch = lumaRegion(image, cand.x, cand.y, cand.config.logoSize, cand.config.logoSize)
-    const cleaned = simulateRemoval(patch, cand.alphaMap, strength)
-    const residual = Math.abs(alphaSlope(cleaned, cand.alphaMap))
-    const suppression = Math.abs(alphaSlope(patch, cand.alphaMap)) - residual
-    const detection: Detection = {
-      ...cand,
-      strength,
-      residual,
-      suppression,
-      accepted:
-        cand.confidence >= CONFIDENCE_THRESHOLD ||
-        (suppression >= SUPPRESSION_ACCEPT && residual <= RESIDUAL_CLEARED),
-    }
-    // Prefer the candidate whose removal most convincingly erases the sparkle;
-    // confidence breaks near-ties between overlapping layouts.
-    const key = detection.suppression + detection.confidence * 0.5
-    if (!winner || key > winner.suppression + winner.confidence * 0.5) winner = detection
+    validated.push(validate(image, cand, CONFIDENCE_THRESHOLD, true))
   }
 
-  if (!winner) {
+  // The corner search runs even when a layout did validate. A layout that lines
+  // up with only part of the mark — after a crop, say — can suppress enough of
+  // it to look convincing while removing from the wrong place, and the only way
+  // to know is to let the mark's actual position compete.
+  const blind = detectBlind(image, maps)
+  if (blind) validated.push(blind)
+
+  let winner: Detection | null = null
+  for (const detection of validated) {
+    if (winner?.accepted && !detection.accepted) continue
+    if (!winner || (detection.accepted && !winner.accepted) || selectionKey(detection) > selectionKey(winner)) {
+      winner = detection
+    }
+  }
+  if (winner) return winner
+
+  if (candidates.length > 0) {
     const cand = candidates[0]
     return { ...cand, strength: 1, residual: 0, suppression: 0, accepted: false }
   }
+  return null
+}
+
+/**
+ * Last resort: take the position and size of the brightest compact blob in the
+ * corner as the layout, and see whether the sparkle mask explains it.
+ */
+function detectBlind(image: PixelImage, maps: AlphaMaps): Detection | null {
+  const blob = findCornerBlob(image)
+  if (!blob) return null
+
+  const trySize = (size: number): Detection | null => {
+    if (size < MIN_LOGO_SIZE || size > MAX_BLOB_SIZE) return null
+    const x = blob.x + Math.round((blob.size - size) / 2)
+    const y = blob.y + Math.round((blob.size - size) / 2)
+    const config: WatermarkConfig = {
+      logoSize: size,
+      marginRight: image.width - x - size,
+      marginBottom: image.height - y - size,
+      alphaVariant: 'default',
+    }
+    const cand = scanAround(image, config, alphaMapFor(config, maps), { x, y })
+    if (!cand || cand.confidence < VALIDATION_MIN_CONFIDENCE) return null
+    // Keep the layout honest: the scan may have drifted off the proposed box.
+    const found: Candidate = {
+      ...cand,
+      config: {
+        ...config,
+        marginRight: image.width - cand.x - size,
+        marginBottom: image.height - cand.y - size,
+      },
+    }
+    return validate(image, found, BLIND_CONFIDENCE_THRESHOLD, false)
+  }
+
+  let winner: Detection | null = null
+  const consider = (detection: Detection | null) => {
+    if (detection && (!winner || selectionKey(detection) > selectionKey(winner))) winner = detection
+  }
+
+  // The blob's extent is where its glow fades into the background, which reads
+  // wide over a bright or noisy picture and narrow over a flat dark one, so
+  // sweep sizes around it rather than trusting the measurement, then refine by
+  // a pixel or two — the sparkle's thin points are where a size error shows.
+  for (const factor of BLIND_SIZE_LADDER) consider(trySize(Math.round(blob.size * factor)))
+  if (!winner) return null
+  const coarse = (winner as Detection).config.logoSize
+  for (const delta of [-2, -1, 1, 2]) consider(trySize(coarse + delta))
   return winner
 }
 
@@ -527,10 +953,8 @@ export function removeWatermarkRegion(
   const { data, width } = image
   for (let row = 0; row < size; row++) {
     for (let col = 0; col < size; col++) {
-      let alpha = alphaMap[row * size + col] * strength
-      alpha = Math.max(0, alpha - ALPHA_FLOOR)
+      const alpha = Math.min(alphaMap[row * size + col] * strength, ALPHA_CAP)
       if (alpha < ALPHA_SKIP_THRESHOLD) continue
-      alpha = Math.min(alpha, ALPHA_CAP)
 
       const idx = ((y + row) * width + (x + col)) * 4
       for (let c = 0; c < 3; c++) {

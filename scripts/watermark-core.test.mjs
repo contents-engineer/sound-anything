@@ -19,6 +19,7 @@ import {
   buildAlphaMap,
   candidateConfigs,
   detectWatermark,
+  interpolateAlphaMap,
   removeWatermarkRegion,
 } from '../lib/watermark/core.ts'
 
@@ -193,6 +194,160 @@ const perfImage = makeImage(2048, 2048, 'photo')
 const t0 = performance.now()
 detectWatermark(perfImage, maps)
 console.log(`detect on 2048x2048: ${(performance.now() - t0).toFixed(0)}ms`)
+
+
+// ---------------------------------------------------------------------------
+// Regressions for the 2026-09 Gemini watermark (issue: the tool stopped working)
+//
+// Ground truth measured from three real Gemini downloads (GargantuaX/
+// gemini-watermark-remover issues #153, #155, #165):
+//   * the sparkle shape is unchanged — a 48px bg_48 mask fits with rms α 0.015
+//   * it is stamped at ≈ 0.60 of that mask's opacity (peak α ≈ 0.30, not 0.51)
+//   * 2752×1536 downloads carry it at 48px with 89px margins
+//   * resized/re-encoded downloads carry it at the same layout times the resize
+//     factor — e.g. 824×1024 (0.888× of the official 928×1152) has a 43px
+//     sparkle at 85px margins, which no integer catalog entry can express
+// ---------------------------------------------------------------------------
+
+/** Mean absolute error over the sparkle core only — where a ghost is visible. */
+function coreError(a, b, alphaMap, x, y, size) {
+  let peak = 0
+  for (let i = 0; i < alphaMap.length; i++) if (alphaMap[i] > peak) peak = alphaMap[i]
+  let sum = 0, n = 0, max = 0
+  for (let row = 0; row < size; row++) {
+    for (let col = 0; col < size; col++) {
+      if (alphaMap[row * size + col] < 0.45 * peak) continue
+      const idx = ((y + row) * a.width + (x + col)) * 4
+      for (let c = 0; c < 3; c++) {
+        const d = Math.abs(a.data[idx + c] - b.data[idx + c])
+        sum += d; n++; max = Math.max(max, d)
+      }
+    }
+  }
+  return { mean: n ? sum / n : 0, max }
+}
+
+console.log('--- 2026-09 mark: ~0.6 opacity leaves no ghost after removal ---')
+for (const bg of ['dark', 'mid', 'photo']) {
+  const config = candidateConfigs(2048, 2048).find((c) => c.logoSize === 48 && c.marginRight === 96)
+  const alphaMap = alphaMapFor(config, maps)
+  const anchor = anchorFor(2048, 2048, config)
+  const original = makeImage(2048, 2048, bg)
+  const marked = clone(original)
+  stampWatermark(marked, alphaMap, anchor.x, anchor.y, config.logoSize, 0.6)
+
+  const det = detectWatermark(marked, maps)
+  check(det?.accepted, `0.6-opacity on ${bg}: detected (conf=${det?.confidence.toFixed(3)})`)
+  if (!det?.accepted) continue
+  const cleaned = clone(marked)
+  removeWatermarkRegion(cleaned, det.alphaMap, det.x, det.y, det.config.logoSize, det.strength)
+  const err = coreError(cleaned, original, det.alphaMap, det.x, det.y, det.config.logoSize)
+  // A flat alpha bias shows up here as a uniform few-level ghost over the whole
+  // sparkle body, which is exactly what users see on dark backgrounds.
+  check(err.mean <= 1.5, `0.6-opacity on ${bg}: no core ghost (meanErr=${err.mean.toFixed(2)} maxErr=${err.max})`)
+}
+
+console.log('--- 2752×1536: the measured 89px margin layout ---')
+{
+  const hit = candidateConfigs(2752, 1536).find(
+    (c) => c.logoSize === 48 && c.marginRight === 89 && c.marginBottom === 89,
+  )
+  check(!!hit, 'catalog for 2752x1536 contains 48px @ 89px margins')
+  if (hit) {
+    const alphaMap = alphaMapFor(hit, maps)
+    const anchor = anchorFor(2752, 1536, hit)
+    for (const bg of ['dark', 'photo']) {
+      const original = makeImage(2752, 1536, bg)
+      const marked = clone(original)
+      stampWatermark(marked, alphaMap, anchor.x, anchor.y, hit.logoSize, 0.6)
+      const det = detectWatermark(marked, maps)
+      check(det?.accepted, `2752x1536 @89 on ${bg}: detected`)
+      if (!det?.accepted) continue
+      check(det.x === anchor.x && det.y === anchor.y, `2752x1536 @89 on ${bg}: exact position (off ${det.x - anchor.x},${det.y - anchor.y})`)
+      const cleaned = clone(marked)
+      removeWatermarkRegion(cleaned, det.alphaMap, det.x, det.y, det.config.logoSize, det.strength)
+      const err = regionError(cleaned, original, anchor.x, anchor.y, hit.logoSize)
+      check(err.max <= 20 && err.mean <= 5, `2752x1536 @89 on ${bg}: restored (maxErr=${err.max} meanErr=${err.mean.toFixed(2)})`)
+    }
+  }
+}
+
+console.log('--- resized downloads: fractional logo sizes and margins ---')
+// Each case is an official Gemini size scaled by a factor a user's editor or
+// messenger would apply, with the 48 @ 96/96 layout scaled the same way.
+const resizeCases = [
+  { label: '824x1024 (0.888x of 928x1152)', w: 824, h: 1024, size: 43, margin: 85 },
+  { label: '1376x768 -> 1101x614 (0.8x)', w: 1101, h: 614, size: 38, margin: 77 },
+  { label: '2048x2048 -> 1229x1229 (0.6x)', w: 1229, h: 1229, size: 29, margin: 58 },
+]
+for (const { label, w, h, size, margin } of resizeCases) {
+  const alphaMap = interpolateAlphaMap(maps.alpha48, 48, size)
+  const x = w - margin - size
+  const y = h - margin - size
+  for (const bg of ['dark', 'photo']) {
+    const original = makeImage(w, h, bg)
+    const marked = clone(original)
+    stampWatermark(marked, alphaMap, x, y, size, 0.6)
+
+    const det = detectWatermark(marked, maps)
+    check(det?.accepted, `${label} on ${bg}: detected (conf=${det?.confidence.toFixed(3)})`)
+    if (!det?.accepted) continue
+    check(
+      Math.abs(det.config.logoSize - size) <= 1,
+      `${label} on ${bg}: logo size ≈ ${size} (got ${det.config.logoSize})`,
+    )
+    check(
+      Math.abs(det.x - x) <= 1 && Math.abs(det.y - y) <= 1,
+      `${label} on ${bg}: position (off ${det.x - x},${det.y - y})`,
+    )
+    const cleaned = clone(marked)
+    removeWatermarkRegion(cleaned, det.alphaMap, det.x, det.y, det.config.logoSize, det.strength)
+    const err = regionError(cleaned, original, x, y, size)
+    check(err.max <= 25 && err.mean <= 5, `${label} on ${bg}: restored (maxErr=${err.max} meanErr=${err.mean.toFixed(2)})`)
+  }
+}
+
+console.log('--- unknown layouts: found without a catalog entry ---')
+// The mark has moved four times already, and a cropped image has no margin the
+// catalog could ever predict. Neither of these sizes matches an official Gemini
+// size or any resize of one, so nothing here can come from the catalog.
+const unknownCases = [
+  { label: 'unlisted size, unlisted layout (1000x700, 60px @ 120)', w: 1000, h: 700, size: 60, right: 120, bottom: 120 },
+  { label: 'cropped download (2700x1500, 48px @ 37/53)', w: 2700, h: 1500, size: 48, right: 37, bottom: 53 },
+  { label: 'future small mark (1500x1000, 28px @ 150)', w: 1500, h: 1000, size: 28, right: 150, bottom: 150 },
+]
+for (const { label, w, h, size, right, bottom } of unknownCases) {
+  const fromCatalog = candidateConfigs(w, h).some(
+    (c) => c.logoSize === size && c.marginRight === right && c.marginBottom === bottom,
+  )
+  check(!fromCatalog, `${label}: genuinely absent from the catalog`)
+
+  const alphaMap = interpolateAlphaMap(maps.alpha48, 48, size)
+  const x = w - right - size
+  const y = h - bottom - size
+  for (const bg of ['dark', 'mid', 'photo']) {
+    const original = makeImage(w, h, bg)
+    const marked = clone(original)
+    stampWatermark(marked, alphaMap, x, y, size, 0.6)
+
+    const det = detectWatermark(marked, maps)
+    check(det?.accepted, `${label} on ${bg}: detected (conf=${det?.confidence.toFixed(3)})`)
+    if (!det?.accepted) continue
+    check(
+      Math.abs(det.x - x) <= 2 && Math.abs(det.y - y) <= 2,
+      `${label} on ${bg}: position (off ${det.x - x},${det.y - y})`,
+    )
+    const cleaned = clone(marked)
+    removeWatermarkRegion(cleaned, det.alphaMap, det.x, det.y, det.config.logoSize, det.strength)
+    const err = regionError(cleaned, original, x, y, size)
+    // Recovering a layout nobody catalogued means recovering its size from how
+    // far the glow reaches, which lands within a pixel or two — so the sparkle's
+    // thin points keep a few outlier pixels that the inverse blend amplifies.
+    // The mean is the metric that says the mark is gone; hold that tighter than
+    // the catalog path does and let the per-pixel tail be wider.
+    check(err.max <= 40 && err.mean <= 3, `${label} on ${bg}: restored (maxErr=${err.max} meanErr=${err.mean.toFixed(2)})`)
+  }
+}
 
 if (failures > 0) {
   console.error(`\n${failures}/${checks} FAILED`)
