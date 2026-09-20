@@ -75,12 +75,14 @@ export class MockProvider {
         sliderHint: {
           weirdness: stemMode ? '20-40%' : (isWild ? '60-80%' : '40-60%'),
           styleInfluence: stemMode ? '70-100%' : '50-70%',
+          variety: stemMode ? 'Off' : (isWild ? 'Extra' : (i % 2 === 0 ? 'Off' : 'Normal')),
+          maxMode: opts.lengthMin >= 3 || MOCK_ROLES[i] === 'climax' ? 'On' : 'Off',
           durationSliderNote: `${opts.lengthMin}분 (${opts.lengthMin * 60}초) 내외 설정 권장`,
           note: stemMode
-            ? `목업 추천 ${i + 1}: Suno v6 플래그십 모델로 보컬 스템 분리를 위해 보수적·뾰족하게 잡은 설정입니다.`
+            ? `목업 추천 ${i + 1}: Suno v6 플래그십 모델로 보컬 스템 분리를 위해 보수적 슬라이더와 프롬프트 원문을 보존하는 Variety Off, 고정밀 Max Mode를 적용한 설정입니다.`
             : isWild
-              ? `목업 추천 ${i + 1}: Suno v6-wild 모델로 모험적이고 다채로운 질감을 추천합니다.`
-              : `목업 추천 ${i + 1}: Suno v6 기본 모델로 완성도와 일관성의 균형을 맞춘 추천입니다.`,
+              ? `목업 추천 ${i + 1}: Suno v6-wild 모델과 높은 Variety로 모험적이고 다채로운 사운드 탐색을 추천합니다.`
+              : `목업 추천 ${i + 1}: Suno v6 기본 모델로 완성도와 균형 잡힌 스타일 변주(Variety)를 맞춘 추천입니다.`,
         },
         recommendedModel: isWild ? 'v6-wild' : 'v6',
         trackRole: mode === 'full' ? MOCK_ROLES[i] : null,

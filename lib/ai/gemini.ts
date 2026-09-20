@@ -1,7 +1,7 @@
 // lib/ai/gemini.ts
 import { ApiError, GoogleGenAI, ThinkingLevel, Type } from '@google/genai'
 import type { GenerationExtras, GenerationMode, GenerationResult, Selections } from '@/types'
-import { STYLE_INFLUENCE_LEVELS, SUNO_MODELS, TRACK_ROLES, WEIRDNESS_LEVELS } from '@/types'
+import { MAX_MODE_OPTIONS, STYLE_INFLUENCE_LEVELS, SUNO_MODELS, TRACK_ROLES, VARIETY_LEVELS, WEIRDNESS_LEVELS } from '@/types'
 import { RateLimitError } from '@/lib/ai/errors'
 import { DEFAULT_MODEL_ID } from '@/lib/models'
 import { SYSTEM_PROMPT, buildUserPrompt } from '@/lib/promptBuilder'
@@ -35,10 +35,12 @@ const SLIDER_HINT_SCHEMA = {
   properties: {
     weirdness: { type: Type.STRING, format: 'enum', enum: [...WEIRDNESS_LEVELS] },
     styleInfluence: { type: Type.STRING, format: 'enum', enum: [...STYLE_INFLUENCE_LEVELS] },
+    variety: { type: Type.STRING, format: 'enum', enum: [...VARIETY_LEVELS] },
+    maxMode: { type: Type.STRING, format: 'enum', enum: [...MAX_MODE_OPTIONS] },
     durationSliderNote: { type: Type.STRING, nullable: true },
     note: { type: Type.STRING },
   },
-  required: ['weirdness', 'styleInfluence', 'note'],
+  required: ['weirdness', 'styleInfluence', 'variety', 'maxMode', 'note'],
 }
 
 const SONG_SCHEMA = {

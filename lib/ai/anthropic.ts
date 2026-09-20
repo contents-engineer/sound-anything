@@ -1,7 +1,7 @@
 // lib/ai/anthropic.ts
 import Anthropic from '@anthropic-ai/sdk'
 import type { GenerationExtras, GenerationMode, GenerationResult, Selections } from '@/types'
-import { STYLE_INFLUENCE_LEVELS, SUNO_MODELS, TRACK_ROLES, WEIRDNESS_LEVELS } from '@/types'
+import { MAX_MODE_OPTIONS, STYLE_INFLUENCE_LEVELS, SUNO_MODELS, TRACK_ROLES, VARIETY_LEVELS, WEIRDNESS_LEVELS } from '@/types'
 import { SYSTEM_PROMPT, buildUserPrompt } from '@/lib/promptBuilder'
 
 const TOOL = {
@@ -40,10 +40,12 @@ const TOOL = {
               properties: {
                 weirdness: { type: 'string', enum: [...WEIRDNESS_LEVELS] },
                 styleInfluence: { type: 'string', enum: [...STYLE_INFLUENCE_LEVELS] },
+                variety: { type: 'string', enum: [...VARIETY_LEVELS] },
+                maxMode: { type: 'string', enum: [...MAX_MODE_OPTIONS] },
                 durationSliderNote: { type: 'string' },
                 note: { type: 'string' },
               },
-              required: ['weirdness', 'styleInfluence', 'note'],
+              required: ['weirdness', 'styleInfluence', 'variety', 'maxMode', 'note'],
             },
             trackRole: { type: ['string', 'null'], enum: [...TRACK_ROLES, null] },
             lyrics: { type: 'string' },

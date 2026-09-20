@@ -1,6 +1,6 @@
 // lib/promptBuilder.ts
 import type { GenerationExtras, GenerationMode, Selections } from '@/types'
-import { STYLE_INFLUENCE_LEVELS, SUNO_MODELS, TRACK_ROLES, WEIRDNESS_LEVELS } from '@/types'
+import { MAX_MODE_OPTIONS, STYLE_INFLUENCE_LEVELS, SUNO_MODELS, TRACK_ROLES, VARIETY_LEVELS, WEIRDNESS_LEVELS } from '@/types'
 import { SECTIONS, VOCAL_STEM_USAGE_LABEL } from '@/lib/options'
 
 export function isEmptySelections(s: Selections): boolean {
@@ -76,7 +76,7 @@ Suno v6는 소리로 번역되는 구체적 음악 구성 요소(보컬 캐릭�
 - **금지**: reverb-drenched, gated reverb drums, tape saturation, vinyl crackle, lo-fi, wall of sound 등 공간계·질감계 디스크립터 전부. 보컬 이펙트(Effects) 계층도 쓰지 않습니다.
 - excludeStyles에는 "reverb", "background noise", "low quality audio" 3개를 반드시 포함하고, 보컬 성별이 고정된 곡이면 반대 성별을 더합니다(최대 5개 유지).
 - recommendedModel은 반드시 "v6"로 고정합니다.
-- sliderHint는 weirdness "20-40%", styleInfluence "70-100%"로 고정하고, note에 스템 분리를 위해 플래그십 v6 모델과 보수적·뾰족한 슬라이더를 적용했다고 한 문장으로 적습니다.
+- sliderHint는 weirdness "20-40%", styleInfluence "70-100%", variety "Off", maxMode "On"으로 고정하고, note에 스템 분리를 위해 플래그십 v6 모델과 보수적 슬라이더, 프롬프트 변형 없는 Variety Off 및 고정밀 Max Mode를 적용했다고 한 문장으로 적습니다.
 - 프로덕션·믹스에서 "로파이 테이프"가 함께 선택돼도 **이 모드가 우선**합니다. 로파이 질감을 버리고 dry·클린으로 가되, concept 마지막에 스템 분리를 위해 로파이 질감을 생략했다고 한 문장 적습니다.
 - **연주곡이 함께 선택된 곡은 이 모드를 무시**하고 연주곡 규칙을 그대로 따릅니다(분리할 보컬이 없음).
 - 남녀 듀엣이 선택된 경우 "Duet" 규칙은 유지하되, concept 마지막에 두 목소리가 겹치면 분리가 어려워질 수 있다는 안내를 한 문장 덧붙입니다.
@@ -89,14 +89,23 @@ Suno v6 모델군 중 이 곡의 음악적 성격에 가장 부합하는 모델 
 - "v6-wild": 덜 예측 가능하며 다채롭고 과감한 텍스처, 실험적인 악기 구성, 즉흥적인 변주를 이끌어내는 모델. 앰비언트, 글리치, 아방가르드, 사이키델릭 또는 높은 Weirdness가 필요한 실험적 트랙에 배정합니다. (mode가 "full"일 때 10곡 중 1~2곡에 변화구로 배정 추천)
 - "v6-mini": 가볍고 빠른 생성에 특화된 모델. 단순한 루프나 미니멀 배경음 스케치용 곡에 선택적으로 배정합니다.
 
-# 각 song의 sliderHint 필드 (Suno v6 슬라이더 및 Duration 추천)
+# 각 song의 sliderHint 필드 (Suno v6 슬라이더 및 신기능 추천)
 
 - weirdness: "0-20%", "20-40%", "40-60%", "60-80%" 중 하나.
   - 극도로 보수적·교과서적 사운드(동요·자장가 등)만 "0-20%", 상업적·안전 지향이면 "20-40%", 대부분의 곡은 "40-60%", 실험적 장르(앰비언트·글리치 등 또는 v6-wild 모델)는 "60-80%".
 - styleInfluence: "30-50%", "50-70%", "70-100%" 중 하나.
   - 기본 "50-70%". stylePrompt가 4~5개로 적고 뾰족하면 "70-100%", 태그를 느슨한 참고로만 쓸 곡은 "30-50%".
+- variety: "Off", "Normal", "High", "Extra", "Max" 중 하나. (Suno v6 신기능: AI의 스타일 프롬프트 임의 변형/확장 정도)
+  - "Off": 생성기가 정밀하게 작성한 stylePrompt를 100% 원문 그대로 반영. 보컬 스템 추출 모드(반드시 Off), 정밀한 장르 고정 곡, style tags가 뾰족하고 정교한 곡에 필수 권장.
+  - "Normal": 표준적인 균형 변주. 팝, 록, 발라드 등 일반 라디오 싱글 트랙의 기본값.
+  - "High": 동일 프롬프트 내에서 더욱 뚜렷하고 개성 있는 스타일 변주를 원할 때.
+  - "Extra": 프로그레시브 록, 복합 재즈, 비트 스위치 등 과감한 스타일 탐색 곡.
+  - "Max": v6-wild 모델과 함께 사용하거나, 앰비언트·글리치 등 규격 외의 극단적 스타일 실험 곡.
+- maxMode: "On", "Off" 중 하나. (Suno v6 신기능: 고연산 일관성/완성도 극대화 토글)
+  - "On": 3분 이상의 표준/긴 곡, 6~10분 대곡, 플레이리스트 핵심 트랙(climax, opener, closer), 보컬 스템 분리 모드처럼 고해상도 음질과 완벽한 구조적 일관성이 필수인 곡에 권장.
+  - "Off": 1~2분 짧은 곡, 단순 루프/미니멀 배경음 스케치, 인터루드(interlude), 또는 v6-mini 모델 곡.
 - durationSliderNote: Suno Create의 Duration Slider에 권장하는 설정 (예: 사용자가 3분을 골랐으면 "Duration Slider: 3분 (180초) 전후 설정 권장").
-- note: 이 곡에 이 모델과 슬라이더 값을 추천하는 이유를 한국어 한 문장으로.
+- note: 이 곡에 이 모델과 슬라이더/신기능 설정값(Weirdness, Style Influence, Variety, Max Mode)을 추천하는 이유를 한국어 한 문장으로.
 
 # 각 song의 나머지 필드
 
@@ -220,7 +229,7 @@ Suno v6 모델군 중 이 곡의 음악적 성격에 가장 부합하는 모델 
 - recommendedModel이 v6, v6-wild, v6-mini 중 하나이며 곡 콘셉트에 적절한가(보컬 스템 추출은 반드시 v6).
 - 시대·프로덕션 옵션이 선택됐으면 stylePrompt에 각각 정확히 1개씩 반영됐고, full 모드에서 10곡이 같은 값을 공유하는가.
 - 명료도 계열(professional studio vocal recording·high fidelity·clean mix, background noise·low quality audio 제외)과 로파이 계열(lo-fi·tape saturation·vinyl crackle)이 같은 곡에 섞이지 않았는가.
-- 보컬 스템 추출 모드이고 연주곡이 아니면: stylePrompt에 dry vocals·no reverb가 있고 공간계·질감계 디스크립터가 하나도 없는가, excludeStyles에 reverb·background noise·low quality audio가 모두 있는가, sliderHint가 20-40% / 70-100%인가.
+- 보컬 스템 추출 모드이고 연주곡이 아니면: stylePrompt에 dry vocals·no reverb가 있고 공간계·질감계 디스크립터가 하나도 없는가, excludeStyles에 reverb·background noise·low quality audio가 모두 있는가, sliderHint가 20-40% / 70-100% / Off / On인가.
 - 연주곡이면: lyrics가 정확히 "[Instrumental]" 한 줄인가, stylePrompt에 instrumental·no vocals가 있고 보컬 디스크립터가 없는가, excludeStyles에 vocals·singing·chanting·vocal samples 4개가 모두 있는가.
 - 곡 진행 방식이 선택됐으면: 섹션 순서가 그 변형의 예시와 같은가, 본문 섹션 개수와 줄 수가 길이표와 일치하는가. AABA면 [Chorus]가 하나도 없고 모든 [Verse]의 마지막 줄이 동일한가.
 - 일본어 가사면: 로마자 음차가 없는가, 줄당 모라가 기준 범위 안이고 줄 간 길이가 고른가, stylePrompt에 Clear Japanese Pronunciation이 있는가.
@@ -305,10 +314,12 @@ export const RESPONSE_SCHEMA = {
             properties: {
               weirdness: { type: 'string', enum: [...WEIRDNESS_LEVELS] },
               styleInfluence: { type: 'string', enum: [...STYLE_INFLUENCE_LEVELS] },
+              variety: { type: 'string', enum: [...VARIETY_LEVELS] },
+              maxMode: { type: 'string', enum: [...MAX_MODE_OPTIONS] },
               durationSliderNote: { type: 'string' },
               note: { type: 'string' },
             },
-            required: ['weirdness', 'styleInfluence', 'note'],
+            required: ['weirdness', 'styleInfluence', 'variety', 'maxMode', 'note'],
           },
           trackRole: { type: ['string', 'null'], enum: [...TRACK_ROLES, null] },
           lyrics: { type: 'string' },

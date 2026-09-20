@@ -59,7 +59,7 @@ const RETRY_PRESCRIPTIONS: { label: string; hint: string; vocalOnly?: boolean }[
   },
   {
     label: '🩺 장르가 튐',
-    hint: '이전 곡은 의도한 장르에서 벗어났습니다. 주 장르를 맨 앞에 두고 더 좁은 마이크로장르로 뾰족하게 만들고, 충돌하는 무드·악기 신호를 제거하세요.',
+    hint: '이전 곡은 의도한 장르에서 벗어났습니다. 주 장르를 맨 앞에 두고 더 좁은 마이크로장르로 뾰족하게 만들고 충돌하는 신호를 제거하며, sliderHint의 variety는 "Off", styleInfluence는 "70-100%"로 고정하세요.',
   },
   {
     label: '🩺 믹스가 탁함',
@@ -236,7 +236,7 @@ export function ResultPanel({ result, onRegenerate, regenerating }: ResultPanelP
                       </button>
                     )}
                     <CopyButton
-                      text={`${s.title}\n\n[KO] ${s.titles.ko}\n[EN] ${s.titles.en}\n[JA] ${s.titles.ja}${stylePrompt ? `\n\n--- Style Prompt ---\n${stylePrompt}` : ''}${excludeStyles.length > 0 ? `\n\n--- Exclude Styles ---\n${excludeStyles.join(', ')}` : ''}\n\n--- Suno v6 Settings ---\nModel: ${s.recommendedModel ?? 'v6'}${s.sliderHint ? `\nWeirdness ${s.sliderHint.weirdness} / Style Influence ${s.sliderHint.styleInfluence}${s.sliderHint.durationSliderNote ? ` / ${s.sliderHint.durationSliderNote}` : ''}\n${s.sliderHint.note}` : ''}\n\n${s.lyrics}`}
+                      text={`${s.title}\n\n[KO] ${s.titles.ko}\n[EN] ${s.titles.en}\n[JA] ${s.titles.ja}${stylePrompt ? `\n\n--- Style Prompt ---\n${stylePrompt}` : ''}${excludeStyles.length > 0 ? `\n\n--- Exclude Styles ---\n${excludeStyles.join(', ')}` : ''}\n\n--- Suno v6 Settings ---\nModel: ${s.recommendedModel ?? 'v6'}${s.sliderHint ? `\nWeirdness ${s.sliderHint.weirdness} / Style Influence ${s.sliderHint.styleInfluence}${s.sliderHint.variety ? ` / Variety ${s.sliderHint.variety}` : ''}${s.sliderHint.maxMode ? ` / Max Mode ${s.sliderHint.maxMode}` : ''}${s.sliderHint.durationSliderNote ? ` / ${s.sliderHint.durationSliderNote}` : ''}\n${s.sliderHint.note}` : ''}\n\n${s.lyrics}`}
                     />
                     <span className="text-zinc-400 transition group-open:rotate-180">▾</span>
                   </div>
@@ -305,12 +305,38 @@ export function ResultPanel({ result, onRegenerate, regenerating }: ResultPanelP
                         )}
                         {s.sliderHint && (
                           <>
-                            <span className="inline-flex items-center rounded-full bg-white px-2.5 py-0.5 text-xs font-medium text-zinc-800 ring-1 ring-amber-200">
+                            <span
+                              title="음악적/리듬적 예측 불가능성 조절"
+                              className="inline-flex items-center rounded-full bg-white px-2.5 py-0.5 text-xs font-medium text-zinc-800 ring-1 ring-amber-200"
+                            >
                               Weirdness {s.sliderHint.weirdness}
                             </span>
-                            <span className="inline-flex items-center rounded-full bg-white px-2.5 py-0.5 text-xs font-medium text-zinc-800 ring-1 ring-amber-200">
+                            <span
+                              title="스타일 프롬프트 태그 반영 강도"
+                              className="inline-flex items-center rounded-full bg-white px-2.5 py-0.5 text-xs font-medium text-zinc-800 ring-1 ring-amber-200"
+                            >
                               Style Influence {s.sliderHint.styleInfluence}
                             </span>
+                            {s.sliderHint.variety && (
+                              <span
+                                title="Suno v6 신기능: AI의 스타일 태그 변형/재해석 강도 (Off: 프롬프트 원문 100% 보존)"
+                                className="inline-flex items-center rounded-full bg-white px-2.5 py-0.5 text-xs font-medium text-zinc-800 ring-1 ring-amber-200"
+                              >
+                                🎨 Variety {s.sliderHint.variety}
+                              </span>
+                            )}
+                            {s.sliderHint.maxMode && (
+                              <span
+                                title="Suno v6 신기능: 더 높은 연산량으로 곡의 구조적 일관성과 음질 완성도 극대화"
+                                className={`inline-flex items-center rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ${
+                                  s.sliderHint.maxMode === 'On'
+                                    ? 'bg-amber-100 font-semibold text-amber-900 ring-amber-300'
+                                    : 'bg-white text-zinc-700 ring-amber-200'
+                                }`}
+                              >
+                                ⚡ Max Mode {s.sliderHint.maxMode}
+                              </span>
+                            )}
                             {s.sliderHint.durationSliderNote && (
                               <span className="inline-flex items-center rounded-full bg-white px-2.5 py-0.5 text-xs font-medium text-zinc-800 ring-1 ring-amber-200">
                                 ⏱️ {s.sliderHint.durationSliderNote}
