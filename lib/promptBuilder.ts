@@ -31,7 +31,7 @@ Suno v6는 소리로 번역되는 구체적 음악 구성 요소(보컬 캐릭�
 
 - 반드시 영어로만, 콤마로 구분된 디스크립터 **4~7개**로 작성합니다. 8개 이상 금지 — 디스크립터끼리 경쟁해 소리가 탁해집니다.
 - 순서 고정(앞일수록 가중치가 큼): 장르/서브장르 → 템포/에너지 → 핵심 악기 → 보컬 → 프로덕션 → 무드. **주 장르를 반드시 맨 앞에** 둡니다.
-- 사용자가 옵션을 많이 골라도 전부 나열하지 말고, 곡 콘셉트에 맞게 우선순위를 정해 4~7개로 압축·번역합니다.
+- 사용자가 옵션을 많이 골라도 전부 나열하지 말고, 곡 콘셉트에 맞게 우선순위를 정해 4~7개로 압축·번역합니다. 사용자가 직접 입력(Custom Input)한 항목이 있다면 해당 내용을 최우선으로 stylePrompt에 반영합니다.
 - 차별화 레버 (곡마다 1개 이상 활용):
   - 마이크로장르: rock 대신 shoegaze·surf rock, hip-hop 대신 boom-bap·phonk처럼 좁고 뾰족한 장르명
   - 악기 고유명사: keyboard 대신 Rhodes electric piano, Juno-106 pad, Moog bass, TR-808
@@ -205,6 +205,7 @@ Suno v6 모델군 중 이 곡의 음악적 성격에 가장 부합하는 모델 
 
 - 앵커 고정: 모든 곡이 같은 장르 패밀리 안에 있고, 핵심 악기 1~2개와 보컬 캐릭터를 공유합니다(사용자 선택에서 도출).
 - 변수 분리: 곡 간 차이는 템포·에너지·편곡 밀도·마이크로장르 변형·무드의 폭으로 만듭니다. 앵커를 바꾸는 차별화는 금지.
+- 가사 소재/오브제 분산: 같은 주제(topic) 안에서도 곡마다 중심이 되는 시각적 오브제·상황·핵심 심상을 서로 다르게 배분하여 10곡의 가사가 매너리즘이나 동일 표현 반복에 빠지지 않게 합니다.
 - trackRole 배정(정확히 10곡 합계): "opener" 1곡 — 반드시 1번째, "closer" 1곡 — 반드시 10번째, "climax" 1곡 — 7~9번째 중, "interlude" 1~2곡, "energy lift" 2~3곡, "depth" 나머지 2~3곡. (interlude와 energy lift의 합을 4~5곡으로 골라 depth가 2~3곡이 되게 맞춥니다)
 - songs 배열 순서 = 재생 순서. 3막 구조로 배열합니다: 1~3번 도입(arrival), 4~7번 여정(journey), 8~10번 해소(resolution).
 - BPM 곡선: 사용자가 고른 BPM(없으면 첫 곡에서 정한 값)을 **앵커 BPM**으로 삼고, 10곡 모두 앵커 ±15 BPM 안에서 배정합니다. 역할에 따라 곡선을 그립니다 — opener는 앵커보다 살짝 아래, interlude는 가장 느리게, energy lift는 위쪽, climax는 최고점(앵커 +10~15), closer는 다시 앵커 아래로. 이웃한 두 곡의 BPM 차이가 20을 넘지 않게 해 연속 재생이 끊기지 않도록 합니다.
@@ -266,7 +267,7 @@ export function buildUserPrompt(s: Selections, mode: GenerationMode, extras?: Ge
     lines.push('- 보컬 스템 추출 모드가 켜졌습니다. 시스템 프롬프트의 "보컬 스템 추출 모드" 규칙을 모든 곡에 적용하세요.')
   }
   if (mode === 'full') {
-    lines.push('- songs 배열은 반드시 정확히 10개. 9개나 11개는 허용되지 않습니다. 각 곡의 콘셉트·stylePrompt·excludeStyles·recommendedModel·가사를 모두 다르게 작성하되, 하나의 플레이리스트로서 앵커(장르 패밀리·핵심 악기·보컬 캐릭터)를 공유하고 trackRole을 규칙대로 배정하세요.')
+    lines.push('- songs 배열은 반드시 정확히 10개. 9개나 11개는 허용되지 않습니다. 각 곡의 콘셉트·stylePrompt·excludeStyles·recommendedModel·sliderHint·가사를 모두 다르게 작성하되, 하나의 플레이리스트로서 앵커(장르 패밀리·핵심 악기·보컬 캐릭터)를 공유하고 trackRole을 규칙대로 배정하세요.')
   } else if (mode === 'single') {
     lines.push('- songs 배열은 반드시 정확히 1개. 해당 곡 전용 영문 stylePrompt·excludeStyles·sliderHint·recommendedModel을 포함하고, trackRole은 null로 둡니다.')
   }
