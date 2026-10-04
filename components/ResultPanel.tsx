@@ -4,8 +4,9 @@
 import { useState } from 'react'
 import type { GenerationResult, SectionKey, Selections } from '@/types'
 import { SECTIONS } from '@/lib/options'
+import { getCondensedStylePrompt, getPromptVariants } from '@/lib/presets'
 
-function CopyButton({ text }: { text: string }) {
+function CopyButton({ text, label = '복사' }: { text: string; label?: string }) {
   const [copied, setCopied] = useState(false)
   return (
     <button
@@ -16,10 +17,97 @@ function CopyButton({ text }: { text: string }) {
         setCopied(true)
         setTimeout(() => setCopied(false), 1500)
       }}
-      className="rounded-md border border-zinc-300 bg-white px-2 py-1 text-xs text-zinc-700 hover:bg-zinc-50"
+      className="rounded-md border border-zinc-300 bg-white px-2 py-1 text-xs text-zinc-700 hover:bg-zinc-50 font-medium"
     >
-      {copied ? '복사됨' : '복사'}
+      {copied ? '복사됨 ✓' : label}
     </button>
+  )
+}
+
+function SongStyleSection({ stylePrompt }: { stylePrompt: string }) {
+  const [condensedMode, setCondensedMode] = useState(false)
+  const [selectedVariant, setSelectedVariant] = useState<'radio' | 'acoustic' | 'spedUp'>('radio')
+
+  const condensed = getCondensedStylePrompt(stylePrompt)
+  const variants = getPromptVariants(stylePrompt)
+  const activePrompt = condensedMode ? condensed : variants[selectedVariant].prompt
+
+  return (
+    <section className="mb-3 rounded-2xl border border-sky-200 bg-sky-50/50 p-3.5 space-y-2.5">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-bold text-zinc-900 flex items-center gap-1.5">
+            <span>🎛️</span> Style Prompt <span className="font-normal text-zinc-500">(Suno Style란)</span>
+          </span>
+          <span className={`text-[11px] font-mono px-2 py-0.5 rounded-full ${
+            activePrompt.length <= 120 ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'
+          }`}>
+            {activePrompt.length}자 {activePrompt.length <= 120 ? '✓ 권장' : ''}
+          </span>
+        </div>
+
+        {/* 골든 압축 모드 토글 */}
+        <div className="inline-flex rounded-xl border border-sky-200 bg-white p-0.5 shadow-2xs text-xs">
+          <button
+            type="button"
+            onClick={() => setCondensedMode(false)}
+            className={`rounded-lg px-2.5 py-1 font-medium transition ${
+              !condensedMode ? 'bg-sky-600 text-white font-semibold shadow-2xs' : 'text-zinc-600 hover:text-zinc-900'
+            }`}
+          >
+            스튜디오 풀 버전
+          </button>
+          <button
+            type="button"
+            onClick={() => setCondensedMode(true)}
+            className={`rounded-lg px-2.5 py-1 font-medium transition flex items-center gap-1 ${
+              condensedMode ? 'bg-sky-600 text-white font-semibold shadow-2xs' : 'text-zinc-600 hover:text-zinc-900'
+            }`}
+          >
+            <span>⚡</span> 120자 골든 압축
+          </button>
+        </div>
+      </div>
+
+      {/* 3단 변형 선택 (풀 버전일 때) */}
+      {!condensedMode && (
+        <div className="pt-0.5 space-y-1">
+          <div className="flex flex-wrap gap-1.5">
+            {(['radio', 'acoustic', 'spedUp'] as const).map((key) => {
+              const v = variants[key]
+              const active = selectedVariant === key
+              return (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => setSelectedVariant(key)}
+                  className={`rounded-xl px-2.5 py-1 text-xs font-semibold transition border ${
+                    active
+                      ? 'border-sky-500 bg-white text-sky-900 shadow-2xs ring-1 ring-sky-300'
+                      : 'border-transparent bg-sky-100/70 text-zinc-600 hover:bg-sky-100'
+                  }`}
+                >
+                  {v.label}
+                </button>
+              )
+            })}
+          </div>
+          <p className="text-[11px] text-zinc-500">
+            {variants[selectedVariant].badge}: {variants[selectedVariant].description}
+          </p>
+        </div>
+      )}
+
+      {/* 프롬프트 본문 & 복사 버튼 */}
+      <div className="relative rounded-xl border border-sky-200 bg-white p-3 shadow-2xs">
+        <p className="whitespace-pre-wrap font-mono text-xs sm:text-sm leading-relaxed text-zinc-800 pr-16" lang="en">
+          {activePrompt}
+        </p>
+        <div className="absolute top-2.5 right-2.5">
+          <CopyButton text={activePrompt} />
+        </div>
+      </div>
+    </section>
   )
 }
 
@@ -243,6 +331,20 @@ export function ResultPanel({ result, onRegenerate, regenerating }: ResultPanelP
                 </summary>
 
                 <div className="border-t border-zinc-200 px-5 py-4">
+                  {/* Suno Create 원클릭 복사 바 */}
+                  <div className="mb-3.5 flex flex-wrap items-center justify-between gap-2 rounded-xl bg-zinc-50 border border-zinc-200/80 px-3.5 py-2">
+                    <span className="text-xs font-semibold text-zinc-600 flex items-center gap-1.5">
+                      <span>📋</span> Suno 웹사이트 즉시 입력용 복사:
+                    </span>
+                    <div className="flex flex-wrap items-center gap-1.5">
+                      <CopyButton text={s.lyrics} label="가사 복사" />
+                      <CopyButton text={stylePrompt} label="스타일 복사" />
+                      {excludeStyles.length > 0 && (
+                        <CopyButton text={excludeStyles.join(', ')} label="제외태그 복사" />
+                      )}
+                    </div>
+                  </div>
+
                   {s.concept && (
                     <section className="mb-3 rounded-lg border-l-2 border-violet-300 bg-violet-50/40 px-3 py-2">
                       <div className="mb-0.5 text-xs font-medium text-zinc-500">💡 곡 콘셉트</div>
@@ -250,17 +352,7 @@ export function ResultPanel({ result, onRegenerate, regenerating }: ResultPanelP
                     </section>
                   )}
 
-                  {stylePrompt && (
-                    <section className="mb-3 rounded-lg border-l-2 border-sky-300 bg-sky-50/50 px-3 py-2">
-                      <div className="mb-1 flex items-center justify-between gap-2">
-                        <span className="text-xs font-medium text-zinc-500">🎛️ Style Prompt (Suno style 입력란용)</span>
-                        <CopyButton text={stylePrompt} />
-                      </div>
-                      <p className="whitespace-pre-wrap font-mono text-sm leading-relaxed text-zinc-800" lang="en">
-                        {stylePrompt}
-                      </p>
-                    </section>
-                  )}
+                  {stylePrompt && <SongStyleSection stylePrompt={stylePrompt} />}
 
                   {excludeStyles.length > 0 && (
                     <section className="mb-3 rounded-lg border-l-2 border-rose-300 bg-rose-50/50 px-3 py-2">

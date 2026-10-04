@@ -15,6 +15,7 @@ import { loadApiKey, saveApiKey, clearApiKey } from '@/lib/apiKey'
 import { isEmptySelections } from '@/lib/promptBuilder'
 import { DEFAULT_MODEL_ID, MODELS, formatPricing, formatPromo } from '@/lib/models'
 import { CLIENT_TIMEOUT_MS as TIMEOUT_MS } from '@/lib/timeouts'
+import { QUICK_PRESETS, mapTrendToSelections } from '@/lib/presets'
 
 const EMPTY: Selections = {
   genre: null, era: null, mood: [], vocal: [], usage: null, instrument: [],
@@ -26,6 +27,8 @@ const MULTI_KEYS: SectionKey[] = ['mood', 'vocal', 'instrument', 'topic']
 
 export default function Page() {
   const [selections, setSelections] = useState<Selections>(EMPTY)
+  const [activePresetId, setActivePresetId] = useState<string | null>(null)
+  const [sourceNotice, setSourceNotice] = useState<string | null>(null)
   const [loading, setLoading] = useState<GenerationMode | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<GenerationResult | null>(null)
@@ -40,8 +43,36 @@ export default function Page() {
   const isEmpty = useMemo(() => isEmptySelections(selections), [selections])
 
   // Hydration-safe: load history after mount (localStorage unavailable on server).
-  // eslint-disable-next-line react-hooks/set-state-in-effect
-  useEffect(() => { setHistory(loadHistory()); setApiKey(loadApiKey()) }, [])
+  useEffect(() => {
+    /* eslint-disable react-hooks/set-state-in-effect */
+    setHistory(loadHistory())
+    setApiKey(loadApiKey())
+
+    if (typeof window !== 'undefined') {
+      const params = new URLSearchParams(window.location.search)
+      const presetParam = params.get('preset')
+      const trendTitle = params.get('trendTitle')
+      const trendTags = params.get('tags')?.split(',') || []
+      const fromChannel = params.get('fromChannel')
+
+      if (presetParam) {
+        const found = QUICK_PRESETS.find((p) => p.id === presetParam)
+        if (found) {
+          setSelections(found.selections)
+          setActivePresetId(found.id)
+          setSourceNotice(`⚡ "${found.name}" 테마 프리셋이 세팅되었습니다.`)
+        }
+      } else if (trendTitle) {
+        const mapped = mapTrendToSelections(trendTitle, trendTags)
+        setSelections(mapped)
+        setSourceNotice(`🎵 핫플리 트렌드 "${trendTitle}" 감성이 자동 세팅되었습니다!`)
+      } else if (fromChannel) {
+        const mapped = mapTrendToSelections(fromChannel)
+        setSelections(mapped)
+        setSourceNotice(`🎧 "${fromChannel}" 채널 분위기를 바탕으로 자동 세팅되었습니다!`)
+      }
+    }
+  }, [])
 
   useEffect(() => {
     if (!result) return
@@ -50,7 +81,22 @@ export default function Page() {
     })
   }, [result])
 
+  function handleSelectPreset(presetId: string) {
+    const preset = QUICK_PRESETS.find((p) => p.id === presetId)
+    if (!preset) return
+    setSelections(preset.selections)
+    setActivePresetId(presetId)
+    setSourceNotice(null)
+  }
+
+  function handleReset() {
+    setSelections(EMPTY)
+    setActivePresetId(null)
+    setSourceNotice(null)
+  }
+
   function toggle(key: SectionKey, label: string) {
+    setActivePresetId(null)
     setSelections((s) => {
       if (MULTI_KEYS.includes(key)) {
         const arr = s[key] as string[]
@@ -69,6 +115,7 @@ export default function Page() {
   }
 
   function setCustom(key: SectionKey, value: string) {
+    setActivePresetId(null)
     setSelections((s) => ({ ...s, customInputs: { ...s.customInputs, [key]: value } }))
   }
 
@@ -197,6 +244,68 @@ export default function Page() {
           </button>
         </div>
       </header>
+
+      {/* 핫플리 / 채널 연동 감지 알림 배너 */}
+      {sourceNotice && (
+        <div className="mb-5 flex items-center justify-between rounded-2xl bg-gradient-to-r from-violet-600 to-indigo-600 px-4 py-3 text-white shadow-sm">
+          <div className="flex items-center gap-2 text-xs sm:text-sm font-medium">
+            <span className="text-base">✨</span>
+            <span>{sourceNotice}</span>
+          </div>
+          <button
+            type="button"
+            onClick={() => setSourceNotice(null)}
+            className="rounded-lg bg-white/20 px-2.5 py-1 text-xs font-semibold text-white hover:bg-white/30"
+          >
+            확인
+          </button>
+        </div>
+      )}
+
+      {/* 원클릭 추천 테마 프리셋 카드 */}
+      <div className="mb-6 rounded-3xl border border-zinc-200 bg-white p-5 shadow-xs">
+        <div className="mb-3 flex items-center justify-between">
+          <div className="flex items-center gap-2">
+            <span className="flex h-6 w-6 items-center justify-center rounded-full bg-violet-100 text-xs font-bold text-violet-700">⚡</span>
+            <h3 className="text-sm font-bold text-zinc-900">원클릭 추천 테마 프리셋</h3>
+            <span className="hidden sm:inline-block text-xs text-zinc-400">클릭 한 번으로 1~13번 최적 조합 세팅</span>
+          </div>
+          <button
+            type="button"
+            onClick={handleReset}
+            disabled={isEmpty}
+            className="rounded-xl border border-zinc-200 px-2.5 py-1 text-xs font-semibold text-zinc-600 hover:bg-zinc-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
+          >
+            초기화
+          </button>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+          {QUICK_PRESETS.map((preset) => {
+            const active = activePresetId === preset.id
+            return (
+              <button
+                key={preset.id}
+                type="button"
+                onClick={() => handleSelectPreset(preset.id)}
+                className={[
+                  'flex flex-col items-start rounded-2xl border p-3 text-left transition',
+                  active
+                    ? 'border-violet-500 bg-violet-50/70 shadow-xs ring-1 ring-violet-400'
+                    : 'border-zinc-200 bg-zinc-50/60 hover:border-zinc-300 hover:bg-white',
+                ].join(' ')}
+              >
+                <div className="flex items-center gap-1.5 w-full">
+                  <span className="text-base">{preset.emoji}</span>
+                  <span className="text-xs font-bold text-zinc-900 truncate">{preset.name}</span>
+                </div>
+                <span className="mt-1 line-clamp-1 text-[11px] text-zinc-500 leading-tight">
+                  {preset.tagline}
+                </span>
+              </button>
+            )
+          })}
+        </div>
+      </div>
 
       <div className="flex flex-col gap-4">
         {SECTIONS.map((sec) => (

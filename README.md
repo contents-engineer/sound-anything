@@ -1,36 +1,41 @@
-# Sound Anything — Playlist Music Creator Clone
+# Sound Anything — 플레이리스트 유튜브 제너레이터
 
-A Next.js 15 clone of TubeMaster's "플레이리스트 음악 만들기" page. Pick from 10 categories of musical attributes and an LLM generates a composite music-generation prompt plus 10 original song concepts (title + brief mood/imagery summary). Outputs are designed to be pasted into AI music services like Suno or Udio.
+올인원 플레이리스트 채널 제작 솔루션입니다. Suno 가사 생성기, 제미나이 워터마크 제거에 이어 YouTube 플레이리스트 채널 운영에 필수적인 **유튜브 채널 분석**, **핫플리 트렌드**, **채널 수익 분석**, **평가 가이드라인** 기능이 탑재되어 있습니다.
+
+## 주요 기능
+
+1. **수노 제너레이터 (`/`)**: 10가지 음악 속성 선택 및 AI 프롬프트/10곡 컨셉 & 가사 동시 생성.
+2. **제미나이 워터마크 제거 (`/watermark`)**: Imagen/Gemini 생성 이미지의 워터마크를 브라우저 Canvas에서 100% 로컬 무손실 제거.
+3. **유튜브 채널 분석 (`/channel-analyze`)**:
+   - 채널 또는 개별 영상 URL/핸들(`@username`) 입력 지원.
+   - YouTube Data API v3로 채널 및 최근 업로드 영상 메타데이터 수집.
+   - 2025년 7월 YouTube 정책 업데이트(Inauthentic Content) 기반 5대 핵심 영역 100점 만점 정밀 감점 채점 (Google Gemini 연동).
+   - Content ID 분쟁, Suno/Udio 상업 라이선스, 설명란 라이선스 명시 여부를 보완하는 고급 자가진단 지원.
+4. **핫플리 트렌드 (`/trends`)**:
+   - 국가별(전체, 한국, 일본, 미국, 유럽, 동남아, 라틴) 및 장르별(Lo-fi, 재즈, 카페, 공부, 수면, 뉴에이지 등) 인기 음악 플레이리스트 실시간 검색.
+   - 기간(24시간, 7일, 30일, 90일) 및 정렬(조회수, 급상승, 채널 규모 대비) 필터링.
+   - 영상 인앱 미리보기 재생 모달 및 YouTube 바로가기 제공.
+5. **채널 수익 분석 (`/revenue`)**:
+   - 채널 또는 영상 조회수와 영상 길이(8분 이상 미드롤 광고 가중치 반영) 기반 YouTube 광고 예상 수익 및 음원 스트리밍 유통 예상 수익 계산.
+   - 기간별(30일, 1년, 전체 누적) 시뮬레이션 및 최근 주요 영상별 예상 수익 TOP 순위 제공.
+6. **평가 가이드라인 (`/guidelines`)**:
+   - 100점 만점 5개 영역(인증성 저하 35점, 콘텐츠 재사용 20점, 메타데이터 기만 20점, AI 라이선스 15점, 비정상 트래픽 10점)의 감점 기준 및 정상 패턴 안내.
+7. **API 연결 및 발급 안내 (`/settings`)**:
+   - YouTube Data API v3 및 Google Gemini API 키 브라우저(localStorage) 등록/수정/삭제.
+   - Google Cloud Console 및 Google AI Studio 단계별 발급 상세 가이드 제공.
+   - 사이드바 연결 인디케이터(초록불/회색불) 지원.
 
 ## Setup
 
 ```bash
 npm install
 cp .env.example .env.local
-# edit .env.local — pick a provider and add its key, or leave AI_PROVIDER=mock
 npm run dev
 ```
 
-Open http://localhost:3000.
+브라우저에서 http://localhost:3000 접속.
 
-## Providers
+## API 키 관리
 
-Set `AI_PROVIDER` in `.env.local` to one of:
-
-| Provider  | Env var(s)                                     |
-| --------- | ---------------------------------------------- |
-| `mock`    | none — deterministic dummy data, useful for UI work |
-| `openai`  | `OPENAI_API_KEY`, optional `OPENAI_MODEL`      |
-| `anthropic` | `ANTHROPIC_API_KEY`, optional `ANTHROPIC_MODEL` |
-| `gemini`  | 브라우저에서 키 등록 (env 불필요), optional `GEMINI_MODEL` |
-
-`gemini`는 서버에 API 키를 두지 않습니다. 화면 우측 상단의 "Gemini API 키 등록" 버튼으로 [Google AI Studio](https://aistudio.google.com/apikey)에서 발급한 키를 입력하면 브라우저 `localStorage`에만 저장되고, 생성 요청마다 서버로 전달되어 해당 요청 처리에만 사용됩니다(서버 저장/로깅 없음). 무료 티어 키(결제 미연결 프로젝트)도 동작하며, 분당 한도 초과(429) 시 서버가 자동으로 잠시 대기 후 재시도하고 일일 한도 소진 시 에러 메시지로 안내합니다.
-
-## What this app generates
-
-- A single composite music-generation prompt.
-- 10 song concepts (each: short original title + 2–3 sentence description of mood, imagery, and hook idea). The concepts are creative metadata, not lyric text.
-
-## Design / Plan
-
-See `docs/superpowers/specs/` and `docs/superpowers/plans/`.
+- **YouTube Data API v3**: `.env.local`의 `YOUTUBE_API_KEY`가 기본 사용되며, 실제 서비스 배포 환경에서는 사용자가 좌측 하단 **API 연결** 메뉴를 통해 브라우저 `localStorage`에 직접 키를 등록하여 사용할 수 있습니다.
+- **Gemini API**: 좌측 하단 **API 연결** 메뉴 또는 상단 키 등록 버튼을 통해 등록 가능하며, 요청 시에만 서버로 전달되어 처리됩니다.

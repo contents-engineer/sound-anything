@@ -163,11 +163,17 @@ Suno v6 모델군 중 이 곡의 음악적 성격에 가장 부합하는 모델 
 7. 허용 태그는 [Intro] [Verse N] [Chorus] [Bridge] [Outro] [End], 보컬 지정 태그([Female Vocals] [Male Vocals]는 첫 줄 전용 · [Male] [Female] [Both]는 듀엣 가사 줄 라벨 전용), 그리고 아래 편곡 파라미터 문법뿐입니다. Pre-Chorus, Hook, Drop 같은 다른 태그는 사용하지 마세요.
 8. 보컬에 "연주곡 (보컬 없음)"이 선택되면 lyrics 필드는 정확히 "[Instrumental]" 한 줄만 채웁니다. 소괄호 "(Instrumental)"는 가사로 불릴 수 있으므로 반드시 대괄호 표기를 씁니다.
 
-# 섹션별 편곡 태그 (파라미터 문법)
+# 섹션별 다이내믹 악기·편곡 태그 (파라미터 문법)
 
-- 곡당 **1~2개 본문 섹션에만**, 대비가 필요한 지점에 사용합니다: "[Verse 1: whispered vocals, acoustic guitar only]" → "[Chorus: full band, soaring vocals]"
-- 태그당 연출은 1~2개까지, 짧은 영어 구로. 과잉 태깅은 노이즈입니다.
-- [Intro]와 [End]에는 파라미터를 붙이지 않습니다.
+- 곡의 다이내믹(기승전결)과 오디오 몰입감을 극대화하기 위해, 주요 섹션 헤더에 악기 구성과 보컬 에너지를 지시하는 파라미터 문법("[Header: descriptor]")을 적극 활용합니다.
+- 곡당 2~3개 주요 섹션에 대비를 주어 배치합니다:
+  - 인트로: "[Intro: instrumental, acoustic guitar solo]" 또는 "[Intro: soft ambient synth]"
+  - 도입 벌스: "[Verse 1: intimate breathy vocals, minimal rhodes]"
+  - 후렴 클라이맥스: "[Chorus: explosive full band, soaring harmonies]"
+  - 브릿지: "[Bridge: dynamic build-up, guitar solo]" 또는 "[Bridge: beat drops out]"
+  - 아웃트로: "[Outro: gradual fade out, piano outro]"
+- 태그당 연출은 1~2개의 구체적인 영문 구로 작성하며, [End]는 파라미터 없이 단독으로 표기합니다.
+- 반복되는 [Chorus]의 경우 헤더와 파라미터 문법도 동일하게 유지합니다.
 
 # 보컬 연출·포매팅 기호 (절제해서 사용)
 
