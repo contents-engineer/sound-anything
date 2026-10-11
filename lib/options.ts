@@ -80,6 +80,12 @@ export const MOODS: Preset[] = [
 export const INSTRUMENTAL_VOCAL_LABEL = '연주곡 (보컬 없음)'
 
 export const VOCALS: Preset[] = [
+  { emoji: '🫧', label: '리센느 완전체 (5인 에테리얼 하모니)' },
+  { emoji: '✨', label: '리센느 미나미 (메인보컬·탄탄한 고음)' },
+  { emoji: '🌸', label: '리센느 리브 (리드보컬·맑은 크리스탈톤)' },
+  { emoji: '💫', label: '리센느 원이 (리더·산뜻한 그루브·에너지)' },
+  { emoji: '☁️', label: '리센느 메이 (서브보컬·몽환적 브레시)' },
+  { emoji: '🖤', label: '리센느 제나 (막내·트렌디 중저음·시크 엣지)' },
   { emoji: '👶', label: '어린이 합창단' },
   { emoji: '👥', label: '어른 합창단' },
   { emoji: '👩', label: '맑고 깨끗한 여성 보컬' },

@@ -16,6 +16,8 @@ import { isEmptySelections } from '@/lib/promptBuilder'
 import { DEFAULT_MODEL_ID, MODELS, formatPricing, formatPromo } from '@/lib/models'
 import { CLIENT_TIMEOUT_MS as TIMEOUT_MS } from '@/lib/timeouts'
 import { QUICK_PRESETS, mapTrendToSelections } from '@/lib/presets'
+import { ResceneVocalSelector } from '@/components/ResceneVocalSelector'
+import { isResceneVocalLabel } from '@/lib/rescene-vocal'
 
 const EMPTY: Selections = {
   genre: null, era: null, mood: [], vocal: [], usage: null, instrument: [],
@@ -40,9 +42,13 @@ export default function Page() {
   const selectedModel = MODELS.find((m) => m.id === modelId)
   const [apiKey, setApiKey] = useState('')
   const [regenIndex, setRegenIndex] = useState<number | null>(null)
+  const [showResceneVocal, setShowResceneVocal] = useState<boolean>(true)
   const resultRef = useRef<HTMLDivElement>(null)
   const abortRef = useRef<AbortController | null>(null)
   const isEmpty = useMemo(() => isEmptySelections(selections), [selections])
+  const isResceneContext = useMemo(() => {
+    return activePresetId === 'rescene' || selections.vocal.some((v) => isResceneVocalLabel(v))
+  }, [activePresetId, selections.vocal])
 
   // Hydration-safe: load history after mount (localStorage unavailable on server).
   useEffect(() => {
@@ -274,14 +280,28 @@ export default function Page() {
             <h3 className="text-sm font-bold text-zinc-900">원클릭 추천 테마 프리셋</h3>
             <span className="hidden sm:inline-block text-xs text-zinc-400">클릭 한 번으로 1~13번 최적 조합 세팅</span>
           </div>
-          <button
-            type="button"
-            onClick={handleReset}
-            disabled={isEmpty}
-            className="rounded-xl border border-zinc-200 px-2.5 py-1 text-xs font-semibold text-zinc-600 hover:bg-zinc-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
-          >
-            초기화
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              type="button"
+              onClick={() => setShowResceneVocal((prev) => !prev)}
+              className={[
+                'rounded-xl border px-2.5 py-1 text-xs font-semibold transition',
+                showResceneVocal || isResceneContext
+                  ? 'border-violet-300 bg-violet-50 text-violet-700 hover:bg-violet-100'
+                  : 'border-zinc-200 text-zinc-600 hover:bg-zinc-50',
+              ].join(' ')}
+            >
+              🫧 리센느 보컬 {showResceneVocal ? '접기' : '열기'}
+            </button>
+            <button
+              type="button"
+              onClick={handleReset}
+              disabled={isEmpty}
+              className="rounded-xl border border-zinc-200 px-2.5 py-1 text-xs font-semibold text-zinc-600 hover:bg-zinc-50 disabled:opacity-40 disabled:cursor-not-allowed transition"
+            >
+              초기화
+            </button>
+          </div>
         </div>
         <div className="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
           {QUICK_PRESETS.map((preset) => {
@@ -310,6 +330,17 @@ export default function Page() {
           })}
         </div>
       </div>
+
+      {/* 리센느(RESCENE) 멤버별 보컬 분석 & 선택 영역 */}
+      {(showResceneVocal || isResceneContext) && (
+        <ResceneVocalSelector
+          selectedVocals={selections.vocal}
+          onToggleVocal={(label) => toggle('vocal', label)}
+          onSelectExclusiveMember={(label) => {
+            setSelections((s) => ({ ...s, vocal: [label] }))
+          }}
+        />
+      )}
 
       <div className="flex flex-col gap-4">
         {SECTIONS.map((sec) => (

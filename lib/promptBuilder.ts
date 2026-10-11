@@ -2,6 +2,7 @@
 import type { GenerationExtras, GenerationMode, Selections } from '@/types'
 import { MAX_MODE_OPTIONS, STYLE_INFLUENCE_LEVELS, SUNO_MODELS, TRACK_ROLES, VARIETY_LEVELS, WEIRDNESS_LEVELS } from '@/types'
 import { SECTIONS, VOCAL_STEM_USAGE_LABEL } from '@/lib/options'
+import { isResceneVocalLabel } from '@/lib/rescene-vocal'
 
 export function isEmptySelections(s: Selections): boolean {
   const multi = s.mood.length + s.vocal.length + s.instrument.length + s.topic.length
@@ -45,6 +46,14 @@ Suno v6는 소리로 번역되는 구체적 음악 구성 요소(보컬 캐릭�
 - **듀엣**(보컬에 "남녀 듀엣"을 골랐거나, 남성·여성 보컬을 함께 선택했거나 듀엣을 요청한 곡): "Duet"을 디스크립터로 반드시 포함합니다.
 - 가사 언어를 보컬 디스크립터에 명시합니다: "female vocals singing in Korean"처럼.
 - 가사 언어에 맞는 발음 명료도 디스크립터를 포함합니다(혼용 포함, 연주곡은 제외): 한국어 → "Clear Korean Pronunciation", 일본어 → "Clear Japanese Pronunciation", 중국어 → "Clear Chinese Pronunciation", 스페인어 → "Clear Spanish Pronunciation". 영어 가사에는 쓰지 않습니다.
+- **리센느(RESCENE) 멤버 보컬 특화 매핑** (보컬에 리센느 멤버가 선택되었거나 언급된 경우): 아티스트 실명 대신 소리로 번역된 정밀 보컬 캐릭터를 stylePrompt 보컬 슬롯에 사용합니다:
+  - 리센느 미나미: "clean powerful high female vocals, crisp Korean diction, stable belting with versatile melodic delivery"
+  - 리센느 리브: "pure airy female vocals, silky smooth mid-high delivery, soulful emotional tone"
+  - 리센느 원이: "bright energetic female vocals, groovy upbeat delivery, charismatic fresh vocal tone"
+  - 리센느 메이: "soft breathy whispery female vocals, delicate airy tone, ethereal lingering vocal texture"
+  - 리센느 제나: "trendy chic female vocals, velvety low-mid delivery, playful punchy attack, cool modern edge"
+  - 리센느 완전체: "ethereal harmonized K-pop girl group vocals, layered lush backing chorus, sparkling crystal-clear delivery"
+  - 2명 이상 선택된 경우(유닛/듀엣): 각 멤버의 보컬 캐릭터를 결합해 "female vocal duo, [캐릭터1] and [캐릭터2]" 형태로 작성합니다.
 - BPM 옵션이 있으면 그대로 명시합니다(예: 70-90 BPM). 신호끼리 싸우게 하지 마세요: slow + 140 BPM, happy bright + D minor 같은 조합 금지.
 - 무드는 한 방향만. aggressive와 peaceful 병치 금지 — 대비가 필요하면 태그가 아니라 가사 구조(조용한 [Verse] → 터지는 [Chorus])로 만듭니다.
 - 사용자가 무드를 여러 개 골랐다면: 1곡 생성 시에는 서로 충돌하지 않는 하나의 지배적 방향만 stylePrompt에 반영하고 나머지는 버립니다. 2곡 이상 생성 시에는 고른 무드들을 플레이리스트 전체에 곡별로 분배해(트랙 역할에 맞게) 곡마다 다른 무드를 대표로 삼되, 앵커(장르 패밀리·핵심 악기·보컬)는 유지합니다.
@@ -274,6 +283,10 @@ export function buildUserPrompt(s: Selections, mode: GenerationMode, extras?: Ge
   lines.push(`- mode: ${mode}`)
   if (s.usage === VOCAL_STEM_USAGE_LABEL) {
     lines.push('- 보컬 스템 추출 모드가 켜졌습니다. 시스템 프롬프트의 "보컬 스템 추출 모드" 규칙을 모든 곡에 적용하세요.')
+  }
+  const resceneVocals = s.vocal.filter((v) => isResceneVocalLabel(v))
+  if (resceneVocals.length > 0) {
+    lines.push(`- [리센느(RESCENE) 멤버 보컬 지정]: ${resceneVocals.join(', ')}. 해당 멤버의 음색 특성(미나미: 탄탄한 고음/딕션, 리브: 맑은 크리스탈톤/리드, 원이: 밝은 에너지/그루브, 메이: 몽환적 브레시/잔향, 제나: 트렌디 중저음/시크 엣지, 완전체: 5인 에테리얼 하모니)을 각 곡의 stylePrompt 보컬 슬롯에 정밀하게 반영하세요.`)
   }
   const count = extras?.songCount ?? (mode === 'full' ? 10 : mode === 'single' ? 1 : 0)
   if (count === 1) {

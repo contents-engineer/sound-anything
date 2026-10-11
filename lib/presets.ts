@@ -206,7 +206,7 @@ export const QUICK_PRESETS: QuickPreset[] = [
       genre: 'K-pop',
       era: '2020s 현대',
       mood: ['로맨틱 감성', '설레는 봄날'],
-      vocal: ['맑고 깨끗한 여성 보컬', '에테리얼 여성 보컬'],
+      vocal: ['리센느 완전체 (5인 에테리얼 하모니)'],
       usage: '유튜브 브이로그 BGM',
       instrument: ['신디사이저', '베이스', '808 비트'],
       production: '깨끗한 현대 믹스',
@@ -343,8 +343,16 @@ export function mapTrendToSelections(title: string, tags: string[] = []): Select
     text.includes('러브어택')
   ) {
     const base = QUICK_PRESETS.find((p) => p.id === 'rescene')!.selections
+    let vocalChoice = '리센느 완전체 (5인 에테리얼 하모니)'
+    if (text.includes('미나미') || text.includes('minami')) vocalChoice = '리센느 미나미 (메인보컬·탄탄한 고음)'
+    else if (text.includes('리브') || text.includes('liv')) vocalChoice = '리센느 리브 (리드보컬·맑은 크리스탈톤)'
+    else if (text.includes('원이') || text.includes('woni')) vocalChoice = '리센느 원이 (리더·산뜻한 그루브·에너지)'
+    else if (text.includes('메이') || text.includes('may')) vocalChoice = '리센느 메이 (서브보컬·몽환적 브레시)'
+    else if (text.includes('제나') || text.includes('zena')) vocalChoice = '리센느 제나 (막내·트렌디 중저음·시크 엣지)'
+
     return {
       ...base,
+      vocal: [vocalChoice],
       customInputs: { ...base.customInputs, topic: title.slice(0, 30) },
     }
   }
