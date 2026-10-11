@@ -30,8 +30,9 @@ Suno v6는 소리로 번역되는 구체적 음악 구성 요소(보컬 캐릭�
 # 각 song의 stylePrompt 필드 (Suno Style 입력란용)
 
 - 반드시 영어로만, 콤마로 구분된 디스크립터 **4~7개**로 작성합니다. 8개 이상 금지 — 디스크립터끼리 경쟁해 소리가 탁해집니다.
-- 순서 고정(앞일수록 가중치가 큼): 장르/서브장르 → 템포/에너지 → 핵심 악기 → 보컬 → 프로덕션 → 무드. **주 장르를 반드시 맨 앞에** 둡니다.
-- 사용자가 옵션을 많이 골라도 전부 나열하지 말고, 곡 콘셉트에 맞게 우선순위를 정해 4~7개로 압축·번역합니다. 사용자가 직접 입력(Custom Input)한 항목이 있다면 해당 내용을 최우선으로 stylePrompt에 반영합니다.
+- 순서 고정(앞일수록 가중치가 큼): 장르/서브장르 → 템포/에너지 → 핵심 악기 / 향기 공감각 사운드 질감 → 보컬 → 프로덕션 → 무드. **주 장르를 반드시 맨 앞에** 둡니다.
+- **리센느 시그니처 향기가 선택된 경우**: 4~7개 슬롯 중 **1~2개를 반드시 향기 공감각 사운드 질감**(예: "apricot-infused Rhodes piano", "smoky earl grey synth chords", "effervescent sea-salt plucks", "dewy rain-soaked pads" 등)에 배정합니다. 무드나 부가 악기를 줄이더라도 향기 사운드는 절대로 생략하지 마세요.
+- 사용자가 옵션을 많이 골라도 전부 나열하지 말고, 곡 콘셉트에 맞게 우선순위를 정해 4~7개로 압축·번역합니다. 사용자가 직접 입력(Custom Input)한 항목 및 시그니처 향기 질감이 있다면 최우선으로 stylePrompt에 반영합니다.
 - 차별화 레버 (곡마다 1개 이상 활용):
   - 마이크로장르: rock 대신 shoegaze·surf rock, hip-hop 대신 boom-bap·phonk, dance-pop 대신 2-step garage·deep house처럼 좁고 뾰족한 장르명
   - 악기 고유명사: keyboard 대신 Rhodes electric piano, Juno-106 pad, Moog bass, TR-808
@@ -62,6 +63,29 @@ Suno v6는 소리로 번역되는 구체적 음악 구성 요소(보컬 캐릭�
 - 금지: 추상어(epic, beautiful, amazing, emotional), 명령문(make the drums louder), 실제 아티스트명, "Target duration ..." 같은 길이 지시, 무한 루프 유발어(hypnotic, looping, endless).
 - 예시: "Dream Pop, slow 70-90 BPM, Juno-106 pad and clean electric guitar, breathy female vocals singing in Korean, Clear Korean Pronunciation, 2010s reverb-heavy production, wistful"
 - 2곡 이상 생성 시 각 곡의 stylePrompt가 서로 명확히 달라야 하며, 곡마다 차별화 레버 중 최소 1개를 다르게 씁니다. 단, 그 차이는 아래 "플레이리스트 일관성" 섹션의 앵커를 깨지 않는 범위에서 만듭니다.
+
+# 리센느(RESCENE) 시그니처 향기 공감각화 규약 (Scent-to-Sound Synesthesia)
+
+리센느낌 프로젝트의 핵심은 **"향기(Scent)가 음악의 질감(Sound)으로 번역되는 공감각적 체험(Proust Effect)"**입니다.
+사용자가 선택한 시그니처 향기나 조향 피라미드가 있을 경우, 이를 단순한 가사 키워드로만 취급하지 말고 **반드시 stylePrompt의 핵심 악기/프로덕션/무드 슬롯에 소리 질감으로 번역하여 1~2개 이상 직접 반영**해야 합니다. 일반적인 K-pop 템플릿(단순 'K-pop, deep house, 126 BPM, synths' 등)으로 축소·단순화하는 것은 엄격히 금지됩니다.
+
+- **stylePrompt 향기 공감각 사운드 반영**:
+  - 4~7개 디스크립터 중 **최소 1~2개**는 선택된 향기의 음악적 공감각 텍스처를 직접 묘사해야 합니다:
+    - 오스만투스 티 & 노을빛 잔향: "apricot-infused Rhodes piano", "smoky earl grey synth chords", "golden autumn warmth"
+    - 야생 무화과 숲 & 그린 밀키: "bittersweet green attack", "dewy fig leaf plucks", "creamy cedarwood groove"
+    - 솔티 마린 & 시 글래스: "effervescent sea-salt synth plucks", "breezy ocean atmospheric pads", "sparkling crystal sea-glass texture"
+    - 비안개 런던 & 스모키 바닐라: "smoked bourbon vanilla warmth", "dark velvety midnight chords", "cozy rain-slicked atmosphere"
+    - 캐시미어 살결 & 화이트 머스크: "soft clean linen synth texture", "intimate cashmere warmth", "powdery skin scent aura"
+    - 네롤리 선셋 & 골든 블룸: "sunlit sparkling neroli chords", "radiant citrus blossom synth leads", "golden sunset bounce"
+  - 커스텀 조향일 경우에도 조향 피라미드(탑-미들-베이스)의 음악적 대응 디스크립터를 추출하여 stylePrompt에 반드시 배치합니다.
+- **제목(Titles)과 콘셉트(Concept)에 향기 정체성 못박기**:
+  - 제목(ko, en, ja)은 선택된 향기 원료(오스만투스, 무화과, 바닐라, 네롤리, 캐시미어, 베르가못 등)와 조향 노트, 프루스트 잔향을 상징하는 시적 어휘를 필수적으로 활용합니다.
+  - 곡 콘셉트(concept)에는 탑/미들/베이스 노트가 음악의 기승전결(인트로-벌스-후렴-아웃트로)과 어떻게 어우러지는지 전문 조향사 겸 음악 프로듀서 메모처럼 묘사합니다.
+- **가사(Lyrics)의 조향 피라미드 서사화**:
+  - [Verse]에서는 탑 노트의 찰나적 첫인상(상큼한 시트러스, 톡 터지는 과즙, 빗방울, 바닷바람 등)
+  - [Chorus]에서는 미들 노트의 중심 테마(금목서 꽃잎, 쌉싸름한 홍차, 만개한 네롤리, 달콤한 무화과 등)
+  - [Outro]에서는 베이스 노트의 잊혀지지 않는 잔향(캐시미어 우드, 바닐라, 앰버그리스, 따스한 체온 등)
+  - 향기 원료와 잔향을 시각·후각·청각이 융합된 시적 가사로 풍성하게 표현합니다.
 
 # 안티-AI 에코 & 드라이 스튜디오 보컬 규약 (Anti-Metallic Echo)
 
@@ -273,6 +297,7 @@ Suno v6 모델군 중 이 곡의 음악적 성격에 가장 부합하는 모델 
 - 일본어 가사면: 로마자 음차가 없는가, 줄당 모라가 기준 범위 안이고 줄 간 길이가 고른가, stylePrompt에 Clear Japanese Pronunciation이 있는가.
 - 듀엣이면: 모든 가사 줄에 [Male]/[Female] 라벨이 있는가, 전환이 4~6회 이내인가, [Both]가 최대 1줄인가. 듀엣이 아니면 이 라벨이 하나도 없는가.
 - 안티-AI 에코 점검: 리센느 및 현대 K-pop/댄스팝 곡에서 보컬이 인위적으로 울리지 않도록 stylePrompt에 "dry upfront vocals" 또는 "close-mic studio recording"이 지정되고, excludeStyles에 "heavy reverb", "echo", "metallic vocals" 중 최소 1~2개가 배치되었는가.
+- 향기 공감각화 점검: 리센느 시그니처 향기가 선택된 경우, stylePrompt(악기/프로덕션/무드 슬롯)에 해당 향기의 공감각 사운드 텍스처(예: apricot-infused Rhodes piano, smoky earl grey synth chords, effervescent sea-salt plucks, rain-washed dewy muguet pads 등)가 1~2개 이상 직접 포함되었는가. 제목(titles)과 가사 본문에 향기 원료와 조향 서사가 뚜렷하게 살아있는가.
 
 [문법·표기 점검]
 - **시적 허용은 그대로 둡니다.** 다음은 오류가 아닙니다:
@@ -303,6 +328,29 @@ export function buildUserPrompt(s: Selections, mode: GenerationMode, extras?: Ge
   lines.push(`- mode: ${mode}`)
   if (s.usage === VOCAL_STEM_USAGE_LABEL) {
     lines.push('- 보컬 스템 추출 모드가 켜졌습니다. 시스템 프롬프트의 "보컬 스템 추출 모드" 규칙을 모든 곡에 적용하세요.')
+  }
+  const scent = s.scent ?? {
+    scentName: s.customInputs.scentName,
+    scentPyramid: s.customInputs.scentPyramid,
+    scentSonicDescriptor: s.customInputs.scentSonicDescriptor,
+    scentInspiration: s.customInputs.scentInspiration,
+  }
+  if (scent.scentName || scent.scentSonicDescriptor) {
+    lines.push('- [🔥 최우선 필수 반영 - 리센느 시그니처 향기 공감각화 (Scent-to-Sound)]:')
+    if (scent.scentName) {
+      lines.push(`  * 선택된 향기 테마: ${scent.scentName}`)
+    }
+    if (scent.scentPyramid) {
+      lines.push(`  * 조향 피라미드 (Top-Mid-Base): ${scent.scentPyramid}`)
+    }
+    if (scent.scentSonicDescriptor) {
+      lines.push(`  * 필수 stylePrompt 공감각 사운드 디스크립터: "${scent.scentSonicDescriptor}"`)
+      lines.push(`    → 지침: 위 향기 사운드 질감에서 핵심 키워드를 반드시 추출하여 각 곡의 stylePrompt(악기/프로덕션/무드 슬롯)에 1~2개 필수로 직접 반영하세요! 단순 'K-pop, deep house' 같은 일반적 태그만 나열하고 향기 사운드를 생략하는 것은 절대 금지됩니다.`)
+    }
+    if (scent.scentInspiration) {
+      lines.push(`  * 조향 스토리 & 영감: ${scent.scentInspiration}`)
+    }
+    lines.push('  * 가사 & 제목: 곡 제목(ko, en, ja)과 가사 본문에 해당 향기 원료(꽃잎, 과즙, 찻잎, 잔향 등)와 탑-미들-베이스의 전개, 프루스트 효과를 생생하게 녹여내세요.')
   }
   const resceneVocals = s.vocal.filter((v) => isResceneVocalLabel(v))
   if (resceneVocals.length > 0) {

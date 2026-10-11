@@ -17,10 +17,13 @@ type Props = {
   onSelectCuratedScent: (scent: CuratedScentFormula) => void
   onApplyCustomScent: (customData: {
     name: string
+    nameEn?: string
+    pyramid?: string
     topic: string
     bpm: string
     genre: string
     instruments: string[]
+    sonicDescriptor?: string
   }) => void
 }
 
@@ -49,20 +52,26 @@ export function ResceneScentAtelier({
     const blended = buildCustomScentFormula(randomTop, randomMiddle, randomBase)
     onApplyCustomScent({
       name: blended.nameKo,
+      nameEn: blended.nameEn,
+      pyramid: blended.pyramidSummary,
       topic: blended.topicSentence,
       bpm: blended.bpmRecommendation,
       genre: blended.genreRecommendation,
       instruments: ['신디사이저', '베이스', '808 비트'],
+      sonicDescriptor: blended.sonicDescriptor,
     })
   }
 
   function handleApplyCurrentCustom() {
     onApplyCustomScent({
       name: customFormula.nameKo,
+      nameEn: customFormula.nameEn,
+      pyramid: customFormula.pyramidSummary,
       topic: customFormula.topicSentence,
       bpm: customFormula.bpmRecommendation,
       genre: customFormula.genreRecommendation,
       instruments: ['신디사이저', '베이스', '808 비트'],
+      sonicDescriptor: customFormula.sonicDescriptor,
     })
   }
 

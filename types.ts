@@ -15,6 +15,13 @@ export type SectionKey =
   | 'language'
   | 'topic'
 
+export type ResceneScentMeta = {
+  scentName?: string
+  scentPyramid?: string
+  scentSonicDescriptor?: string
+  scentInspiration?: string
+}
+
 export type Selections = {
   genre: string | null
   era: string | null
@@ -29,7 +36,8 @@ export type Selections = {
   language: string | null
   topic: string[]
   lengthMin: number
-  customInputs: Partial<Record<SectionKey, string>>
+  customInputs: Partial<Record<SectionKey, string>> & ResceneScentMeta
+  scent?: ResceneScentMeta
 }
 
 export const TRACK_ROLES = ['opener', 'depth', 'energy lift', 'interlude', 'climax', 'closer'] as const

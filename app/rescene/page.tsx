@@ -24,6 +24,19 @@ export default function RescenePage() {
   const [scentTopic, setScentTopic] = useState<string>(CURATED_NEW_SCENTS[0].topic)
   const [scentGenre, setScentGenre] = useState<string>(CURATED_NEW_SCENTS[0].genre)
   const [scentInstruments, setScentInstruments] = useState<string[]>(CURATED_NEW_SCENTS[0].instruments)
+  const [scentMeta, setScentMeta] = useState<{
+    name: string
+    nameEn: string
+    pyramid: string
+    sonicDescriptor: string
+    inspiration: string
+  }>({
+    name: CURATED_NEW_SCENTS[0].nameKo,
+    nameEn: CURATED_NEW_SCENTS[0].nameEn,
+    pyramid: `탑: ${CURATED_NEW_SCENTS[0].pyramid.top} | 미들: ${CURATED_NEW_SCENTS[0].pyramid.middle} | 베이스: ${CURATED_NEW_SCENTS[0].pyramid.base}`,
+    sonicDescriptor: CURATED_NEW_SCENTS[0].sonicDescriptor,
+    inspiration: CURATED_NEW_SCENTS[0].inspiration,
+  })
 
   const [selectedVocals, setSelectedVocals] = useState<string[]>([
     '리센느 완전체 (5인 에테리얼 하모니)',
@@ -68,6 +81,13 @@ export default function RescenePage() {
     setScentGenre(scent.genre)
     setScentInstruments(scent.instruments)
     setTempo(scent.bpm)
+    setScentMeta({
+      name: scent.nameKo,
+      nameEn: scent.nameEn,
+      pyramid: `탑: ${scent.pyramid.top} | 미들: ${scent.pyramid.middle} | 베이스: ${scent.pyramid.base}`,
+      sonicDescriptor: scent.sonicDescriptor,
+      inspiration: scent.inspiration,
+    })
     if (
       selectedVocals.length === 0 ||
       selectedVocals.includes('리센느 완전체 (5인 에테리얼 하모니)')
@@ -79,16 +99,26 @@ export default function RescenePage() {
 
   function handleApplyCustomScent(customData: {
     name: string
+    nameEn?: string
+    pyramid?: string
     topic: string
     bpm: string
     genre: string
     instruments: string[]
+    sonicDescriptor?: string
   }) {
     setSelectedScentId('custom')
     setScentTopic(customData.topic)
     setScentGenre(customData.genre)
     setScentInstruments(customData.instruments)
     setTempo(customData.bpm)
+    setScentMeta({
+      name: customData.name,
+      nameEn: customData.nameEn ?? 'Custom Blend',
+      pyramid: customData.pyramid ?? customData.topic,
+      sonicDescriptor: customData.sonicDescriptor ?? 'custom fragrance sonic textures',
+      inspiration: '조향 아틀리에에서 직접 배합한 커스텀 시그니처 향기 포뮬러',
+    })
   }
 
   function handleToggleVocal(label: string) {
@@ -112,6 +142,8 @@ export default function RescenePage() {
 
   function buildSelections(): Selections {
     const combinedTopic = [
+      `[시그니처 향기: ${scentMeta.name} (${scentMeta.nameEn})]`,
+      `[조향 피라미드: ${scentMeta.pyramid}]`,
       scentTopic,
       customTopic.trim() ? customTopic.trim() : null,
     ]
@@ -125,6 +157,13 @@ export default function RescenePage() {
         ? '내추럴 미니멀 룸 앰비언스 보컬'
         : '소프트 하모니 앰비언트 보컬'
 
+    const scentPayload = {
+      scentName: `${scentMeta.name} (${scentMeta.nameEn})`,
+      scentPyramid: scentMeta.pyramid,
+      scentSonicDescriptor: scentMeta.sonicDescriptor,
+      scentInspiration: scentMeta.inspiration,
+    }
+
     return {
       genre: 'K-pop',
       era: '2020s 현대',
@@ -137,13 +176,15 @@ export default function RescenePage() {
       age: '10대 (청소년)',
       form: '후렴 선행 (90년대식)',
       language: language,
-      topic: ['첫사랑', '향수'],
+      topic: ['첫사랑', '향수', scentMeta.name],
       lengthMin: lengthMin,
+      scent: scentPayload,
       customInputs: {
         genre: scentGenre,
         topic: combinedTopic,
         vocal: selectedVocals.join(', '),
         production: vocalSpaceText,
+        ...scentPayload,
       },
     }
   }

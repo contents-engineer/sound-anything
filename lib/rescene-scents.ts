@@ -205,7 +205,6 @@ export const BASE_NOTES: ScentNoteItem[] = [
   },
 ]
 
-// 2. 조향학 기반 큐레이션된 신규 시그니처 향기 포뮬러 (리센느에게 제안하는 6대 뉴 센트)
 export interface CuratedScentFormula {
   id: string
   emoji: string
@@ -223,6 +222,7 @@ export interface CuratedScentFormula {
   genre: string
   topic: string
   instruments: string[]
+  sonicDescriptor: string // Suno v6 stylePrompt에 들어갈 향기 공감각 사운드 디스크립터
 }
 
 export const CURATED_NEW_SCENTS: CuratedScentFormula[] = [
@@ -243,6 +243,7 @@ export const CURATED_NEW_SCENTS: CuratedScentFormula[] = [
     genre: 'K-Pop 감성 딥하우스 & 노이 neu 스타일',
     topic: '골목길을 채우는 살구빛 금목서 향기, 찻잔에 번지는 얼그레이 잔향, 잊혀지지 않는 그 계절의 노을',
     instruments: ['신디사이저', '그랜드 피아노', '베이스'],
+    sonicDescriptor: 'apricot-infused Rhodes electric piano, smoky earl grey synth chords, golden autumn nostalgic warmth, deep Moog sub bass',
   },
   {
     id: 'fig-green',
@@ -261,6 +262,7 @@ export const CURATED_NEW_SCENTS: CuratedScentFormula[] = [
     genre: 'K-Pop 2-Step Garage & 어반 하우스',
     topic: '새벽이슬 맺힌 무화과 숲의 싱그러움, 시크하게 감기는 중저음의 엣지, 톡 터지는 비트의 쾌감',
     instruments: ['베이스', '808 비트', '신디사이저'],
+    sonicDescriptor: 'bittersweet green attack, dewy fig leaf plucks, creamy milky cedarwood groove, velvety low-end sub bass',
   },
   {
     id: 'salty-marine',
@@ -279,6 +281,7 @@ export const CURATED_NEW_SCENTS: CuratedScentFormula[] = [
     genre: 'K-Pop 에테리얼 2-Step 셔플',
     topic: '파도에 반짝이는 시 글래스, 귓가를 스치는 짭조름한 바닷바람, 한여름 밤의 푸른 기억',
     instruments: ['808 비트', '신디사이저', '베이스'],
+    sonicDescriptor: 'effervescent sea-salt synth plucks, breezy ocean atmospheric pads, sparkling crystalline sea-glass texture',
   },
   {
     id: 'london-vanilla',
@@ -297,6 +300,7 @@ export const CURATED_NEW_SCENTS: CuratedScentFormula[] = [
     genre: 'K-Pop 슬로우 딥하우스 & 칠웨이브',
     topic: '안개 낀 밤거리의 고요한 불빛, 스모키하게 피어오르는 바닐라의 온기, 나직한 귓가 속삭임',
     instruments: ['일렉 피아노', '신디사이저', '베이스'],
+    sonicDescriptor: 'smoked bourbon vanilla warmth, dark velvety midnight chords, cozy rain-slicked atmosphere, warm amber sub bass',
   },
   {
     id: 'cashmere-skin',
@@ -315,6 +319,7 @@ export const CURATED_NEW_SCENTS: CuratedScentFormula[] = [
     genre: 'K-Pop 베드룸 신스팝 & 앰비언트 하우스',
     topic: '하얀 린넨 시트에 스며든 체온, 거짓 없는 순수한 마음, 은은하게 번지는 살결의 잔향',
     instruments: ['신디사이저', '그랜드 피아노', '어쿠스틱 기타'],
+    sonicDescriptor: 'soft clean linen synth texture, intimate cashmere warmth, dewy muguet acoustic undertone, powdery skin scent aura',
   },
   {
     id: 'neroli-sunset',
@@ -333,6 +338,7 @@ export const CURATED_NEW_SCENTS: CuratedScentFormula[] = [
     genre: 'K-Pop 에너제틱 딥하우스 & 댄스 팝',
     topic: '황금빛 노을 속에 흩날리는 네롤리 꽃잎, 심장을 두드리는 비트, 끝나지 않을 우리만의 축제',
     instruments: ['신디사이저', '808 비트', '베이스'],
+    sonicDescriptor: 'sunlit sparkling neroli chords, radiant citrus blossom synth leads, golden sunset brass synth, uplifting bounce',
   },
 ]
 
@@ -348,6 +354,7 @@ export function buildCustomScentFormula(
   topicSentence: string
   genreRecommendation: string
   bpmRecommendation: string
+  sonicDescriptor: string
 } {
   const nameKo = `${top.nameKo.split(' ')[0]} × ${middle.nameKo.split(' ')[0]} 잔향`
   const nameEn = `${top.nameEn.split(' ')[0]} & ${middle.nameEn.split(' ')[0]} Scent`
@@ -362,6 +369,9 @@ export function buildCustomScentFormula(
     bpmRecommendation = '118-124 BPM (나른하고 그루비한 감성 딥하우스)'
   }
 
+  // 공감각 사운드 디스크립터
+  const sonicDescriptor = `${top.nameEn.toLowerCase()} top texture, ${middle.nameEn.toLowerCase()} core presence, ${base.nameEn.toLowerCase()} warm lingering base`
+
   return {
     nameKo,
     nameEn,
@@ -369,5 +379,10 @@ export function buildCustomScentFormula(
     topicSentence,
     genreRecommendation: 'K-Pop 딥하우스 & 2-Step Garage (커스텀 조향)',
     bpmRecommendation,
+    sonicDescriptor,
   }
+}
+
+export function getScentById(id: string): CuratedScentFormula | undefined {
+  return CURATED_NEW_SCENTS.find((s) => s.id === id)
 }
