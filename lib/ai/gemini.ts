@@ -82,7 +82,7 @@ export class GeminiProvider {
     budget: GenerateBudget = makeBudget(mode),
   ): Promise<Omit<GenerationResult, 'generatedAt' | 'provider'>> {
     const userPrompt = buildUserPrompt(opts, mode, extras)
-    const songCount = mode === 'full' ? 10 : mode === 'single' ? 1 : 0
+    const songCount = extras?.songCount ?? (mode === 'full' ? 10 : mode === 'single' ? 1 : 0)
 
     const schema = mode !== 'prompt-only'
       ? {

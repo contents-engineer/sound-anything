@@ -45,13 +45,16 @@ export class MockProvider {
     const instrumental = opts.vocal.includes(INSTRUMENTAL_VOCAL_LABEL)
     const stemMode = opts.usage === VOCAL_STEM_USAGE_LABEL && !instrumental
 
-    // opener 1(1번째)·closer 1(10번째)·climax 1(7번째)·interlude 1·energy lift 3·depth 3
-    const MOCK_ROLES: TrackRole[] = [
-      'opener', 'depth', 'energy lift', 'interlude', 'depth',
-      'energy lift', 'climax', 'depth', 'energy lift', 'closer',
-    ]
+    function assignRole(idx: number, total: number): TrackRole | null {
+      if (total <= 1) return null
+      if (idx === 0) return 'opener'
+      if (idx === total - 1) return 'closer'
+      if (total >= 3 && idx === Math.floor(total * 0.7)) return 'climax'
+      if (idx % 2 === 0) return 'energy lift'
+      return 'depth'
+    }
 
-    const songCount = mode === 'single' ? 1 : 10
+    const songCount = extras?.songCount ?? (mode === 'single' ? 1 : 10)
     const songs: SongConcept[] = Array.from({ length: songCount }, (_, i) => {
       const isWild = !stemMode && (i === 3 || i === 7)
       return {
@@ -76,7 +79,7 @@ export class MockProvider {
           weirdness: stemMode ? '20-40%' : (isWild ? '60-80%' : '40-60%'),
           styleInfluence: stemMode ? '70-100%' : '50-70%',
           variety: stemMode ? 'Off' : (isWild ? 'Extra' : (i % 2 === 0 ? 'Off' : 'Normal')),
-          maxMode: opts.lengthMin >= 3 || MOCK_ROLES[i] === 'climax' ? 'On' : 'Off',
+          maxMode: opts.lengthMin >= 3 || (songCount >= 3 && i === Math.floor(songCount * 0.7)) ? 'On' : 'Off',
           durationSliderNote: `${opts.lengthMin}분 (${opts.lengthMin * 60}초) 내외 설정 권장`,
           note: stemMode
             ? `목업 추천 ${i + 1}: Suno v6 플래그십 모델로 보컬 스템 분리를 위해 보수적 슬라이더와 프롬프트 원문을 보존하는 Variety Off, 고정밀 Max Mode를 적용한 설정입니다.`
@@ -85,7 +88,7 @@ export class MockProvider {
               : `목업 추천 ${i + 1}: Suno v6 기본 모델로 완성도와 균형 잡힌 스타일 변주(Variety)를 맞춘 추천입니다.`,
         },
         recommendedModel: isWild ? 'v6-wild' : 'v6',
-        trackRole: mode === 'full' ? MOCK_ROLES[i] : null,
+        trackRole: assignRole(i, songCount),
         lyrics: instrumental ? '[Instrumental]' : mockLyrics(i + 1),
       }
     })

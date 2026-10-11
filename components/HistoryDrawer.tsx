@@ -49,7 +49,9 @@ export function HistoryDrawer({ open, entries, onClose, onSelect, onClear }: Pro
               >
                 <div className="flex items-center justify-between text-xs text-zinc-500">
                   <span>{new Date(e.generatedAt).toLocaleString('ko-KR')}</span>
-                  <span className="rounded-full bg-zinc-100 px-2 py-0.5">{e.provider} · {e.mode}</span>
+                  <span className="rounded-full bg-zinc-100 px-2 py-0.5">
+                    {e.provider} · {e.songCount ? `${e.songCount}곡` : e.mode === 'full' ? '10곡' : e.mode === 'single' ? '1곡' : e.mode}
+                  </span>
                 </div>
                 <p className="mt-1 truncate text-sm text-zinc-800">{getPreview(e)}</p>
               </button>

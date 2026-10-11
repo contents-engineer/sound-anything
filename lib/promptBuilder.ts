@@ -18,8 +18,7 @@ Suno v6는 소리로 번역되는 구체적 음악 구성 요소(보컬 캐릭�
 
 - 출력은 반드시 지정된 JSON 스키마를 따릅니다. JSON 외의 텍스트(설명, 코드펜스 등)는 절대 출력하지 마세요.
 - "songs" 필드:
-  - mode가 "full"이면 정확히 10개 항목을 생성합니다.
-  - mode가 "single"이면 정확히 1개 항목만 생성합니다.
+  - 요청된 곡 수(1~10개)에 맞춰 정확히 지정된 개수만큼 항목을 생성합니다.
   - mode가 "prompt-only"이면 null로 둡니다.
 
 # prompt 필드 (레거시 호환용)
@@ -48,12 +47,12 @@ Suno v6는 소리로 번역되는 구체적 음악 구성 요소(보컬 캐릭�
 - 가사 언어에 맞는 발음 명료도 디스크립터를 포함합니다(혼용 포함, 연주곡은 제외): 한국어 → "Clear Korean Pronunciation", 일본어 → "Clear Japanese Pronunciation", 중국어 → "Clear Chinese Pronunciation", 스페인어 → "Clear Spanish Pronunciation". 영어 가사에는 쓰지 않습니다.
 - BPM 옵션이 있으면 그대로 명시합니다(예: 70-90 BPM). 신호끼리 싸우게 하지 마세요: slow + 140 BPM, happy bright + D minor 같은 조합 금지.
 - 무드는 한 방향만. aggressive와 peaceful 병치 금지 — 대비가 필요하면 태그가 아니라 가사 구조(조용한 [Verse] → 터지는 [Chorus])로 만듭니다.
-- 사용자가 무드를 여러 개 골랐다면: single 모드(1곡)에서는 서로 충돌하지 않는 하나의 지배적 방향만 stylePrompt에 반영하고 나머지는 버립니다. full 모드(10곡)에서는 고른 무드들을 플레이리스트 전체에 곡별로 분배해(트랙 역할·3막 구조에 맞게) 곡마다 다른 무드를 대표로 삼되, 앵커(장르 패밀리·핵심 악기·보컬)는 유지합니다.
+- 사용자가 무드를 여러 개 골랐다면: 1곡 생성 시에는 서로 충돌하지 않는 하나의 지배적 방향만 stylePrompt에 반영하고 나머지는 버립니다. 2곡 이상 생성 시에는 고른 무드들을 플레이리스트 전체에 곡별로 분배해(트랙 역할에 맞게) 곡마다 다른 무드를 대표로 삼되, 앵커(장르 패밀리·핵심 악기·보컬)는 유지합니다.
 - 저중역 질감 계열 디스크립터(dark, warm, lush, heavy, thick, reverb-heavy 등)는 곡당 **최대 2개** — 뭉개진(muddy) 믹스를 예방합니다. 무드상 이 계열이 몰리면 하나를 clean mix 또는 hi-fi production으로 대체합니다.
 - 보컬이 곡의 주인공인 장르(발라드·CCM/찬양·R&B·소울 등)에서 프로덕션 디스크립터를 쓸 때는 명료도를 올리는 쪽을 우선합니다: professional studio vocal recording, high fidelity, clean mix 중 **최대 1개**. 단 lo-fi·빈티지·tape saturation·vinyl crackle 질감을 의도한 곡에는 절대 함께 쓰지 마세요(정면 충돌). 연주곡에도 쓰지 않습니다.
 - 금지: 추상어(epic, beautiful, amazing, emotional), 명령문(make the drums louder), 실제 아티스트명, "Target duration ..." 같은 길이 지시, 무한 루프 유발어(hypnotic, looping, endless).
 - 예시: "Dream Pop, slow 70-90 BPM, Juno-106 pad and clean electric guitar, breathy female vocals singing in Korean, Clear Korean Pronunciation, 2010s reverb-heavy production, wistful"
-- mode가 "full"이면 10곡의 stylePrompt가 서로 명확히 달라야 하며, 곡마다 차별화 레버 중 최소 1개를 다르게 씁니다. 단, 그 차이는 아래 "플레이리스트 일관성" 섹션의 앵커를 깨지 않는 범위에서 만듭니다.
+- 2곡 이상 생성 시 각 곡의 stylePrompt가 서로 명확히 달라야 하며, 곡마다 차별화 레버 중 최소 1개를 다르게 씁니다. 단, 그 차이는 아래 "플레이리스트 일관성" 섹션의 앵커를 깨지 않는 범위에서 만듭니다.
 
 # 각 song의 excludeStyles 필드 (Suno Exclude Styles 입력란용)
 
@@ -205,16 +204,20 @@ Suno v6 모델군 중 이 곡의 음악적 성격에 가장 부합하는 모델 
     - (a) 영어 섹션 1개: 위 한국어+영어와 동일하게 [Chorus] 또는 [Bridge] 중 한 섹션 전체를 영어로.
     - (b) **영어 훅 1줄**(J-pop에서 더 흔한 방식): [Chorus]의 첫 줄 **또는** 마지막 줄 딱 한 줄만 영어로 쓰고 나머지 줄은 모두 일본어. 그 영어 줄은 반복되는 [Chorus]에서 한 글자도 다르지 않게 동일해야 합니다. 한 섹션 안에 두 언어가 들어가는 이 예외는 일본어 곡의 [Chorus] 한 줄에만 허용됩니다.
 
-# 플레이리스트 일관성 (mode: "full" 전용)
+# 플레이리스트 일관성 (2곡 이상 생성 시)
 
-10곡은 각각 따로 노는 곡이 아니라, 한 채널에서 연속 재생되는 **하나의 플레이리스트**입니다.
+생성된 곡들은 각각 따로 노는 곡이 아니라, 한 채널에서 연속 재생되는 **하나의 플레이리스트**입니다.
 
 - 앵커 고정: 모든 곡이 같은 장르 패밀리 안에 있고, 핵심 악기 1~2개와 보컬 캐릭터를 공유합니다(사용자 선택에서 도출).
 - 변수 분리: 곡 간 차이는 템포·에너지·편곡 밀도·마이크로장르 변형·무드의 폭으로 만듭니다. 앵커를 바꾸는 차별화는 금지.
-- 가사 소재/오브제 분산: 같은 주제(topic) 안에서도 곡마다 중심이 되는 시각적 오브제·상황·핵심 심상을 서로 다르게 배분하여 10곡의 가사가 매너리즘이나 동일 표현 반복에 빠지지 않게 합니다.
-- trackRole 배정(정확히 10곡 합계): "opener" 1곡 — 반드시 1번째, "closer" 1곡 — 반드시 10번째, "climax" 1곡 — 7~9번째 중, "interlude" 1~2곡, "energy lift" 2~3곡, "depth" 나머지 2~3곡. (interlude와 energy lift의 합을 4~5곡으로 골라 depth가 2~3곡이 되게 맞춥니다)
-- songs 배열 순서 = 재생 순서. 3막 구조로 배열합니다: 1~3번 도입(arrival), 4~7번 여정(journey), 8~10번 해소(resolution).
-- BPM 곡선: 사용자가 고른 BPM(없으면 첫 곡에서 정한 값)을 **앵커 BPM**으로 삼고, 10곡 모두 앵커 ±15 BPM 안에서 배정합니다. 역할에 따라 곡선을 그립니다 — opener는 앵커보다 살짝 아래, interlude는 가장 느리게, energy lift는 위쪽, climax는 최고점(앵커 +10~15), closer는 다시 앵커 아래로. 이웃한 두 곡의 BPM 차이가 20을 넘지 않게 해 연속 재생이 끊기지 않도록 합니다.
+- 가사 소재/오브제 분산: 같은 주제(topic) 안에서도 곡마다 중심이 되는 시각적 오브제·상황·핵심 심상을 서로 다르게 배분하여 곡들의 가사가 매너리즘이나 동일 표현 반복에 빠지지 않게 합니다.
+- trackRole 배정:
+  - 1곡 생성 시: trackRole은 null로 둡니다.
+  - 2곡 이상 생성 시: 1번째 곡은 "opener", 마지막 곡은 "closer"를 반드시 배정합니다.
+  - 3곡 이상일 경우 후반부에 "climax" 1곡을 배정하고, 나머지 트랙은 "depth", "energy lift", "interlude"를 자연스럽게 배분합니다.
+  - 10곡 전체 생성 시: opener 1곡(1번째), closer 1곡(10번째), climax 1곡(7~9번째 중), interlude 1~2곡, energy lift 2~3곡, depth 2~3곡으로 3막 구조(도입-여정-해소)를 완성합니다.
+- songs 배열 순서 = 재생 순서. 2곡 이상일 경우 기승전결(도입-여정-해소) 흐름으로 배열합니다.
+- BPM 곡선: 사용자가 고른 BPM(없으면 첫 곡에서 정한 값)을 **앵커 BPM**으로 삼고, 모든 곡을 앵커 ±15 BPM 안에서 배정합니다. 역할에 따라 곡선을 그립니다 — opener는 앵커보다 살짝 아래, interlude는 가장 느리게, energy lift는 위쪽, climax는 최고점(앵커 +10~15), closer는 다시 앵커 아래로. 이웃한 두 곡의 BPM 차이가 20을 넘지 않게 해 연속 재생이 끊기지 않도록 합니다.
 - 역할이 곡에 드러나야 합니다: interlude는 편곡 밀도를 낮추고, climax는 에너지 정점, closer는 해소감으로 마무리.
 
 # 저작권
@@ -234,7 +237,7 @@ Suno v6 모델군 중 이 곡의 음악적 성격에 가장 부합하는 모델 
 - stylePrompt 디스크립터가 4~7개이고 주 장르가 맨 앞인가. 추상어·명령문·아티스트명·길이 지시·루프 유발어가 없는가. 저중역 질감 계열이 3개 이상 겹치지 않는가.
 - excludeStyles가 2~5개이고 stylePrompt와 모순되지 않는가.
 - recommendedModel이 v6, v6-wild, v6-mini 중 하나이며 곡 콘셉트에 적절한가(보컬 스템 추출은 반드시 v6).
-- 시대·프로덕션 옵션이 선택됐으면 stylePrompt에 각각 정확히 1개씩 반영됐고, full 모드에서 10곡이 같은 값을 공유하는가.
+- 시대·프로덕션 옵션이 선택됐으면 stylePrompt에 각각 정확히 1개씩 반영됐고, 2곡 이상 생성 시 모든 곡이 같은 값을 공유하는가.
 - 명료도 계열(professional studio vocal recording·high fidelity·clean mix, background noise·low quality audio 제외)과 로파이 계열(lo-fi·tape saturation·vinyl crackle)이 같은 곡에 섞이지 않았는가.
 - 보컬 스템 추출 모드이고 연주곡이 아니면: stylePrompt에 dry vocals·no reverb가 있고 공간계·질감계 디스크립터가 하나도 없는가, excludeStyles에 reverb·background noise·low quality audio가 모두 있는가, sliderHint가 20-40% / 70-100% / Off / On인가.
 - 연주곡이면: lyrics가 정확히 "[Instrumental]" 한 줄인가, stylePrompt에 instrumental·no vocals가 있고 보컬 디스크립터가 없는가, excludeStyles에 vocals·singing·chanting·vocal samples 4개가 모두 있는가.
@@ -272,10 +275,11 @@ export function buildUserPrompt(s: Selections, mode: GenerationMode, extras?: Ge
   if (s.usage === VOCAL_STEM_USAGE_LABEL) {
     lines.push('- 보컬 스템 추출 모드가 켜졌습니다. 시스템 프롬프트의 "보컬 스템 추출 모드" 규칙을 모든 곡에 적용하세요.')
   }
-  if (mode === 'full') {
-    lines.push('- songs 배열은 반드시 정확히 10개. 9개나 11개는 허용되지 않습니다. 각 곡의 콘셉트·stylePrompt·excludeStyles·recommendedModel·sliderHint·가사를 모두 다르게 작성하되, 하나의 플레이리스트로서 앵커(장르 패밀리·핵심 악기·보컬 캐릭터)를 공유하고 trackRole을 규칙대로 배정하세요.')
-  } else if (mode === 'single') {
+  const count = extras?.songCount ?? (mode === 'full' ? 10 : mode === 'single' ? 1 : 0)
+  if (count === 1) {
     lines.push('- songs 배열은 반드시 정확히 1개. 해당 곡 전용 영문 stylePrompt·excludeStyles·sliderHint·recommendedModel을 포함하고, trackRole은 null로 둡니다.')
+  } else if (count > 1) {
+    lines.push(`- songs 배열은 반드시 정확히 ${count}개. ${count - 1}개나 ${count + 1}개는 허용되지 않습니다. 각 곡의 콘셉트·stylePrompt·excludeStyles·recommendedModel·sliderHint·가사를 모두 다르게 작성하되, 하나의 플레이리스트로서 앵커(장르 패밀리·핵심 악기·보컬 캐릭터)를 공유하고 trackRole을 규칙대로 배정하세요.`)
   }
   if (extras?.excludeTitles && extras.excludeTitles.length > 0) {
     lines.push(`- 다음 제목들과 겹치지 마세요 (의미·콘셉트도 명확히 달라야 함): ${extras.excludeTitles.map((t) => `"${t}"`).join(', ')}`)

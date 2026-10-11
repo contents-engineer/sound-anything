@@ -73,9 +73,10 @@ export class AnthropicProvider {
   async generate(opts: Selections, mode: GenerationMode, extras?: GenerationExtras): Promise<Omit<GenerationResult, 'generatedAt' | 'provider'>> {
     const userPrompt = buildUserPrompt(opts, mode, extras)
 
+    const count = extras?.songCount ?? (mode === 'full' ? 10 : mode === 'single' ? 1 : 0)
     const msg = await this.client.messages.create({
       model: this.model,
-      max_tokens: mode === 'full' ? 16384 : 8192,
+      max_tokens: count > 1 ? 16384 : 8192,
       system: [{ type: 'text', text: SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }],
       tools: [TOOL],
       tool_choice: { type: 'tool', name: 'submit_playlist' },

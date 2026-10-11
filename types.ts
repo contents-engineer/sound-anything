@@ -70,6 +70,7 @@ export type SongConcept = {
 
 export type GenerationResult = {
   mode: GenerationMode
+  songCount?: number
   prompt: string
   songs: SongConcept[] | null
   generatedAt: string
@@ -83,7 +84,8 @@ export type ApiError = {
 
 export type ApiRequest = {
   selections: Selections
-  mode: GenerationMode
+  mode?: GenerationMode
+  songCount?: number
   model?: string
   /** 브라우저에서 등록한 Gemini API 키. 서버는 요청 처리에만 사용하고 저장하지 않는다. */
   apiKey?: string
@@ -92,6 +94,7 @@ export type ApiRequest = {
 }
 
 export type GenerationExtras = {
+  songCount?: number
   excludeTitles?: string[]
   retryHint?: string
 }

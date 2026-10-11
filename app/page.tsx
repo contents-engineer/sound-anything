@@ -29,6 +29,8 @@ export default function Page() {
   const [selections, setSelections] = useState<Selections>(EMPTY)
   const [activePresetId, setActivePresetId] = useState<string | null>(null)
   const [sourceNotice, setSourceNotice] = useState<string | null>(null)
+  const [songCount, setSongCount] = useState<number>(10)
+  const [loadingCount, setLoadingCount] = useState<number>(10)
   const [loading, setLoading] = useState<GenerationMode | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [result, setResult] = useState<GenerationResult | null>(null)
@@ -124,20 +126,22 @@ export default function Page() {
     abortRef.current = null
   }
 
-  async function generate(mode: GenerationMode) {
+  async function generate(count: number = songCount) {
     cancelInFlight()
     const controller = new AbortController()
     abortRef.current = controller
+    const mode: GenerationMode = count === 1 ? 'single' : 'full'
     const timeoutMs = TIMEOUT_MS[mode]
     const timer = window.setTimeout(() => controller.abort(), timeoutMs)
 
     setError(null)
     setLoading(mode)
+    setLoadingCount(count)
     try {
       const res = await fetch('/api/generate', {
         method: 'POST',
         headers: { 'content-type': 'application/json' },
-        body: JSON.stringify({ selections, mode, model: modelId, apiKey }),
+        body: JSON.stringify({ selections, mode, songCount: count, model: modelId, apiKey }),
         signal: controller.signal,
       })
       const data = await res.json()
@@ -145,7 +149,7 @@ export default function Page() {
         setError(data?.error?.message ?? '알 수 없는 오류')
         return
       }
-      const enriched: GenerationResult = { ...(data as GenerationResult), selections }
+      const enriched: GenerationResult = { ...(data as GenerationResult), selections, songCount: count }
       setResult(enriched)
       setHistory(pushHistory(enriched))
     } catch (e: unknown) {
@@ -227,7 +231,7 @@ export default function Page() {
       <header className="mb-6 flex items-start justify-between">
         <div>
           <h2 className="text-2xl font-bold">수노 제너레이터</h2>
-          <p className="text-sm text-zinc-500">Suno v6 최적화 · 곡별 스타일 프롬프트 + 1곡 또는 10곡 콘셉트를 생성합니다</p>
+          <p className="text-sm text-zinc-500">Suno v6 최적화 · 곡별 스타일 프롬프트 + 1~10곡 콘셉트를 생성합니다</p>
         </div>
         <div className="flex flex-wrap items-center justify-end gap-2">
           <ApiKeySettings
@@ -384,7 +388,7 @@ export default function Page() {
             </div>
           )}
         </div>
-        <div className="ml-auto flex items-center gap-3">
+        <div className="ml-auto flex flex-wrap items-center gap-2.5">
           {(loading !== null || regenIndex !== null) && (
             <button
               type="button"
@@ -394,23 +398,77 @@ export default function Page() {
               취소
             </button>
           )}
+
+          {/* 곡 수 선택 (1~10곡) */}
+          <div className="flex items-center gap-1.5 rounded-xl border border-zinc-300 bg-zinc-50 p-1">
+            <span className="pl-1.5 pr-0.5 text-xs font-semibold text-zinc-600">곡 수</span>
+
+            {/* 데스크톱/태블릿: 1~10 숫자 버튼 세그먼트 */}
+            <div className="hidden sm:inline-flex rounded-lg bg-zinc-200/60 p-0.5">
+              {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10].map((n) => {
+                const active = songCount === n
+                return (
+                  <button
+                    key={n}
+                    type="button"
+                    disabled={loading !== null || regenIndex !== null}
+                    onClick={() => setSongCount(n)}
+                    className={[
+                      'h-7 w-7 rounded-md text-xs font-semibold transition disabled:cursor-not-allowed disabled:opacity-50',
+                      active
+                        ? 'bg-violet-600 text-white shadow-2xs font-bold'
+                        : 'text-zinc-600 hover:text-zinc-900 hover:bg-white/60',
+                    ].join(' ')}
+                    title={`${n}곡`}
+                  >
+                    {n}
+                  </button>
+                )
+              })}
+            </div>
+
+            {/* 모바일: - / 셀렉트 / + 스텝퍼 */}
+            <div className="sm:hidden flex items-center">
+              <button
+                type="button"
+                onClick={() => setSongCount((c) => Math.max(1, c - 1))}
+                disabled={songCount <= 1 || loading !== null || regenIndex !== null}
+                className="h-7 w-7 rounded text-zinc-600 hover:bg-white disabled:opacity-30 font-bold text-xs"
+                aria-label="곡 수 감소"
+              >
+                −
+              </button>
+              <select
+                value={songCount}
+                onChange={(e) => setSongCount(Number(e.target.value))}
+                disabled={loading !== null || regenIndex !== null}
+                className="h-7 rounded border border-zinc-200 bg-white px-1.5 text-xs font-bold text-zinc-800 focus:outline-none"
+                aria-label="곡 수 선택"
+              >
+                {Array.from({ length: 10 }, (_, i) => i + 1).map((n) => (
+                  <option key={n} value={n}>{n}곡</option>
+                ))}
+              </select>
+              <button
+                type="button"
+                onClick={() => setSongCount((c) => Math.min(10, c + 1))}
+                disabled={songCount >= 10 || loading !== null || regenIndex !== null}
+                className="h-7 w-7 rounded text-zinc-600 hover:bg-white disabled:opacity-30 font-bold text-xs"
+                aria-label="곡 수 증가"
+              >
+                +
+              </button>
+            </div>
+          </div>
+
           <button
             type="button"
             disabled={loading !== null || regenIndex !== null || isEmpty || !apiKey}
             title={!apiKey ? '먼저 우측 상단에서 Gemini API 키를 등록하세요' : isEmpty ? '먼저 옵션을 하나 이상 선택하세요' : undefined}
-            onClick={() => generate('single')}
-            className="rounded-xl border border-zinc-300 bg-white px-4 py-2 text-sm font-medium text-zinc-800 hover:bg-zinc-50 disabled:cursor-not-allowed disabled:opacity-50"
+            onClick={() => generate(songCount)}
+            className="rounded-xl bg-violet-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-50 transition"
           >
-            {loading === 'single' ? '생성 중…' : '1곡 생성'}
-          </button>
-          <button
-            type="button"
-            disabled={loading !== null || regenIndex !== null || isEmpty || !apiKey}
-            title={!apiKey ? '먼저 우측 상단에서 Gemini API 키를 등록하세요' : isEmpty ? '먼저 옵션을 하나 이상 선택하세요' : undefined}
-            onClick={() => generate('full')}
-            className="rounded-xl bg-violet-600 px-4 py-2 text-sm font-semibold text-white shadow hover:bg-violet-700 disabled:cursor-not-allowed disabled:opacity-50"
-          >
-            {loading === 'full' ? '생성 중…' : '10곡 생성'}
+            {loading !== null ? '생성 중…' : `${songCount}곡 생성`}
           </button>
         </div>
         {!apiKey && !error && (
@@ -423,7 +481,7 @@ export default function Page() {
       </div>
 
       {!result && loading !== null && (
-        <ResultSkeleton count={loading === 'full' ? 10 : 1} />
+        <ResultSkeleton count={loadingCount} />
       )}
 
       {result && (

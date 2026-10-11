@@ -253,7 +253,7 @@ type ResultPanelProps = {
 
 export function ResultPanel({ result, onRegenerate, regenerating }: ResultPanelProps) {
   const expected =
-    result.mode === 'full' ? 10 : result.mode === 'single' ? 1 : 0
+    result.songCount ?? (result.mode === 'full' ? 10 : result.mode === 'single' ? 1 : (result.songs?.length ?? 0))
   const got = result.songs?.length ?? 0
   const countMismatch = expected > 0 && got !== expected
 
