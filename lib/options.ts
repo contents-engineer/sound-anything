@@ -165,6 +165,7 @@ export const BPMS: Preset[] = [
 export const AGES: Preset[] = [
   { emoji: '👶', label: '유아 (0-7세)' },
   { emoji: '🎒', label: '10대 (청소년)' },
+  { emoji: '✨', label: '10대 후반~20대 초반 (Z세대 청춘)' },
   { emoji: '💼', label: '20대 (청춘)' },
   { emoji: '👔', label: '30-40대 (직장인/부모)' },
   { emoji: '🎩', label: '50-60대 (시니어)' },

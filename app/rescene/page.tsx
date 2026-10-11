@@ -50,6 +50,7 @@ export default function RescenePage() {
   const [tempo, setTempo] = useState<string>(CURATED_NEW_SCENTS[0].bpm)
   const [lengthMin, setLengthMin] = useState<number>(3)
   const [vocalSpace, setVocalSpace] = useState<string>('dry-studio')
+  const [ageGroup, setAgeGroup] = useState<string>('10대 후반~20대 초반 (Z세대 청춘)')
 
   const [loading, setLoading] = useState<GenerationMode | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -173,7 +174,7 @@ export default function RescenePage() {
       instrument: scentInstruments,
       production: vocalSpaceText,
       bpm: tempo.includes('130') || tempo.includes('빠름') ? '빠름 (130-150 BPM)' : '약간 빠름 (110-130 BPM)',
-      age: '10대 (청소년)',
+      age: ageGroup,
       form: '후렴 선행 (90년대식)',
       language: language,
       topic: ['첫사랑', '향수', scentMeta.name],
@@ -184,6 +185,7 @@ export default function RescenePage() {
         topic: combinedTopic,
         vocal: selectedVocals.join(', '),
         production: vocalSpaceText,
+        age: ageGroup,
         ...scentPayload,
       },
     }
@@ -389,7 +391,7 @@ export default function RescenePage() {
             </span>
           </div>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             <div>
               <label className="block text-xs font-bold text-zinc-700 mb-1.5">
                 속도 및 리듬감 (BPM)
@@ -415,13 +417,42 @@ export default function RescenePage() {
                 onChange={(e) => setVocalSpace(e.target.value)}
                 className="w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-xs font-medium text-zinc-800 focus:border-violet-500 focus:outline-none"
               >
-                <option value="dry-studio">🎙️ 드라이 &amp; 클로즈마이크 스튜디오 (AI 에코 제거 · 추천)</option>
-                <option value="natural-room">✨ 자연스러운 미니멀 룸 앰비언스 (내추럴)</option>
-                <option value="soft-ethereal">🫧 은은한 소프트 하모니 (몽환적 감성)</option>
+                <option value="dry-studio">🎙️ 드라이 스튜디오 (AI 에코 제거)</option>
+                <option value="natural-room">✨ 자연스러운 룸 앰비언스 (내추럴)</option>
+                <option value="soft-ethereal">🫧 은은한 소프트 하모니 (몽환)</option>
               </select>
               {vocalSpace === 'dry-studio' && (
                 <p className="mt-1.5 text-[11px] text-emerald-700 font-medium leading-snug">
-                  ✓ 인위적인 홀 에코·깡통 울림을 차단하고 귀 바로 옆에서 들리는 선명한 보컬을 만듭니다.
+                  ✓ 인위적 홀 에코를 차단한 클로즈마이크 보컬
+                </p>
+              )}
+            </div>
+
+            <div>
+              <label className="block text-xs font-bold text-zinc-700 mb-1.5">
+                가사 타깃 연령대
+              </label>
+              <select
+                value={ageGroup}
+                onChange={(e) => setAgeGroup(e.target.value)}
+                className="w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-xs font-medium text-zinc-800 focus:border-violet-500 focus:outline-none"
+              >
+                <option value="10대 후반~20대 초반 (Z세대 청춘)">
+                  ✨ 10대 후반~20대 초반 (리센느 실제 연령)
+                </option>
+                <option value="20대 (청춘)">
+                  💼 20대 (청춘 · 깊은 어반 무드)
+                </option>
+                <option value="10대 (청소년)">
+                  🎒 10대 (청소년 · 풋풋한 하이틴)
+                </option>
+                <option value="전 연령대">
+                  🌍 전 연령대 (보편적 대중 팝)
+                </option>
+              </select>
+              {ageGroup.includes('10대 후반') && (
+                <p className="mt-1.5 text-[11px] text-violet-600 leading-snug">
+                  멤버 나이(18~22세)에 맞춘 풋풋하고 세련된 Z세대 감성
                 </p>
               )}
             </div>
@@ -436,16 +467,16 @@ export default function RescenePage() {
                 className="w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-xs font-medium text-zinc-800 focus:border-violet-500 focus:outline-none"
               >
                 <option value="한·일 감성 혼용 (노이 neu 스타일: 한국어 80% + 일본어 20%)">
-                  🌸 한·일 감성 혼용 (노이 neu 스타일 — 리센느 추천)
+                  🌸 한·일 감성 혼용 (노이 neu 스타일)
                 </option>
-                <option value="한국어+영어 섞어서">한국어 + 영어 섞어서 (글로벌 K-Pop 스타일)</option>
+                <option value="한국어+영어 섞어서">한국어 + 영어 섞어서</option>
                 <option value="한국어">순수 한국어 중심</option>
-                <option value="일본어">일본어 전용 (J-Pop 헌정 스타일)</option>
+                <option value="일본어">일본어 전용 (J-Pop 헌정)</option>
                 <option value="영어">영어 전용 (글로벌 팝)</option>
               </select>
               {language.includes('노이') && (
                 <p className="mt-1.5 text-[11px] text-violet-600 leading-snug">
-                  💡 <strong>노이(neu) 스타일:</strong> 한국어로 메인 서사를 이끌고, 감성적인 일본어 속삭임을 교차 배치합니다.
+                  💡 한국어 메인 + 일본어 속삭임 교차
                 </p>
               )}
             </div>

@@ -369,6 +369,9 @@ export function buildUserPrompt(s: Selections, mode: GenerationMode, extras?: Ge
   if (s.language?.includes('노이') || s.language?.includes('한·일')) {
     lines.push('- [가사 언어 특화 - 노이(neu) 스타일 한·일 감성 혼용]: 전체 곡의 70~80%는 세련된 한국어로 작성하고, 인트로·프리코러스·브릿지·아웃트로에 서정적인 일본어 감성 소절(향기, 잔향, 기억, 독백 테마)을 1~2줄씩 교차 배치하세요. 일본어는 한자/히라가나로 표기하고 로마자 표기는 금지합니다.')
   }
+  if (s.age?.includes('10대 후반') || s.age?.includes('20대 초반') || s.customInputs.age?.includes('10대 후반')) {
+    lines.push('- [가사 대상 연령대 - 10대 후반~20대 초반 (Z세대 청춘)]: 리센느 멤버들의 실제 연령대(18~22세)에 맞추어, 너무 유치하거나 어린 10대 감성은 지양하고, 풋풋하면서도 트렌디하고 세련된 Z세대 청춘의 감각적인 어휘와 설렘, 찰나의 순간과 향기 잔향에 대한 깊이 있는 감정선을 표현하세요.')
+  }
   const count = extras?.songCount ?? (mode === 'full' ? 10 : mode === 'single' ? 1 : 0)
   if (count === 1) {
     lines.push('- songs 배열은 반드시 정확히 1개. 해당 곡 전용 영문 stylePrompt·excludeStyles·sliderHint·recommendedModel을 포함하고, trackRole은 null로 둡니다.')
