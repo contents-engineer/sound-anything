@@ -34,9 +34,12 @@ export function ResceneVocalSelector({
               <span className="rounded-full bg-violet-100 px-2 py-0.5 text-[11px] font-semibold text-violet-700">
                 리센느낌 전용
               </span>
+              <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-800">
+                🎙️ 안티-AI 에코 (Dry 스튜디오)
+              </span>
             </div>
             <p className="text-xs text-zinc-500">
-              멤버별 음색과 창법 분석 데이터를 기반으로 Suno v6 보컬 디스크립터를 맞춤 반영합니다.
+              AI 특유의 깡통 에코·홀 리버브를 제거하고 마이크에 바짝 붙은(Close-mic) 선명한 스튜디오 보컬로 자동 매핑합니다.
             </p>
           </div>
         </div>

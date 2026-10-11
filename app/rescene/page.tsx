@@ -36,6 +36,7 @@ export default function RescenePage() {
   )
   const [tempo, setTempo] = useState<string>(CURATED_NEW_SCENTS[0].bpm)
   const [lengthMin, setLengthMin] = useState<number>(3)
+  const [vocalSpace, setVocalSpace] = useState<string>('dry-studio')
 
   const [loading, setLoading] = useState<GenerationMode | null>(null)
   const [error, setError] = useState<string | null>(null)
@@ -117,6 +118,13 @@ export default function RescenePage() {
       .filter(Boolean)
       .join(', ')
 
+    const vocalSpaceText =
+      vocalSpace === 'dry-studio'
+        ? '드라이 & 클로즈마이크 스튜디오 보컬 (AI 깡통 에코·홀 리버브 원천 차단)'
+        : vocalSpace === 'natural-room'
+        ? '내추럴 미니멀 룸 앰비언스 보컬'
+        : '소프트 하모니 앰비언트 보컬'
+
     return {
       genre: 'K-pop',
       era: '2020s 현대',
@@ -124,7 +132,7 @@ export default function RescenePage() {
       vocal: selectedVocals,
       usage: '유튜브 브이로그 BGM',
       instrument: scentInstruments,
-      production: '깨끗한 현대 믹스',
+      production: vocalSpaceText,
       bpm: tempo.includes('130') || tempo.includes('빠름') ? '빠름 (130-150 BPM)' : '약간 빠름 (110-130 BPM)',
       age: '10대 (청소년)',
       form: '후렴 선행 (90년대식)',
@@ -135,6 +143,7 @@ export default function RescenePage() {
         genre: scentGenre,
         topic: combinedTopic,
         vocal: selectedVocals.join(', '),
+        production: vocalSpaceText,
       },
     }
   }
@@ -301,8 +310,8 @@ export default function RescenePage() {
                 향기로 기억을 깨우는 프루스트 효과 &amp; 128 BPM 딥하우스
               </h2>
               <p className="mt-1 text-xs sm:text-sm text-violet-100 leading-relaxed max-w-2xl">
-                리센느 멤버 각자의 음색(미나미의 고음·리브의 크리스탈톤·원의 그루브·메이의 몽환 브레시·제나의 시크 엣지)을 선택하고,
-                시그니처 향기 테마를 지정하여 팬들의 마음을 사로잡을 완성도 높은 곡과 가사를 만들어보세요.
+                리센느 멤버 각자의 음색을 선택하고 시그니처 향기 테마를 지정하여 팬들의 마음을 사로잡을 완성도 높은 곡을 만들어보세요.
+                AI 특유의 깡통 에코를 억제한 <strong>드라이 &amp; 클로즈마이크 스튜디오 보컬</strong> 규약이 적용됩니다.
               </p>
             </div>
             <Link
@@ -330,10 +339,16 @@ export default function RescenePage() {
 
         {/* 3. 세부 사운드 조율 및 가사 요청 */}
         <div className="mb-6 rounded-3xl border border-zinc-200 bg-white p-5 shadow-xs">
-          <h3 className="mb-4 text-sm font-bold text-zinc-900 flex items-center gap-2">
-            <span>🎛️</span> 세부 사운드 &amp; 가사 요청 설정
-          </h3>
-          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+          <div className="mb-4 flex flex-wrap items-center justify-between gap-2">
+            <h3 className="text-sm font-bold text-zinc-900 flex items-center gap-2">
+              <span>🎛️</span> 세부 사운드 &amp; 가사 요청 설정
+            </h3>
+            <span className="inline-flex items-center gap-1 rounded-full bg-emerald-50 px-2.5 py-1 text-[11px] font-semibold text-emerald-800 border border-emerald-200/60">
+              <span>🎙️</span> AI 에코 제거(Anti-Echo) 기본 활성화
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
               <label className="block text-xs font-bold text-zinc-700 mb-1.5">
                 속도 및 리듬감 (BPM)
@@ -349,6 +364,27 @@ export default function RescenePage() {
                 <option value="130-140 BPM (에너제틱 클럽 믹스)">130-140 BPM (질주감 넘치는 클럽 믹스)</option>
               </select>
             </div>
+
+            <div>
+              <label className="block text-xs font-bold text-zinc-700 mb-1.5">
+                보컬 공간감 / 에코 튜닝
+              </label>
+              <select
+                value={vocalSpace}
+                onChange={(e) => setVocalSpace(e.target.value)}
+                className="w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-xs font-medium text-zinc-800 focus:border-violet-500 focus:outline-none"
+              >
+                <option value="dry-studio">🎙️ 드라이 &amp; 클로즈마이크 스튜디오 (AI 에코 제거 · 추천)</option>
+                <option value="natural-room">✨ 자연스러운 미니멀 룸 앰비언스 (내추럴)</option>
+                <option value="soft-ethereal">🫧 은은한 소프트 하모니 (몽환적 감성)</option>
+              </select>
+              {vocalSpace === 'dry-studio' && (
+                <p className="mt-1.5 text-[11px] text-emerald-700 font-medium leading-snug">
+                  ✓ 인위적인 홀 에코·깡통 울림을 차단하고 귀 바로 옆에서 들리는 선명한 보컬을 만듭니다.
+                </p>
+              )}
+            </div>
+
             <div>
               <label className="block text-xs font-bold text-zinc-700 mb-1.5">
                 가사 언어 스타일
@@ -368,10 +404,11 @@ export default function RescenePage() {
               </select>
               {language.includes('노이') && (
                 <p className="mt-1.5 text-[11px] text-violet-600 leading-snug">
-                  💡 <strong>노이(neu) 스타일:</strong> 한국어로 메인 서사를 이끌고, 인트로·프리코러스·브릿지에 미나미·메이의 감성적인 일본어 속삭임(Whisper)을 블렌딩합니다.
+                  💡 <strong>노이(neu) 스타일:</strong> 한국어로 메인 서사를 이끌고, 감성적인 일본어 속삭임을 교차 배치합니다.
                 </p>
               )}
             </div>
+
             <div>
               <label className="block text-xs font-bold text-zinc-700 mb-1.5">
                 곡당 목표 길이

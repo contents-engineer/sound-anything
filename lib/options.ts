@@ -125,10 +125,11 @@ export const ERAS: Preset[] = [
 ]
 
 export const PRODUCTIONS: Preset[] = [
+  { emoji: '🎙️', label: '드라이 스튜디오 보컬 (AI 에코 제거)' },
   { emoji: '💎', label: '깨끗한 현대 믹스' },
   { emoji: '🎚️', label: '아날로그 따뜻함' },
   { emoji: '📼', label: '로파이 테이프' },
-  { emoji: '🎙️', label: '라이브 밴드 (원테이크)' },
+  { emoji: '🎸', label: '라이브 밴드 (원테이크)' },
 ]
 
 export const INSTRUMENTS: Preset[] = [

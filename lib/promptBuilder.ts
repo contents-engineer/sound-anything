@@ -38,7 +38,7 @@ Suno v6는 소리로 번역되는 구체적 음악 구성 요소(보컬 캐릭�
   - 시대 앵커: 80s synth-pop, late 2010s minimal production처럼 시대를 못박기
   - 프로덕션 질감: tape saturation, vinyl crackle, gated reverb drums, warm analog production
 - **시대 앵커 옵션이 선택되면** 그 시대를 stylePrompt에 디스크립터 1개로 반드시 못박습니다(예: "1980s Japanese city pop production", "late 2010s minimal production"). full 모드에서는 이 시대가 10곡 공통 앵커이므로 곡마다 시대를 바꾸지 마세요. 선택이 없을 때만 곡별 차별화 레버로 자유롭게 씁니다.
-- **프로덕션·믹스 옵션이 선택되면** 프로덕션 슬롯을 그 선택으로 고정하고 모델 재량으로 다른 질감을 넣지 마세요. 매핑: 깨끗한 현대 믹스 → "clean modern mix"(+필요 시 high fidelity) / 아날로그 따뜻함 → "warm analog production" / 로파이 테이프 → "lo-fi tape saturation"(vinyl crackle 추가 가능) / 라이브 밴드 (원테이크) → "live band recording"(room mics 추가 가능). 이 선택도 full 모드에서 10곡 공통 앵커입니다.
+- **프로덕션·믹스 옵션이 선택되면** 프로덕션 슬롯을 그 선택으로 고정하고 모델 재량으로 다른 질감을 넣지 마세요. 매핑: 드라이 스튜디오 보컬 → "dry upfront studio vocal recording, close-mic clean mix" / 깨끗한 현대 믹스 → "clean modern mix"(+필요 시 high fidelity) / 아날로그 따뜻함 → "warm analog production" / 로파이 테이프 → "lo-fi tape saturation"(vinyl crackle 추가 가능) / 라이브 밴드 (원테이크) → "live band recording"(room mics 추가 가능). 이 선택도 full 모드에서 10곡 공통 앵커입니다.
 - 시대·프로덕션 옵션이 함께 선택되면 4~7개 슬롯 중 2개가 이 둘에 배정되므로, 무드 등 우선순위가 낮은 디스크립터를 줄여 상한을 지킵니다.
 - 로파이 테이프가 선택된 곡에는 명료도 계열(professional studio vocal recording·high fidelity·clean mix)을 절대 함께 쓰지 마세요. 반대로 깨끗한 현대 믹스가 선택되면 tape saturation·vinyl crackle·lo-fi를 쓰지 않습니다.
 - 보컬은 3계층으로 씁니다: Character(누가 — raspy female vocals), Delivery(어떻게 — breathy, powerful belt), Effects(질감 — reverb-drenched, 필요할 때만). 최소 Character+Delivery는 지정합니다.
@@ -46,13 +46,13 @@ Suno v6는 소리로 번역되는 구체적 음악 구성 요소(보컬 캐릭�
 - **듀엣**(보컬에 "남녀 듀엣"을 골랐거나, 남성·여성 보컬을 함께 선택했거나 듀엣을 요청한 곡): "Duet"을 디스크립터로 반드시 포함합니다.
 - 가사 언어를 보컬 디스크립터에 명시합니다: "female vocals singing in Korean"처럼.
 - 가사 언어에 맞는 발음 명료도 디스크립터를 포함합니다(혼용 포함, 연주곡은 제외): 한국어 → "Clear Korean Pronunciation", 일본어 → "Clear Japanese Pronunciation", 중국어 → "Clear Chinese Pronunciation", 스페인어 → "Clear Spanish Pronunciation". 영어 가사에는 쓰지 않습니다.
-- **리센느(RESCENE) 멤버 보컬 특화 매핑** (보컬에 리센느 멤버가 선택되었거나 언급된 경우): 아티스트 실명 대신 소리로 번역된 정밀 보컬 캐릭터를 stylePrompt 보컬 슬롯에 사용합니다:
-  - 리센느 미나미: "clean powerful high female vocals, crisp Korean diction, stable belting with versatile melodic delivery"
-  - 리센느 리브: "pure airy female vocals, silky smooth mid-high delivery, soulful emotional tone"
-  - 리센느 원이: "bright energetic female vocals, groovy upbeat delivery, charismatic fresh vocal tone"
-  - 리센느 메이: "soft breathy whispery female vocals, delicate airy tone, ethereal lingering vocal texture"
-  - 리센느 제나: "trendy chic female vocals, velvety low-mid delivery, playful punchy attack, cool modern edge"
-  - 리센느 완전체: "ethereal harmonized K-pop girl group vocals, layered lush backing chorus, sparkling crystal-clear delivery"
+- **리센느(RESCENE) 멤버 보컬 특화 매핑** (보컬에 리센느 멤버가 선택되었거나 언급된 경우): 아티스트 실명 대신 소리로 번역된 정밀 보컬 캐릭터를 stylePrompt 보컬 슬롯에 사용합니다. AI 특유의 인위적인 깡통 에코와 과도한 홀 리버브를 방지하기 위해 반드시 마이크에 바짝 붙은 드라이한(dry upfront close-mic) 스튜디오 사운드로 작성합니다:
+  - 리센느 미나미: "dry upfront powerful high female vocals, close-mic studio recording, crisp Korean diction, stable punchy belting"
+  - 리센느 리브: "dry pure crystal-clear female vocals, intimate close-mic delivery, silky smooth mid-high presence"
+  - 리센느 원이: "dry bright energetic female vocals, punchy close-mic delivery, crisp upbeat rhythm, charismatic fresh groove"
+  - 리센느 메이: "intimate breathy close-mic female vocals, dry upfront whispering tone, delicate crisp articulation"
+  - 리센느 제나: "dry velvety low-mid female vocals, upfront chic delivery, punchy close-mic attack, modern cool edge"
+  - 리센느 완전체: "dry upfront harmonized K-pop girl group vocals, close-mic studio recording, crisp crystal-clear delivery, layered tight backing vocals"
   - 2명 이상 선택된 경우(유닛/듀엣): 각 멤버의 보컬 캐릭터를 결합해 "female vocal duo, [캐릭터1] and [캐릭터2]" 형태로 작성합니다.
 - BPM 옵션이 있으면 그대로 명시합니다(예: 70-90 BPM). 신호끼리 싸우게 하지 마세요: slow + 140 BPM, happy bright + D minor 같은 조합 금지.
 - 무드는 한 방향만. aggressive와 peaceful 병치 금지 — 대비가 필요하면 태그가 아니라 가사 구조(조용한 [Verse] → 터지는 [Chorus])로 만듭니다.
@@ -62,6 +62,20 @@ Suno v6는 소리로 번역되는 구체적 음악 구성 요소(보컬 캐릭�
 - 금지: 추상어(epic, beautiful, amazing, emotional), 명령문(make the drums louder), 실제 아티스트명, "Target duration ..." 같은 길이 지시, 무한 루프 유발어(hypnotic, looping, endless).
 - 예시: "Dream Pop, slow 70-90 BPM, Juno-106 pad and clean electric guitar, breathy female vocals singing in Korean, Clear Korean Pronunciation, 2010s reverb-heavy production, wistful"
 - 2곡 이상 생성 시 각 곡의 stylePrompt가 서로 명확히 달라야 하며, 곡마다 차별화 레버 중 최소 1개를 다르게 씁니다. 단, 그 차이는 아래 "플레이리스트 일관성" 섹션의 앵커를 깨지 않는 범위에서 만듭니다.
+
+# 안티-AI 에코 & 드라이 스튜디오 보컬 규약 (Anti-Metallic Echo)
+
+AI 음악 생성(Suno v5/v6) 시 보컬에 과도한 에코/홀 리버브(Echo, Hall Reverb)가 들어가면 소리가 붕 뜨고 금속성 위상 왜곡(Metallic Phase Artifact)이 발생하여 "AI가 만든 티"가 심하게 납니다.
+K-pop 아이돌 댄스팝, 딥하우스, 어반 팝 등 상업 음원의 본질은 악기 배경과 명확히 분리되어 귀 바로 앞에서 때려주는 **"드라이 & 클로즈마이크 스튜디오 보컬(Dry, Upfront, Close-mic Studio Vocals)"**입니다.
+
+- **stylePrompt 보컬 디스크립터**:
+  - 드라이 스튜디오 질감을 지향하는 곡(리센느 곡, K-pop, 댄스팝 등)은 보컬 슬롯에 "dry upfront vocals" 또는 "close-mic studio vocal recording"을 반드시 반영합니다.
+  - 신스 패드나 배경 사운드에 공간감이 있더라도 보컬만큼은 인유어페이스(in-your-face)로 드라이하게 분리되도록 지시합니다.
+  - 보컬에 "reverb-drenched", "cavernous", "ambient vocals", "lingering vocals" 같은 에코 유발 표현을 절대 쓰지 마세요.
+- **excludeStyles 필수 안티-에코 차단**:
+  - AI 에코와 깡통 울림을 방지하기 위해 excludeStyles(2~5개 항목 중)에 아래 안티-에코 태그 중 **1~2개**를 반드시 배치합니다:
+    - "heavy reverb", "echo", "cavernous hall", "metallic vocals", "distant vocals"
+  - 리센느(RESCENE) 관련 곡 및 깨끗한 현대 믹스 옵션이 선택된 곡은 **"heavy reverb", "echo", "metallic vocals"**를 excludeStyles에 우선적으로 배정합니다.
 
 # 각 song의 excludeStyles 필드 (Suno Exclude Styles 입력란용)
 
@@ -258,6 +272,7 @@ Suno v6 모델군 중 이 곡의 음악적 성격에 가장 부합하는 모델 
 - 곡 진행 방식이 선택됐으면: 섹션 순서가 그 변형의 예시와 같은가, 본문 섹션 개수와 줄 수가 길이표와 일치하는가. AABA면 [Chorus]가 하나도 없고 모든 [Verse]의 마지막 줄이 동일한가.
 - 일본어 가사면: 로마자 음차가 없는가, 줄당 모라가 기준 범위 안이고 줄 간 길이가 고른가, stylePrompt에 Clear Japanese Pronunciation이 있는가.
 - 듀엣이면: 모든 가사 줄에 [Male]/[Female] 라벨이 있는가, 전환이 4~6회 이내인가, [Both]가 최대 1줄인가. 듀엣이 아니면 이 라벨이 하나도 없는가.
+- 안티-AI 에코 점검: 리센느 및 현대 K-pop/댄스팝 곡에서 보컬이 인위적으로 울리지 않도록 stylePrompt에 "dry upfront vocals" 또는 "close-mic studio recording"이 지정되고, excludeStyles에 "heavy reverb", "echo", "metallic vocals" 중 최소 1~2개가 배치되었는가.
 
 [문법·표기 점검]
 - **시적 허용은 그대로 둡니다.** 다음은 오류가 아닙니다:
@@ -292,6 +307,16 @@ export function buildUserPrompt(s: Selections, mode: GenerationMode, extras?: Ge
   const resceneVocals = s.vocal.filter((v) => isResceneVocalLabel(v))
   if (resceneVocals.length > 0) {
     lines.push(`- [리센느(RESCENE) 멤버 보컬 지정]: ${resceneVocals.join(', ')}. 해당 멤버의 음색 특성(미나미: 탄탄한 고음/딕션, 리브: 맑은 크리스탈톤/리드, 원이: 밝은 에너지/그루브, 메이: 몽환적 브레시/잔향, 제나: 트렌디 중저음/시크 엣지, 완전체: 5인 에테리얼 하모니)을 각 곡의 stylePrompt 보컬 슬롯에 정밀하게 반영하세요.`)
+    lines.push('- [안티-AI 에코 & 드라이 스튜디오 보컬 필수]: AI 특유의 깡통 울림과 과도한 홀 에코를 원천 차단하기 위해 보컬은 "dry upfront vocals, close-mic studio recording"으로 튜닝하고, excludeStyles에 "heavy reverb", "echo", "metallic vocals"를 반드시 포함하세요.')
+  }
+  if (
+    s.production?.includes('드라이') ||
+    s.production?.includes('클로즈마이크') ||
+    s.production?.includes('에코') ||
+    s.customInputs.production?.includes('드라이') ||
+    s.customInputs.production?.includes('에코')
+  ) {
+    lines.push('- [보컬 질감 - 안티-AI 에코 & 100% 드라이 스튜디오 보컬]: 인위적인 홀 에코나 리버브를 완전히 배제하고 귀 바로 옆에서 들리는 close-mic dry vocals로 작성하며, excludeStyles에 "heavy reverb", "echo", "metallic vocals"를 필수 탑재하세요.')
   }
   if (s.language?.includes('노이') || s.language?.includes('한·일')) {
     lines.push('- [가사 언어 특화 - 노이(neu) 스타일 한·일 감성 혼용]: 전체 곡의 70~80%는 세련된 한국어로 작성하고, 인트로·프리코러스·브릿지·아웃트로에 서정적인 일본어 감성 소절(향기, 잔향, 기억, 독백 테마)을 1~2줄씩 교차 배치하세요. 일본어는 한자/히라가나로 표기하고 로마자 표기는 금지합니다.')
