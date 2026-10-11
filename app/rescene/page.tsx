@@ -114,7 +114,9 @@ export default function RescenePage() {
   const [songCount, setSongCount] = useState<number>(3)
   const [loadingCount, setLoadingCount] = useState<number>(3)
   const [customTopic, setCustomTopic] = useState<string>('')
-  const [language, setLanguage] = useState<string>('한국어+영어 섞어서')
+  const [language, setLanguage] = useState<string>(
+    '한·일 감성 혼용 (노이 neu 스타일: 한국어 80% + 일본어 20%)'
+  )
   const [tempo, setTempo] = useState<string>('125-130 BPM (딥하우스/2-Step)')
   const [lengthMin, setLengthMin] = useState<number>(3)
 
@@ -476,10 +478,19 @@ export default function RescenePage() {
                 onChange={(e) => setLanguage(e.target.value)}
                 className="w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-xs font-medium text-zinc-800 focus:border-violet-500 focus:outline-none"
               >
-                <option value="한국어+영어 섞어서">한국어 + 영어 섞어서 (글로벌 K-Pop 스타일 권장)</option>
+                <option value="한·일 감성 혼용 (노이 neu 스타일: 한국어 80% + 일본어 20%)">
+                  🌸 한·일 감성 혼용 (노이 neu 스타일 — 리센느 추천)
+                </option>
+                <option value="한국어+영어 섞어서">한국어 + 영어 섞어서 (글로벌 K-Pop 스타일)</option>
                 <option value="한국어">순수 한국어 중심</option>
+                <option value="일본어">일본어 전용 (J-Pop 헌정 스타일)</option>
                 <option value="영어">영어 전용 (글로벌 팝)</option>
               </select>
+              {language.includes('노이') && (
+                <p className="mt-1.5 text-[11px] text-violet-600 leading-snug">
+                  💡 <strong>노이(neu) 스타일:</strong> 한국어로 메인 서사를 이끌고, 인트로·프리코러스·브릿지에 미나미·메이의 감성적인 일본어 속삭임(Whisper)을 블렌딩합니다.
+                </p>
+              )}
             </div>
             <div>
               <label className="block text-xs font-bold text-zinc-700 mb-1.5">

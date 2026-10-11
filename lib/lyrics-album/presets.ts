@@ -269,4 +269,102 @@ Dearest... 맑아진 하늘처럼 너를 사랑해`,
       },
     ],
   },
+  {
+    id: 'rescene-neu-hybrid',
+    name: '리센느 느낌 — 노이(neu) 스타일 한·일 감성 블렌딩',
+    tag: '🌸 노이 스타일 · 한·일 바이링구얼 딥하우스 & 2-Step',
+    mood: '가수 노이(neu) 식의 세련된 한·일 가사 믹싱: 한국어 메인 서사 위에 미나미·메이의 나직한 일본어 감성 소절과 속삭임이 스며드는 몽환적 딥하우스',
+    songs: [
+      {
+        title: '잔향의 계절 (残香の季節 : Afterglow Scent)',
+        lyrics: `[Intro]
+(Whisper: soft breathy voice)
+かすかな香り、風に乗って...
+너를 닮은 그 향기, 다시 번져와
+
+[Verse 1]
+바람결에 스쳐 지나간 낯익은 앰버 노트
+발걸음을 멈추고 뒤를 돌아보게 해
+기억 속 저편에 고요히 잠들어 있던
+너와 나의 계절이 다시 꽃을 피우네
+
+[Pre-Chorus]
+코끝을 맴도는 아련한 그 잔향
+君の気配が、今もここで揺れている
+숨을 쉴 때마다 선명해지는 너
+I can't let it fade away
+
+[Chorus]
+퍼져가는 Scent of You, 시간 너머로
+내 마음에 남겨진 너라는 잔향
+消えないで、胸の奥で咲く花
+기억의 문을 열어 깨어나는 순간
+영원히 기억될 우리만의 Scene
+
+[Outro]
+時を止めて、この香りのままで
+은은하게 맴도는 너의 흔적... Afterglow`,
+      },
+      {
+        title: '버블 어택 (泡の記憶 : 128 BPM Bubble Attack)',
+        lyrics: `[Intro]
+Ready, set, pop!
+胸の鼓動、128 BPM
+One, two, bubble attack!
+
+[Verse 1]
+통통 튀는 탄산 기포처럼 차오르는 마음
+쿵쾅대는 비트가 귓가를 간지럽혀
+망설일 틈 없이 쏟아지는 러브 시그널
+네 눈빛이 닿은 순간 모든 게 시작돼
+
+[Pre-Chorus]
+멈출 수 없는 셔플의 리듬 속에
+弾ける気持ち、もう隠せないよ
+더 이상 감출 수 없는 나의 진심
+Here comes the attack, watch out!
+
+[Chorus]
+Bubble, Bubble Attack! 팡 터지는 설렘
+달콤하게 번져가는 너와 나의 스파크
+恋の魔法に落ちてゆく瞬間
+한 방울의 떨림도 놓치지 않을래
+(Pop! Pop! 泡のようにきらめく)
+
+[Outro]
+톡 쏘는 탄산처럼 멈출 수 없는 이 느낌
+甘い香りのまま、Bubble Attack fall in love!`,
+      },
+      {
+        title: '비 갠 뒤의 풀잎 (雨上がりのDearest : Petrichor)',
+        lyrics: `[Intro]
+(Soft synth pad & raindrops)
+雨上がりの街、静かな光
+마르고 난 뒤에 피어나는 향기
+
+[Verse 1]
+창문을 두드리던 소나기가 그치고
+젖은 흙과 풀잎에서 피어나는 페트리코
+복잡했던 도시의 소음도 씻겨 내려가
+모든 게 거짓말처럼 맑아진 오후
+
+[Pre-Chorus]
+안개 낀 길모퉁이 스며드는 온기
+優しい風が、そっと背中を押す
+비 갠 하늘 위로 번지는 무지개
+I'm sending all my love to you
+
+[Chorus]
+초록빛 잎사귀에 맺힌 작은 물방울
+너를 향해 반짝이는 내 마음의 빛이야
+雨が降ったあとの大地のように
+우리의 향기도 더 깊어질 테니까
+(Dearest, いつまでもそばにいて)
+
+[Outro]
+청명한 바람결에 날려 보내는 마음
+Dearest... 맑아진 하늘처럼 너를 사랑해`,
+      },
+    ],
+  },
 ]

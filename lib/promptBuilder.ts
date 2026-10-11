@@ -212,6 +212,11 @@ Suno v6 모델군 중 이 곡의 음악적 성격에 가장 부합하는 모델 
   - "일본어+영어 섞어서": 아래 두 방식 중 곡에 맞는 하나를 고릅니다. 어느 쪽이든 일본어 부분은 절대 로마자로 바꾸지 마세요.
     - (a) 영어 섹션 1개: 위 한국어+영어와 동일하게 [Chorus] 또는 [Bridge] 중 한 섹션 전체를 영어로.
     - (b) **영어 훅 1줄**(J-pop에서 더 흔한 방식): [Chorus]의 첫 줄 **또는** 마지막 줄 딱 한 줄만 영어로 쓰고 나머지 줄은 모두 일본어. 그 영어 줄은 반복되는 [Chorus]에서 한 글자도 다르지 않게 동일해야 합니다. 한 섹션 안에 두 언어가 들어가는 이 예외는 일본어 곡의 [Chorus] 한 줄에만 허용됩니다.
+  - **"한·일 감성 혼용 (노이 neu 스타일)"** (한국어 메인 + 일본어 감성 포인트):
+    - 가수 노이(neu)의 대표 작법처럼 곡의 중심 서사(약 70~80%)는 세련되고 직관적인 한국어로 전개하되, 인트로(Intro)의 나직한 귓가 속삭임이나 프리코러스(Pre-Chorus)의 감정 고조, 브릿지(Bridge), 아웃트로(Outro)의 여운 등에 감각적인 일본어 소절을 1~2줄씩 자연스럽게 교차 배치합니다.
+    - 리센느 일본인 멤버(미나미의 탄탄한 고음, 메이의 몽환적 브레시)와 어울리는 시적 감각어(향기 香り, 잔향 残香, 찰나 刹那, 기억 記憶, 숨결 息, 지워지지 않는 消えない, 너의 기척 気配 등)를 활용하여 정서적 아련함을 극대화합니다.
+    - 일본어 부분은 절대 로마자(romaji)로 쓰지 않고 일본어 본래 문자(한자·히라가나)로 표기합니다.
+    - stylePrompt 보컬 슬롯에는 "Clear Korean Pronunciation, with subtle Japanese vocal phrases" 또는 "bilingual Korean and Japanese delivery"를 반영합니다.
 
 # 플레이리스트 일관성 (2곡 이상 생성 시)
 
@@ -287,6 +292,9 @@ export function buildUserPrompt(s: Selections, mode: GenerationMode, extras?: Ge
   const resceneVocals = s.vocal.filter((v) => isResceneVocalLabel(v))
   if (resceneVocals.length > 0) {
     lines.push(`- [리센느(RESCENE) 멤버 보컬 지정]: ${resceneVocals.join(', ')}. 해당 멤버의 음색 특성(미나미: 탄탄한 고음/딕션, 리브: 맑은 크리스탈톤/리드, 원이: 밝은 에너지/그루브, 메이: 몽환적 브레시/잔향, 제나: 트렌디 중저음/시크 엣지, 완전체: 5인 에테리얼 하모니)을 각 곡의 stylePrompt 보컬 슬롯에 정밀하게 반영하세요.`)
+  }
+  if (s.language?.includes('노이') || s.language?.includes('한·일')) {
+    lines.push('- [가사 언어 특화 - 노이(neu) 스타일 한·일 감성 혼용]: 전체 곡의 70~80%는 세련된 한국어로 작성하고, 인트로·프리코러스·브릿지·아웃트로에 서정적인 일본어 감성 소절(향기, 잔향, 기억, 독백 테마)을 1~2줄씩 교차 배치하세요. 일본어는 한자/히라가나로 표기하고 로마자 표기는 금지합니다.')
   }
   const count = extras?.songCount ?? (mode === 'full' ? 10 : mode === 'single' ? 1 : 0)
   if (count === 1) {
