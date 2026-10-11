@@ -7,6 +7,8 @@ import { useRouter } from 'next/navigation'
 import type { GenerationMode, GenerationResult, Selections, SongConcept } from '@/types'
 import { RESCENE_MEMBERS, type ResceneMemberVocal } from '@/lib/rescene-vocal'
 import { ResceneVocalSelector } from '@/components/ResceneVocalSelector'
+import { ResceneScentAtelier } from '@/components/ResceneScentAtelier'
+import { CURATED_NEW_SCENTS, type CuratedScentFormula } from '@/lib/rescene-scents'
 import { ResultPanel } from '@/components/ResultPanel'
 import { ResultSkeleton } from '@/components/ResultSkeleton'
 import { HistoryDrawer } from '@/components/HistoryDrawer'
@@ -16,98 +18,13 @@ import { loadApiKey, saveApiKey, clearApiKey } from '@/lib/apiKey'
 import { DEFAULT_MODEL_ID, MODELS, formatPricing, formatPromo } from '@/lib/models'
 import { CLIENT_TIMEOUT_MS as TIMEOUT_MS } from '@/lib/timeouts'
 
-// 리센느 시그니처 향기 테마
-interface ScentTheme {
-  id: string
-  emoji: string
-  name: string
-  subname: string
-  bpm: string
-  description: string
-  vocalRecommend: string
-  genre: string
-  topic: string
-  instruments: string[]
-}
-
-const SCENT_THEMES: ScentTheme[] = [
-  {
-    id: 'amber',
-    emoji: '✨',
-    name: '용연향 (앰버그리스) 딥하우스',
-    subname: '미니 1집 테마 — 몽환적 감각',
-    bpm: '약간 빠름 (110-130 BPM)',
-    description: '깊고 은은하게 번지는 앰버그리스 잔향, 묵직하고 둥근 버블링 서브 베이스와 세련된 딥하우스 그루브',
-    vocalRecommend: '리센느 완전체 (5인 에테리얼 하모니)',
-    genre: 'K-Pop 딥하우스 (RESCENE Deep House)',
-    topic: '기억의 문을 여는 앰버그리스 잔향, 몽환적인 밤의 드라이브, 귓가에 남은 속삭임',
-    instruments: ['베이스', '신디사이저', '808 비트'],
-  },
-  {
-    id: 'bubble',
-    emoji: '🫧',
-    name: '스파클링 탄산 2-Step (128 BPM)',
-    subname: 'LOVE ATTACK 무드 — 톡 쏘는 설렘',
-    bpm: '빠름 (130-150 BPM)',
-    description: '128 BPM 질주감 넘치는 2-Step Garage 셔플, 톡 터지는 탄산 기포 사운드와 산뜻한 에너제틱 훅',
-    vocalRecommend: '리센느 원이 (리더·산뜻한 그루브·에너지)',
-    genre: 'K-Pop 2-Step Garage (128 BPM)',
-    topic: '심장이 128 BPM으로 뛰는 러브어택, 탄산 기포처럼 팡 터지는 설렘, 멈출 수 없는 셔플',
-    instruments: ['808 비트', '신디사이저', '베이스'],
-  },
-  {
-    id: 'floral',
-    emoji: '🌸',
-    name: '화이트 플로럴 & 잔향',
-    subname: '데뷔 앨범 테마 — 순수 크리스탈',
-    bpm: '약간 빠름 (110-130 BPM)',
-    description: '청초하고 우아한 생화 꽃잎의 향기, 유리구슬처럼 투명한 플럭 신스와 맑고 서정적인 감성 하우스',
-    vocalRecommend: '리센느 리브 (리드보컬·맑은 크리스탈톤·안정된 중고음)',
-    genre: 'K-Pop 플로럴 딥하우스',
-    topic: '바람결에 스쳐간 플로럴 노트, 잊혀지지 않는 첫사랑의 잔향, 투명한 봄날의 기억',
-    instruments: ['신디사이저', '그랜드 피아노', '베이스'],
-  },
-  {
-    id: 'petrichor',
-    emoji: '🌧️',
-    name: '비 갠 뒤 풀잎 (페트리코)',
-    subname: 'Deja Vu 무드 — 싱그러운 촉촉함',
-    bpm: '보통 (90-110 BPM)',
-    description: '소나기가 그친 뒤 피어나는 흙과 풀잎의 냄새(페트리코), 따뜻한 아날로그 신스 패드와 그루비 베이스',
-    vocalRecommend: '리센느 메이 (서브보컬·몽환적 브레시·섬세한 잔향)',
-    genre: 'K-Pop 베드룸 신스팝 & 칠 팝',
-    topic: '비 갠 뒤 맑아진 하늘, 촉촉한 풀잎에 맺힌 작은 물방울, 아련하게 스며드는 위로',
-    instruments: ['신디사이저', '어쿠스틱 기타', '베이스'],
-  },
-  {
-    id: 'soap',
-    emoji: '🧼',
-    name: '포근한 비누(Soap) 린넨 팝',
-    subname: '미니 2집 Glow Up 테마 — 깨끗한 일상',
-    bpm: '약간 빠름 (110-130 BPM)',
-    description: '방금 씻고 나온 듯한 순백의 비누 향과 보송보송한 코튼 질감, 편안하게 귀를 감싸는 이지리스닝 댄스 팝',
-    vocalRecommend: '리센느 미나미 (메인보컬·탄탄한 고음·명확한 딕션)',
-    genre: 'K-Pop 이지리스닝 댄스 팝',
-    topic: '따뜻한 햇살에 말린 하얀 셔츠, 깨끗한 비누 거품처럼 산뜻한 하루의 시작, 맑은 미소',
-    instruments: ['신디사이저', '일렉 피아노', '드럼/퍼커션'],
-  },
-  {
-    id: 'berry',
-    emoji: '🍓',
-    name: '라즈베리 & 시크 드롭',
-    subname: 'Lip Bomb 테마 — 달콤 쌉싸름한 반전',
-    bpm: '약간 빠름 (110-130 BPM)',
-    description: '달콤한 베리 향 뒤에 숨겨진 묵직한 베이스 드롭, 트렌디한 어반 비트와 도회적이고 쿨한 엣지',
-    vocalRecommend: '리센느 제나 (막내·트렌디 중저음·시크한 엣지)',
-    genre: 'K-Pop 딥하우스 & 클럽 믹스',
-    topic: '달콤한 유혹과 시크한 시선, 네온사인이 번지는 밤거리, 쫀득하게 귀를 사로잡는 훅',
-    instruments: ['베이스', '808 비트', '신디사이저'],
-  },
-]
-
 export default function RescenePage() {
   const router = useRouter()
-  const [selectedThemeId, setSelectedThemeId] = useState<string>('amber')
+  const [selectedScentId, setSelectedScentId] = useState<string>('osmanthus-tea')
+  const [scentTopic, setScentTopic] = useState<string>(CURATED_NEW_SCENTS[0].topic)
+  const [scentGenre, setScentGenre] = useState<string>(CURATED_NEW_SCENTS[0].genre)
+  const [scentInstruments, setScentInstruments] = useState<string[]>(CURATED_NEW_SCENTS[0].instruments)
+
   const [selectedVocals, setSelectedVocals] = useState<string[]>([
     '리센느 완전체 (5인 에테리얼 하모니)',
   ])
@@ -117,7 +34,7 @@ export default function RescenePage() {
   const [language, setLanguage] = useState<string>(
     '한·일 감성 혼용 (노이 neu 스타일: 한국어 80% + 일본어 20%)'
   )
-  const [tempo, setTempo] = useState<string>('125-130 BPM (딥하우스/2-Step)')
+  const [tempo, setTempo] = useState<string>(CURATED_NEW_SCENTS[0].bpm)
   const [lengthMin, setLengthMin] = useState<number>(3)
 
   const [loading, setLoading] = useState<GenerationMode | null>(null)
@@ -132,11 +49,6 @@ export default function RescenePage() {
   const resultRef = useRef<HTMLDivElement>(null)
   const abortRef = useRef<AbortController | null>(null)
 
-  const currentTheme = useMemo(
-    () => SCENT_THEMES.find((t) => t.id === selectedThemeId) || SCENT_THEMES[0],
-    [selectedThemeId]
-  )
-
   useEffect(() => {
     setHistory(loadHistory())
     setApiKey(loadApiKey())
@@ -149,11 +61,33 @@ export default function RescenePage() {
     })
   }, [result])
 
-  function handleSelectTheme(theme: ScentTheme) {
-    setSelectedThemeId(theme.id)
-    if (selectedVocals.length === 0 || selectedVocals.includes('리센느 완전체 (5인 에테리얼 하모니)')) {
-      setSelectedVocals([theme.vocalRecommend])
+  function handleSelectCuratedScent(scent: CuratedScentFormula) {
+    setSelectedScentId(scent.id)
+    setScentTopic(scent.topic)
+    setScentGenre(scent.genre)
+    setScentInstruments(scent.instruments)
+    setTempo(scent.bpm)
+    if (
+      selectedVocals.length === 0 ||
+      selectedVocals.includes('리센느 완전체 (5인 에테리얼 하모니)')
+    ) {
+      const rec = RESCENE_MEMBERS.find((m) => scent.recommendedVocal.includes(m.nameKo))
+      if (rec) setSelectedVocals([rec.label])
     }
+  }
+
+  function handleApplyCustomScent(customData: {
+    name: string
+    topic: string
+    bpm: string
+    genre: string
+    instruments: string[]
+  }) {
+    setSelectedScentId('custom')
+    setScentTopic(customData.topic)
+    setScentGenre(customData.genre)
+    setScentInstruments(customData.instruments)
+    setTempo(customData.bpm)
   }
 
   function handleToggleVocal(label: string) {
@@ -177,7 +111,7 @@ export default function RescenePage() {
 
   function buildSelections(): Selections {
     const combinedTopic = [
-      currentTheme.topic,
+      scentTopic,
       customTopic.trim() ? customTopic.trim() : null,
     ]
       .filter(Boolean)
@@ -189,16 +123,16 @@ export default function RescenePage() {
       mood: ['로맨틱 감성', '설레는 봄날'],
       vocal: selectedVocals,
       usage: '유튜브 브이로그 BGM',
-      instrument: currentTheme.instruments,
+      instrument: scentInstruments,
       production: '깨끗한 현대 믹스',
-      bpm: tempo.includes('125') ? '약간 빠름 (110-130 BPM)' : '빠름 (130-150 BPM)',
+      bpm: tempo.includes('130') || tempo.includes('빠름') ? '빠름 (130-150 BPM)' : '약간 빠름 (110-130 BPM)',
       age: '10대 (청소년)',
       form: '후렴 선행 (90년대식)',
       language: language,
       topic: ['첫사랑', '향수'],
       lengthMin: lengthMin,
       customInputs: {
-        genre: currentTheme.genre,
+        genre: scentGenre,
         topic: combinedTopic,
         vocal: selectedVocals.join(', '),
       },
@@ -387,66 +321,12 @@ export default function RescenePage() {
           onSelectExclusiveMember={handleSelectExclusiveMember}
         />
 
-        {/* 2. 시그니처 향기 & 사운드 테마 선택 */}
-        <div className="mb-6 rounded-3xl border border-zinc-200 bg-white p-5 shadow-xs">
-          <div className="mb-3 flex items-center justify-between">
-            <div className="flex items-center gap-2">
-              <span className="flex h-6 w-6 items-center justify-center rounded-full bg-pink-100 text-xs font-bold text-pink-700">
-                🌸
-              </span>
-              <h3 className="text-sm font-bold text-zinc-900">시그니처 향기 &amp; 무드 테마</h3>
-              <span className="hidden sm:inline-block text-xs text-zinc-400">
-                리센느 앨범 및 음악 콘셉트 기반
-              </span>
-            </div>
-            <span className="text-xs font-semibold text-violet-600">
-              현재: {currentTheme.name}
-            </span>
-          </div>
-
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-            {SCENT_THEMES.map((theme) => {
-              const active = selectedThemeId === theme.id
-              return (
-                <button
-                  key={theme.id}
-                  type="button"
-                  onClick={() => handleSelectTheme(theme)}
-                  className={[
-                    'flex flex-col items-start rounded-2xl border p-3.5 text-left transition',
-                    active
-                      ? 'border-violet-500 bg-violet-50/80 shadow-xs ring-2 ring-violet-400/40'
-                      : 'border-zinc-200 bg-zinc-50/60 hover:border-zinc-300 hover:bg-white',
-                  ].join(' ')}
-                >
-                  <div className="flex items-center justify-between w-full">
-                    <div className="flex items-center gap-1.5">
-                      <span className="text-lg">{theme.emoji}</span>
-                      <span className="text-sm font-bold text-zinc-900">{theme.name}</span>
-                    </div>
-                    {active && <span className="text-xs font-bold text-violet-600">선택됨</span>}
-                  </div>
-                  <span className="mt-1 text-[11px] font-semibold text-violet-700">
-                    {theme.subname}
-                  </span>
-                  <p className="mt-1.5 text-xs text-zinc-600 leading-relaxed line-clamp-2">
-                    {theme.description}
-                  </p>
-                  <div className="mt-2.5 flex flex-wrap gap-1">
-                    {theme.instruments.map((inst) => (
-                      <span
-                        key={inst}
-                        className="rounded bg-white/90 border border-zinc-200 px-1.5 py-0.5 text-[10px] text-zinc-600"
-                      >
-                        {inst}
-                      </span>
-                    ))}
-                  </div>
-                </button>
-              )
-            })}
-          </div>
-        </div>
+        {/* 2. 시그니처 향기 & 조향 아틀리에 (Scent Atelier) */}
+        <ResceneScentAtelier
+          selectedScentId={selectedScentId}
+          onSelectCuratedScent={handleSelectCuratedScent}
+          onApplyCustomScent={handleApplyCustomScent}
+        />
 
         {/* 3. 세부 사운드 조율 및 가사 요청 */}
         <div className="mb-6 rounded-3xl border border-zinc-200 bg-white p-5 shadow-xs">
