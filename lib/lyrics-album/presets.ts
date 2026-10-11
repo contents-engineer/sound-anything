@@ -173,4 +173,100 @@ Midnight cruising, don't stop the groove
       },
     ],
   },
+  {
+    id: 'rescene-vibe',
+    name: '리센느 느낌 — 향기와 잔향 (RESCENE Vibe)',
+    tag: '🫧 리센느 느낌 · 몽환적 딥하우스 & 2-Step K-Pop',
+    mood: '기억을 깨우는 플로럴과 앰버의 잔향, 몽환적인 딥하우스와 2-Step 리듬으로 리센느에게 선물하고 싶은 감각적인 틴/걸스 팝',
+    songs: [
+      {
+        title: '잔향 (Scent Memory: Afterglow)',
+        lyrics: `[Intro]
+(Whisper)
+Breathe in, breathe out...
+너를 닮은 그 향기, 다시 번져와
+
+[Verse 1]
+바람결에 스쳐 지나간 낯익은 플로럴 노트
+발걸음을 멈추고 뒤를 돌아보게 해
+기억 속 저편에 고요히 잠들어 있던
+너와 나의 계절이 다시 꽃을 피우네
+
+[Pre-Chorus]
+코끝을 맴도는 아련한 그 잔향 (그 잔향)
+투명한 공기 속 번지는 파동
+숨을 쉴 때마다 선명해지는 너
+I can't let it fade away
+
+[Chorus]
+퍼져가는 Scent of You, 시간 너머로
+내 마음에 남겨진 너라는 잔향
+기억의 문을 열어 깨어나는 순간
+Forever in my heart, 절대 사라지지 않게
+(Ooh- ooh- 너만의 향기 속에 머물러)
+
+[Outro]
+은은하게 맴도는 너의 흔적
+Breathe in... 영원히 기억될 향기`,
+      },
+      {
+        title: '버블 어택 (Bubble Attack: 128 BPM)',
+        lyrics: `[Intro]
+Ready, set, pop!
+One, two, bubble attack!
+
+[Verse 1]
+통통 튀는 탄산 기포처럼 차오르는 마음
+쿵쾅대는 비트가 귓가를 간지럽혀
+망설일 틈 없이 쏟아지는 러브 시그널
+네 눈빛이 닿은 순간 모든 게 시작돼
+
+[Pre-Chorus]
+심장이 128 BPM으로 뛰어 (뛰어)
+멈출 수 없는 셔플의 리듬 속에
+더 이상 감출 수 없는 나의 진심
+Here comes the attack, watch out!
+
+[Chorus]
+Bubble, Bubble Attack! 팡 터지는 설렘
+달콤하게 번져가는 너와 나의 스파크
+숨길 수 없어 네게로 번진 Love
+한 방울의 떨림도 놓치지 않을래
+(Pop! Pop! 터지는 우리만의 magic)
+
+[Outro]
+톡 쏘는 탄산처럼 멈출 수 없는 이 느낌
+Bubble Attack, you got me falling in love!`,
+      },
+      {
+        title: '비 갠 뒤의 풀잎 (Petrichor: Dearest)',
+        lyrics: `[Intro]
+Rain drops falling down,
+마르고 난 뒤에 피어나는 향기
+
+[Verse 1]
+창문을 두드리던 소나기가 그치고
+젖은 흙과 풀잎에서 피어나는 페트리코
+복잡했던 도시의 소음도 씻겨 내려가
+모든 게 거짓말처럼 맑아진 오후
+
+[Pre-Chorus]
+안개 낀 길모퉁이 스며드는 온기
+너에게 띄우는 작은 편지처럼
+비 갠 하늘 위로 번지는 무지개
+I'm sending all my love to you
+
+[Chorus]
+초록빛 잎사귀에 맺힌 작은 물방울
+너를 향해 반짝이는 내 마음의 빛이야
+비 온 뒤 땅이 더 단단해지듯
+우리의 향기도 더 깊어질 테니까
+(Dearest, 언제나 네 곁에 머물게)
+
+[Outro]
+청명한 바람결에 날려 보내는 마음
+Dearest... 맑아진 하늘처럼 너를 사랑해`,
+      },
+    ],
+  },
 ]

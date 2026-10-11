@@ -22,6 +22,7 @@ const DEFAULT_SONGS: SongInput[] = [
 ]
 
 const QUICK_MOODS = [
+  '🫧 리센느 느낌 & 향기 딥하우스',
   '🎧 감성 J-POP 밴드',
   '🌙 새벽 감성 & 위로',
   '🌧️ 비 오는 날 & 센치함',

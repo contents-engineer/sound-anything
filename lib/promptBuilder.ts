@@ -32,7 +32,7 @@ Suno v6는 소리로 번역되는 구체적 음악 구성 요소(보컬 캐릭�
 - 순서 고정(앞일수록 가중치가 큼): 장르/서브장르 → 템포/에너지 → 핵심 악기 → 보컬 → 프로덕션 → 무드. **주 장르를 반드시 맨 앞에** 둡니다.
 - 사용자가 옵션을 많이 골라도 전부 나열하지 말고, 곡 콘셉트에 맞게 우선순위를 정해 4~7개로 압축·번역합니다. 사용자가 직접 입력(Custom Input)한 항목이 있다면 해당 내용을 최우선으로 stylePrompt에 반영합니다.
 - 차별화 레버 (곡마다 1개 이상 활용):
-  - 마이크로장르: rock 대신 shoegaze·surf rock, hip-hop 대신 boom-bap·phonk처럼 좁고 뾰족한 장르명
+  - 마이크로장르: rock 대신 shoegaze·surf rock, hip-hop 대신 boom-bap·phonk, dance-pop 대신 2-step garage·deep house처럼 좁고 뾰족한 장르명
   - 악기 고유명사: keyboard 대신 Rhodes electric piano, Juno-106 pad, Moog bass, TR-808
   - 시대 앵커: 80s synth-pop, late 2010s minimal production처럼 시대를 못박기
   - 프로덕션 질감: tape saturation, vinyl crackle, gated reverb drums, warm analog production

@@ -154,7 +154,16 @@ export async function generateLyricsAlbumPackage(
     })
     .join('\n───────────────────────\n')
 
-  const prompt = `당신은 최고 수준의 글로벌 J-POP/인디 플레이리스트 채널 디렉터이자 음악 프로듀서입니다.
+  const moodLower = (targetMood || '').toLowerCase()
+  const isKpop =
+    moodLower.includes('k-pop') ||
+    moodLower.includes('kpop') ||
+    moodLower.includes('리센느') ||
+    moodLower.includes('rescene') ||
+    moodLower.includes('아이돌') ||
+    moodLower.includes('걸그룹')
+
+  const prompt = `당신은 최고 수준의 글로벌 ${isKpop ? 'K-POP & 감성' : 'J-POP/인디'} 플레이리스트 채널 디렉터이자 음악 프로듀서(A&R)입니다.
 아래에 제공된 ${songs.length}곡의 노래 가사들을 깊이 있게 분석하고, 사용자가 지정한 '규격 포맷 양식'에 맞춰 가사 맞춤형 앨범 및 유튜브 패키지를 완성해주세요.
 
 선택된 앨범 구분: ${labels.ko} (${labels.ja} / ${albumType})
@@ -178,8 +187,8 @@ ${formattedSongs}
 
 2. 앨범 주제 (albumTheme):
    - coreConcept: 핵심 감정선 요약
-   - keywords: 키워드 5개 (예: JPOP, 짝사랑, 청춘, 퇴근길, 기적 등)
-   - genreMood: 음악 장르 및 템포 (예: Emotional J-Rock & Melodic J-POP Band, BPM 90-120)
+   - keywords: 키워드 5개 (예: ${isKpop ? 'K-POP, 리센느, 딥하우스, 향기, 잔향' : 'JPOP, 짝사랑, 청춘, 퇴근길, 기적'} 등)
+   - genreMood: 음악 장르 및 템포 (예: ${isKpop ? 'K-Pop Deep House & 2-Step Garage, BPM 125-130' : 'Emotional J-Rock & Melodic J-POP Band, BPM 90-120'})
    - narrativeArc: 가사들이 엮어내는 기승전결 서사
 
 3. 앨범 설명글 (albumDescription):
@@ -200,23 +209,23 @@ ${formattedSongs}
 
 4. 유튜브 타이틀 (youtubeTitles):
    반드시 접두사 "🎧𝐏𝐥𝐚𝐲𝐥𝐢𝐬𝐭 " (유니코드 Bold 서체)를 앞에 붙여야 합니다.
-   - pattern1: "🎧𝐏𝐥𝐚𝐲𝐥𝐢𝐬𝐭 [가사 핵심 소망/위로 문구] | 감성 JPOP 밴드 노래 모음" 형태
-   - pattern2: "🎧𝐏𝐥𝐚𝐲𝐥𝐢𝐬𝐭 [상황(예: 퇴근길에 듣다 보면)], [감정 변화(예: 나에게도 기적이 일어날 것 같은)] JPOP 플레이리스트" 형태
-   - pattern3: "🎧𝐏𝐥𝐚𝐲𝐥𝐢𝐬𝐭 지친 하루 끝, [벅차오르는 감정] | JPOP 플레이리스트" 형태
+   - pattern1: ${isKpop ? '"🎧𝐏𝐥𝐚𝐲𝐥𝐢𝐬𝐭 [가사 핵심 감각/향기 문구] | 리센느 느낌 몽환 딥하우스 & 2-Step K-POP 플레이리스트"' : '"🎧𝐏𝐥𝐚𝐲𝐥𝐢𝐬𝐭 [가사 핵심 소망/위로 문구] | 감성 JPOP 밴드 노래 모음"'} 형태
+   - pattern2: ${isKpop ? '"🎧𝐏𝐥𝐚𝐲𝐥𝐢𝐬𝐭 [상황(예: 늦은 밤 드라이브할 때)], [감각 변화(예: 귓가에 번지는 은은한 잔향)] 리센느 감성 플리"' : '"🎧𝐏𝐥𝐚𝐲𝐥𝐢𝐬𝐭 [상황(예: 퇴근길에 듣다 보면)], [감정 변화(예: 나에게도 기적이 일어날 것 같은)] JPOP 플레이리스트"'} 형태
+   - pattern3: ${isKpop ? '"🎧𝐏𝐥𝐚𝐲𝐥𝐢𝐬𝐭 몽환적인 밤, [벅차오르는 비트와 향기] | K-POP 딥하우스 믹스"' : '"🎧𝐏𝐥𝐚𝐲𝐥𝐢𝐬𝐭 지친 하루 끝, [벅차오르는 감정] | JPOP 플레이리스트"'} 형태
    - main: 위 3개 중 가장 추천하는 대표 타이틀
    - alternatives: 추가 대체 타이틀 2~3개
 
 5. 유튜브 설명글 (youtubeDescription):
    다음 문단 구성을 정확히 따를 것:
-   단락1: [가사 무드 감성 소개]. 가만히 이어폰을 꽂고 그 시절의 나로 돌아가 보세요. 🎧
-   단락2: [가사 스토리 상세 묘사]. [서투르고 애틋했던 감정]을 위로해 줄 곡들로 채웠습니다. 공부할 때나 조용한 밤에 감성에 젖어 가볍게 듣기 좋은 플레이리스트로 추천합니다.
-   단락3: A sentimental J-POP playlist about [가사 테마/영문]. Enjoy emotional Japanese band music and nostalgic Japanese songs.
-   단락4: 切ない[테마]の記憶や、あの頃の感情に浸れるエモーショナルな日本のバンド・J-POPプレイリストです。作業用BGMや夜の散歩道に。
+   단락1: ${isKpop ? '[가사 무드 및 향기/감각 소개]. 가만히 이어폰을 꽂고 향기처럼 퍼지는 비트에 빠져보세요. 🫧' : '[가사 무드 감성 소개]. 가만히 이어폰을 꽂고 그 시절의 나로 돌아가 보세요. 🎧'}
+   단락2: ${isKpop ? '[가사 스토리 및 사운드(딥하우스, 2-Step) 묘사]. 리센느(RESCENE)에게 선물하고 싶은 음악이자, 은은한 잔향과 탄산 기포처럼 터지는 감각을 담았습니다. 드라이브할 때나 밤에 작업할 때 듣기 좋은 플레이리스트입니다.' : '[가사 스토리 상세 묘사]. [서투르고 애틋했던 감정]을 위로해 줄 곡들로 채웠습니다. 공부할 때나 조용한 밤에 감성에 젖어 가볍게 듣기 좋은 플레이리스트로 추천합니다.'}
+   단락3: ${isKpop ? 'A dreamy K-Pop Deep House & 2-Step Garage playlist inspired by RESCENE vibes and scent memories. Enjoy ethereal vocals, bubbling basslines, and lingering afterglow.' : 'A sentimental J-POP playlist about [가사 테마/영문]. Enjoy emotional Japanese band music and nostalgic Japanese songs.'}
+   단락4: ${isKpop ? '香りのように広がる幻想的なK-POPディープハウス＆2ステップ・ガレージ。心地よいビートと余韻に浸れるプレイリストです。ドライブや作業用BGMに。' : '切ない[테마]の記憶や、あの頃の感情に浸れるエモーショナルな日本のバンド・J-POPプレイリストです。作業用BGMや夜の散歩道に。'}
    [Tracklist]
    00:00 [트랙1 일본어명] / [트랙1 한국어명]
    03:50 [트랙2 일본어명] / [트랙2 한국어명]
    07:45 [트랙3 일본어명] / [트랙3 한국어명]
-   (해시태그): #jpopplaylist #일본노래 #제이팝 #jpop #jrock #제이팝플리 #제이팝플레이리스트 #jpop플레이리스트 #일본노래모음 #邦楽 #playlist #プレイリスト #作業用bgm
+   (해시태그): ${isKpop ? '#kpop #kpopplaylist #리센느 #rescene #리센느낌 #케이팝플레이리스트 #deephouse #2stepgarage #케이팝플리 #몽환플리 #드라이브플리 #작업용bgm' : '#jpopplaylist #일본노래 #제이팝 #jpop #jrock #제이팝플리 #제이팝플레이리스트 #jpop플레이리스트 #일본노래모음 #邦楽 #playlist #プレイリスト #作業用bgm'}
    fullFormattedText에는 위 모든 요소가 개행과 함께 조합된 완성형 설명란 텍스트를 출력하세요.
 
 6. 유튜브 고정 댓글 (pinnedComment):

@@ -196,6 +196,32 @@ export const QUICK_PRESETS: QuickPreset[] = [
       customInputs: {},
     },
   },
+  {
+    id: 'rescene',
+    name: '리센느 느낌 (RESCENE)',
+    emoji: '🫧',
+    tagline: '향기를 품은 몽환적 딥하우스 & 2-Step K-Pop',
+    description: '프루스트 효과처럼 기억을 깨우는 플로럴·앰버 잔향, 쫀득한 2-Step 개러지 셔플과 맑고 몽환적인 걸그룹 보컬 — 리센느에게 선물하고 싶은 감각적 K-Pop',
+    selections: {
+      genre: 'K-pop',
+      era: '2020s 현대',
+      mood: ['로맨틱 감성', '설레는 봄날'],
+      vocal: ['맑고 깨끗한 여성 보컬', '에테리얼 여성 보컬'],
+      usage: '유튜브 브이로그 BGM',
+      instrument: ['신디사이저', '베이스', '808 비트'],
+      production: '깨끗한 현대 믹스',
+      bpm: '약간 빠름 (110-130 BPM)',
+      age: '10대 (청소년)',
+      form: '후렴 선행 (90년대식)',
+      language: '한국어+영어 섞어서',
+      topic: ['첫사랑', '향수'],
+      lengthMin: 3,
+      customInputs: {
+        genre: 'K-Pop 딥하우스 / 2-Step Garage (RESCENE Vibe)',
+        topic: '기억을 깨우는 향기(프루스트 효과), 플로럴 앰버 잔향, 설렘의 러브어택',
+      },
+    },
+  },
 ]
 
 /**
@@ -306,7 +332,22 @@ export function getPromptVariants(basePrompt: string): PromptVariants {
  * 트렌드 영상 제목/키워드 또는 채널명으로부터 어울리는 Selections 생성
  */
 export function mapTrendToSelections(title: string, tags: string[] = []): Selections {
-  const text = `${title} ${tags.join(' ')}`.toLowerCase()
+  const text = [title, ...tags].join(' ').toLowerCase()
+
+  // 0. 리센느/리센느낌/RESCENE/LOVE ATTACK
+  if (
+    text.includes('리센느') ||
+    text.includes('rescene') ||
+    text.includes('리센느낌') ||
+    text.includes('love attack') ||
+    text.includes('러브어택')
+  ) {
+    const base = QUICK_PRESETS.find((p) => p.id === 'rescene')!.selections
+    return {
+      ...base,
+      customInputs: { ...base.customInputs, topic: title.slice(0, 30) },
+    }
+  }
 
   // 1. 로파이/공부/새벽/집중
   if (text.includes('lofi') || text.includes('lo-fi') || text.includes('로파이') || text.includes('공부') || text.includes('study') || text.includes('코딩')) {
