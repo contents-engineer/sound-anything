@@ -8,6 +8,7 @@ import { loadApiKey, loadYoutubeApiKey } from '@/lib/apiKey'
 
 const MENU = [
   { label: '수노 제너레이터', href: '/', icon: '🎵' },
+  { label: '리센느낌 제너레이터', href: '/rescene', icon: '🫧' },
   { label: '가사 ➔ 앨범·유튜브 패키지', href: '/lyrics-album', icon: '💿' },
   { label: '제미나이 워터마크 제거', href: '/watermark', icon: '✨' },
   { label: '유튜브 채널 분석', href: '/channel-analyze', icon: '📊' },
