@@ -142,14 +142,9 @@ export default function RescenePage() {
   }
 
   function buildSelections(): Selections {
-    const combinedTopic = [
-      `[시그니처 향기: ${scentMeta.name} (${scentMeta.nameEn})]`,
-      `[조향 피라미드: ${scentMeta.pyramid}]`,
-      scentTopic,
-      customTopic.trim() ? customTopic.trim() : null,
-    ]
-      .filter(Boolean)
-      .join(', ')
+    const userTopic = customTopic.trim()
+    const lyricsTopic = userTopic || '설레는 첫사랑과 찰나의 순간, 밤공기를 가르는 청춘의 자유'
+    const topicList = userTopic ? [userTopic] : ['첫사랑의 설렘', '도심의 밤거리', '청춘의 자유']
 
     const vocalSpaceText =
       vocalSpace === 'dry-studio'
@@ -177,12 +172,12 @@ export default function RescenePage() {
       age: ageGroup,
       form: '후렴 선행 (90년대식)',
       language: language,
-      topic: ['첫사랑', '향수', scentMeta.name],
+      topic: topicList,
       lengthMin: lengthMin,
       scent: scentPayload,
       customInputs: {
         genre: scentGenre,
-        topic: combinedTopic,
+        topic: lyricsTopic,
         vocal: selectedVocals.join(', '),
         production: vocalSpaceText,
         age: ageGroup,
@@ -498,14 +493,19 @@ export default function RescenePage() {
           </div>
 
           <div className="mt-4">
-            <label className="block text-xs font-bold text-zinc-700 mb-1.5">
-              사용자 지정 가사 테마 또는 추가 요청 (선택)
-            </label>
+            <div className="flex items-center justify-between mb-1.5">
+              <label className="block text-xs font-bold text-zinc-700">
+                곡 가사 테마 &amp; 스토리 (자유 입력)
+              </label>
+              <span className="text-[11px] text-violet-600 font-medium">
+                💡 입력한 스토리가 가사와 제목에 100% 최우선 반영됩니다 (사운드는 향기 감성 유지)
+              </span>
+            </div>
             <input
               type="text"
               value={customTopic}
               onChange={(e) => setCustomTopic(e.target.value)}
-              placeholder="예: 비 오는 압구정 거리에서 우연히 마주친 옛사랑, 귓가를 스치는 복숭아 향기"
+              placeholder="예: 비 오는 밤거리의 아련한 이별, 친구들과의 신나는 새벽 드라이브, 예측 불허의 짜릿한 짝사랑, 당당한 나만의 런웨이"
               className="w-full rounded-xl border border-zinc-300 bg-white px-3 py-2.5 text-xs text-zinc-900 placeholder:text-zinc-400 focus:border-violet-500 focus:outline-none"
             />
           </div>
