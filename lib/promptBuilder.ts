@@ -80,73 +80,77 @@ Suno AI는 인물 이름만으로는 누구인지 알지 못하므로, 단순 [L
 또한 **다같이 부르는 구간([All] 또는 단체 제창)을 일절 허용하지 않으며, 100% 5인 멤버의 솔로 보컬로만 배분**하고, 실제 K-Pop의 자연스러운 호흡인 **"보통 2소절(2줄) 단위로 안정감 있게 전개하다가 텐션이 급변하거나 고조되는 포인트에서만 1소절(1줄)씩 티키타카 교대"**하는 황금 호흡 공식을 반드시 준수합니다:
 
 1. **5인 멤버별 표준 Suno 보이스 디렉팅 공식 (필수 매핑)**:
-   - **리브 (LIV)** [리드보컬 / 크리스탈톤]: [Liv: crystal-clear high tone] (유리구슬처럼 투명한 청아한 고음, 첫 후렴 훅 포문 & 브릿지 리프트, 5소절)
-   - **미나미 (MINAMI)** [메인보컬 / 올라운더]: [Minami: powerful clear belt] (단단한 코어 & 사이다 파워 고음, 후렴 훅 엔딩 & 브릿지 초고음 클라이맥스 & 일본어 소절 전담, 5~6소절)
-   - **제나 (ZENA)** [서브보컬 / 시크 엣지]: [Zena: chic velvety low-mid] (808 비트 위 트렌디하고 쫀득한 어반 중저음 싱잉랩 톤, 벌스 1 포문 & 시크한 브릿지 도입, 4소절)
-   - **메이 (MAY)** [서브보컬 / 몽환 브레시]: [May: breathy intimate whisper] (공기 반 소리 반 ASMR 귓가 속삭임, 벌스 몽환 텍스처 & 아웃트로 독백 잔향, 4소절)
-   - **원이 (WONI)** [리더 / 비타민 에너지]: [Woni: bright punchy delivery] (비트에 착 감기는 산뜻한 타격감, 벌스 리듬 그루브 & 2차 후렴 포문, 3~4소절)
+   - **리브 (LIV)** [리드보컬 / 크리스탈톤]: [Liv: crystal-clear high tone] (유리구슬처럼 투명한 청아한 고음, 첫 후렴 훅 포문 & 브릿지 리프트 & 아웃트로, 4~5소절)
+   - **미나미 (MINAMI)** [메인보컬 / 올라운더]: [Minami: powerful clear belt] (단단한 코어 & 사이다 파워 고음 벨팅, 후렴 훅 엔딩 & 브릿지 초고음 클라이맥스) 뿐만 아니라, 가사 정서에 따라 [Minami: soft emotive whisper-tone](아련하고 섬세한 감성), [Minami: warm wistful tone](따뜻한 미열 중음) 등 다채로운 음색 스펙트럼 활용 가능, 일본어 소절 전담, 5~6소절
+   - **제나 (ZENA)** [서브보컬 / 시크 엣지]: [Zena: chic velvety low-mid] (808 비트 위 트렌디하고 쫀득한 어반 중저음 싱잉랩 톤, 노을빛 브릿지 도입 & 아웃트로 여운 봉인, 3~4소절)
+   - **메이 (MAY)** [서브보컬 / 몽환 브레시]: [May: breathy intimate whisper] (공기 반 소리 반 ASMR 귓가 속삭임, 은방울꽃 벌스 몽환 텍스처 & 살결의 잔향 브릿지 감성, 3~4소절)
+   - **원이 (WONI)** [리더 / 비타민 에너지]: [Woni: bright punchy delivery] (비트에 착 감기는 산뜻한 타격감, 벌스 리듬 그루브 & 2차 후렴 메인 훅 포문, 4소절)
    - **⚠️ [All] 태그 절대 금지**: 후렴, 드롭, 아웃트로 등 곡의 어느 구간에서도 [All] 또는 단체 합창을 절대 쓰지 마세요. 100% 개별 멤버의 솔로로만 분배하세요.
-   - **🇯🇵 일본어 소절 전담 규칙**: 한·일 감성 혼용 곡에서 일본어 라인이 등장하면 반드시 네이티브 감성을 지닌 [Minami: crisp Korean diction] 또는 [Minami: powerful clear belt]가 가창해야 합니다.
+   - **🇯🇵 일본어 소절 전담 규칙**: 한·일 감성 혼용 곡에서 일본어 라인이 등장하면 반드시 네이티브 감성을 지닌 [Minami: soft emotive whisper-tone] 또는 [Minami: warm wistful tone], [Minami: powerful clear belt]가 가창해야 합니다.
 
-2. **소절 호흡 공식 (2소절 기본 + 1소절 포인트 교차)**:
+2. **소절 호흡 공식 (2소절 기본 + 1소절 포인트 교차 & 여유로운 음절 다이어트)**:
    - **기본 호흡 (안정형)**: 4줄 섹션에서 앞의 2줄은 멤버 A가 통째로 부르고, 뒤의 2줄은 멤버 B가 부릅니다.
    - **다이내믹 호흡 (포인트형)**: 4줄 섹션에서 앞의 2줄은 멤버 A가 부르고, 뒤의 2줄은 텐션 고조를 위해 멤버 B(1줄)와 멤버 C(1줄)가 티키타카 교대합니다.
    - **2줄 섹션 (Pre-Chorus, Outro)**: 1줄씩 빠르게 교대하거나(Pre-Chorus), 1명이 2줄을 아련하게 독백(Outro).
-   - **가사 작성 예시**:
-     [Verse 1]
-     [Zena: chic velvety low-mid]
-     바람에 실려 온 솔티한 바다 내음 속에
-     자전거 바퀴를 따라 흩날리던 봄빛 그림자
-     [Minami: powerful clear belt]
-     ふわりと揺れる 記憶の青い波音
-     [Liv: crystal-clear high tone]
-     너와 나눈 말들은 수면 위로 맑게 튀어 올라
+   - **가사 작성 예시 (여유로운 미니멀 호흡 & [Post-Chorus] 연주 드롭 탑재)**:
+     [Intro: bubbling synth plucks, marine breeze ambiance]
 
-     [Pre-Chorus]
+     [Chorus: uplifting 2-step groove, sparkling sea-glass textures]
+     [Minami: powerful clear belt]
+     (밀려온)
      [Liv: crystal-clear high tone]
-     눈을 감아봐 feel the chemistry
-     [Minami: powerful clear belt]
-     이 순간을 기다려온 걸 터질 듯한 심장
+     둥글게 깎인 투명한 조각
+     스치는 바람, 우리를 채워
+     [Minami: bright soaring resonance]
+     눈부신 윤슬, 찰나의 순간
+     여전히 내 맘속에 번져가
 
-     [Chorus]
+     [Post-Chorus: 2-step groove drop, sparkling synth plucks]
+
+     [Verse 1: tight 808 beat, spacious close-mic]
      [Liv: crystal-clear high tone]
-     밀려온 파도 끝에 둥글게 깎인 투명한 조각
-     손끝에 닿은 짭조름한 바람이 우리를 채워와
-     [Minami: powerful clear belt]
-     눈부신 윤슬처럼 터지는 찰나의 순간
-     그 계절의 향기는 여전히 내 맘속에 번져가
+     솔티한 바다 내음 속에
+     흩날리던 봄빛 그림자
+     [Minami: soft emotive whisper-tone]
+     ふわりと揺れる 記憶の波音
+     [Woni: bright punchy bounce]
+     너의 목소리, 수면 위로 튀어 올라
 
-     [Verse 2]
-     [May: breathy intimate whisper]
-     하얗게 피어난 은방울꽃 그늘 아래서
-     유리알 속에 가둬둔 푸른 하늘을 바라보았지
-     [Minami: powerful clear belt]
-     乾いた砂に 零れた春の微熱
+     [Verse 2: layered percussions, dewy muguet bassline]
+     [May: breathy delicate whisper]
+     은방울꽃 그늘 아래
+     유리알 속 가둔 푸른 하늘
+     [Minami: warm wistful tone]
+     砂に零れた 春の微熱
      [Woni: bright punchy delivery]
-     숨길 수 없던 두근거림이 발끝에 고여 와
+     발끝에 고인 두근거림
 
-     [Bridge]
+     [Bridge: filtered beat, intimate spacious delivery]
      [Zena: chic velvety low-mid]
-     밀려온 나뭇가지와 붉게 물든 해질녘
-     노을빛이 바다 끝을 금빛으로 물들일 때
-     [Liv: crystal-clear high tone]
-     지워지지 않는 살결의 잔향처럼
-     [Minami: powerful clear belt]
-     우리가 새겨둔 푸른 온기는 그대로 머물러
-
-     [Chorus]
-     [Woni: bright punchy delivery]
-     밀려온 파도 끝에 둥글게 깎인 투명한 조각
-     손끝에 닿은 짭조름한 바람이 우리를 채워와
-     [Liv: crystal-clear high tone]
-     눈부신 윤슬처럼 터지는 찰나의 순간
-     [Minami: powerful clear belt]
-     그 계절의 향기는 여전히 내 맘속에 번져가
-
-     [Outro]
+     붉게 물든 해질녘
+     바다 끝을 물들이는 노을
      [May: breathy intimate whisper]
-     파도 사이로 사라지지 않는 영원한 향기
-     유리병에 담긴 푸른 바다의 기억
+     살결에 남은 잔향처럼
+     [Minami: powerful soaring belt]
+     우리의 푸른 온기는 머물러
+
+     [Chorus: uplifting 2-step groove, sparkling sea-glass textures]
+     [Minami: powerful clear belt]
+     (밀려온)
+     [Woni: bright punchy delivery]
+     둥글게 깎인 투명한 조각
+     스치는 바람, 우리를 채워
+     [Minami: powerful clear belt]
+     눈부신 윤슬, 찰나의 순간
+     여전히 내 맘속에 번져가
+
+     [Post-Chorus: 2-step groove drop, vocal chops]
+
+     [Outro: gentle waves and fading synth chords]
+     [Liv: crystal-clear airy tone]
+     사라지지 않을 영원한 향기
+     [Zena: chic velvety low-mid]
+     유리병에 담긴 바다의 기억
 
      [End]
 
@@ -261,6 +265,9 @@ Suno v6 모델군 중 이 곡의 음악적 성격에 가장 부합하는 모델 
   - 3~5분 예: [Intro] → [Verse 1] → [Pre-Chorus: rising tension] → [Chorus: All] → [Drop: deep house bass drop] → [Verse 2] → [Pre-Chorus] → [Bridge: soaring climax] → [Chorus] → [Outro] → [End]
   - [Pre-Chorus]에서는 드럼이 빠지고(drum drop-out) 라이징 신스와 보컬로 긴장감을 극대화하며, [Chorus] 및 [Drop]에서는 묵직한 딥하우스 펌핑 베이스와 4-on-the-floor 킥이 폭발합니다.
   - **시그니처 킬링 구절(Killing Phrase / Point Hook)**: 리센느 대표곡(Yo-Yo, Uh-Uh, Pinball, Love Attack)처럼 귓가에 맴도는 감각적인 1~2단어 시그니처 훅/의성어를 프리코러스 끝 또는 코러스 훅에 배치합니다.
+- **여유로운 미니멀 (간주·드롭 여백 & 짧은 음절)**: 보컬이 쉼 없이 쏟아내는 러시 현상(Rush-singing)을 방지하고 비트와 악기 그루브의 공간감을 극대화하는 구성입니다.
+  - 3~5분 예: [Intro] → [Chorus: uplifting 2-step groove] → [Post-Chorus: 2-step groove drop, vocal chops] → [Verse 1: tight 808 beat, spacious delivery] → [Verse 2] → [Bridge] → [Chorus] → [Post-Chorus: groove drop] → [Outro] → [End]
+  - 각 줄당 음절 수를 간결하게 줄이고(한국어 기준 8~11음절 이내), 후렴 뒤에 반드시 가사 없는 순수 악기/비트 연주인 [Post-Chorus: drop] 또는 [Instrumental Break]를 배치하여 보컬의 공기감과 악기 여백을 확보합니다.
 - **표준 (벌스 → 후렴)**: 길이표를 그대로 씁니다.
 - **후렴 선행 (90년대식)**: [Intro] 바로 다음에 [Chorus]를 놓고, 길이표의 나머지 순서에서 [Chorus] 하나를 빼고 그대로 이어 붙입니다. 첫 후렴부터 곡의 훅을 터뜨리는 구성입니다.
   - 3~5분 예: [Intro] → [Chorus] → [Verse 1] → [Verse 2] → [Bridge] → [Chorus] → [Outro] → [End]
@@ -289,6 +296,24 @@ Suno v6 모델군 중 이 곡의 음악적 성격에 가장 부합하는 모델 
 6. 섹션과 섹션 사이는 빈 줄 1개로 구분. 섹션 내부에는 빈 줄을 넣지 마세요.
 7. 허용 태그는 [Intro], [Verse N], [Pre-Chorus], [Chorus], [Drop], [Post-Chorus], [Bridge], [Outro], [End], 보컬 지정 태그([Female Vocals] [Male Vocals]는 첫 줄 전용 · [Male] [Female] [Both]는 듀엣 가사 줄 라벨 전용), 멤버 실전 음향 브래킷 태그([Liv: crystal-clear high tone], [Minami: powerful clear belt], [Zena: chic velvety low-mid], [May: breathy intimate whisper], [Woni: bright punchy delivery] 등 [Member: Voice Cue] 태그), 그리고 아래 편곡 파라미터 문법뿐입니다. (주의: 리센느 곡에서는 합창 [All] 태그 사용 금지)
 8. 보컬에 "연주곡 (보컬 없음)"이 선택되면 lyrics 필드는 정확히 "[Instrumental]" 한 줄만 채웁니다. 소괄호 "(Instrumental)"는 가사로 불릴 수 있으므로 반드시 대괄호 표기를 씁니다.
+
+# 가사 밀도 & 여백 공식 (Anti-Rush-Singing & Spacious Breathing)
+
+Suno AI는 가사의 음절 수가 길고 빼곡하면 템포에 맞추기 위해 가사를 랩하듯 빠르게 우겨넣는 **러시 현상(Rush-singing)**이 발생하여 멜로디의 감성과 비트 그루브가 죽어버립니다.
+따라서 모든 팝, K-Pop, 딥하우스, 댄스 및 리센느(RESCENE) 스타일 트랙은 아래의 **"여유로운 미니멀 호흡(Spacious Breathing)"**을 기본값으로 적용합니다:
+
+1. **음절 수 다이어트 (줄당 8~11음절 엄수)**:
+   - 한 줄당 한국어 기준 **8~11음절 이내**(절대 12음절 초과 금지)로 간결하게 작성합니다.
+   - "손끝에 닿은 짭조름한 바람이 우리를 채워와" 같은 긴 문장형 서술어를 지양하고, "스치는 바람, 우리를 채워", "투명한 조각", "찰나의 순간"처럼 감각적인 단문/명사구 위주로 작성하여 보컬이 음표 하나하나를 길게 뻗고 여운을 남길 수 있게 합니다.
+
+2. **악기 간주 및 비트 드롭([Post-Chorus: Drop]) 필수 배치**:
+   - 가사로만 빼곡하게 채워지지 않도록, 후렴([Chorus]) 직후에는 가사 없는 순수 악기 연주/비트 드롭 구간인 **[Post-Chorus: 2-step groove drop, sparkling synth plucks]** 또는 **[Drop]**을 반드시 배치합니다.
+   - 이를 통해 보컬이 숨을 고르고, 비트와 베이스 사운드가 전면에 드러나 리스너가 리듬과 공간감을 즐길 수 있는 음악적 여백을 형성합니다.
+
+3. **가사 밀도(Density) 3단계 제어**:
+   - **여유로운 미니멀 (Spacious - 기본 권장)**: 줄당 7~10음절, 섹션당 2~3줄 위주, [Post-Chorus] 연주 드롭 필수. 이지리스닝, K-Pop 걸그룹, 딥하우스에 필수 적용.
+   - **스탠다드 (Balanced)**: 줄당 10~12음절, 표준적인 팝 호흡.
+   - **서사형 (Dense)**: 줄당 13~16음절, 발라드/스토리텔링 전용.
 
 # 섹션별 다이내믹 악기·편곡 태그 (파라미터 문법)
 
@@ -430,8 +455,12 @@ export function buildUserPrompt(s: Selections, mode: GenerationMode, extras?: Ge
   const resceneVocals = s.vocal.filter((v) => isResceneVocalLabel(v))
   if (resceneVocals.length > 0) {
     lines.push(`- [리센느(RESCENE) 멤버 보컬 지정]: ${resceneVocals.join(', ')}.`)
-    lines.push('- [가사 파트 분배 필수 규칙: [Member: Voice Cue] 실전 보이스 태그 & 2소절 기본 + 1소절 포인트 & 합창([All]) 절대 금지]: Suno AI는 인물 이름만으로는 누구인지 알지 못하므로, 가사 작성 시 반드시 [Liv: crystal-clear high tone], [Minami: powerful clear belt], [Zena: chic velvety low-mid], [May: breathy intimate whisper], [Woni: bright punchy delivery]처럼 사람이 알아볼 수 있는 [멤버 이름]과 Suno가 실제 목소리를 바꾸는 [핵심 음향 디스크립터]를 결합하여 작성하세요! 곡의 어느 구간에서도 [All] 또는 단체 제창을 절대 쓰지 마세요(100% 5인 멤버 솔로). 보통 2소절(2줄) 단위로 안정감 있게 전개하고, 텐션이 급변하거나 고조되는 포인트에서만 1소절(1줄)씩 교대하세요. 일본어 소절은 반드시 [Minami: powerful clear belt]에게 배정하세요.')
+    lines.push('- [가사 파트 분배 필수 규칙: [Member: Voice Cue] 실전 보이스 태그 & 2소절 기본 + 1소절 포인트 & 합창([All]) 절대 금지]: Suno AI는 인물 이름만으로는 누구인지 알지 못하므로, 가사 작성 시 반드시 [Liv: crystal-clear high tone], [Minami: powerful clear belt], [Zena: chic velvety low-mid], [May: breathy intimate whisper], [Woni: bright punchy delivery]처럼 사람이 알아볼 수 있는 [멤버 이름]과 Suno가 실제 목소리를 바꾸는 [핵심 음향 디스크립터]를 결합하여 작성하세요! (미나미는 가사 정서에 따라 [Minami: soft emotive whisper-tone], [Minami: warm wistful tone] 등 다채롭게 운용 가능). 곡의 어느 구간에서도 [All] 또는 단체 제창을 절대 쓰지 마세요(100% 5인 멤버 솔로). 보통 2소절(2줄) 단위로 안정감 있게 전개하고, 텐션이 급변하거나 고조되는 포인트에서만 1소절(1줄)씩 교대하세요. 일본어 소절은 반드시 미나미에게 배정하세요.')
     lines.push('- [안티-AI 에코 & 드라이 스튜디오 보컬 필수]: AI 특유의 깡통 울림과 과도한 홀 에코를 원천 차단하기 위해 보컬은 "dry upfront vocals, close-mic studio recording"으로 튜닝하고, excludeStyles에 "heavy reverb", "echo", "metallic vocals"를 반드시 포함하세요.')
+  }
+  lines.push('- [가사 밀도 & 여백 공식 (Anti-Rush-Singing & Spacious Breathing)]: 가사가 빼곡하여 보컬이 랩하듯 급하게 부르는 현상을 방지하기 위해, 한 줄당 음절 수를 간결하게(한국어 8~11자 내외) 다이어트하고, 후렴 뒤에 반드시 가사 없는 비트/신스 드롭 구간([Post-Chorus: 2-step groove drop, sparkling synth plucks])을 배치하여 보컬의 공기감과 악기 그루브의 여백을 확보하세요.')
+  if (s.form?.includes('미니멀') || s.customInputs.form?.includes('미니멀')) {
+    lines.push('- [여유로운 미니멀 구성 집중]: 가사 한 줄당 8~10음절을 엄수하고, [Post-Chorus: groove drop] 및 연주 간주를 통해 칠(Chill)하고 세련된 여백을 극대화하세요.')
   }
   if (
     s.production?.includes('드라이') ||
