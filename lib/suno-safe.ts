@@ -6,6 +6,19 @@
  */
 const RESCENE_MEMBERS_LOWER = ['minami', 'liv', 'woni', 'may', 'zena', 'all', '미나미', '리브', '원이', '메이', '제나', '완전체']
 
+const RESCENE_DEFAULT_VOICE_CUES: Record<string, string> = {
+  liv: 'Liv: crystal-clear high tone',
+  minami: 'Minami: powerful clear belt',
+  zena: 'Zena: chic velvety low-mid',
+  may: 'May: breathy intimate whisper',
+  woni: 'Woni: bright punchy delivery',
+  리브: 'Liv: crystal-clear high tone',
+  미나미: 'Minami: powerful clear belt',
+  제나: 'Zena: chic velvety low-mid',
+  메이: 'May: breathy intimate whisper',
+  원이: 'Woni: bright punchy delivery',
+}
+
 function cleanBracketContent(inner: string): string {
   const trimmed = inner.trim()
   const lower = trimmed.toLowerCase()
@@ -29,13 +42,35 @@ function cleanBracketContent(inner: string): string {
   if (lower.startsWith('intro')) return 'Intro'
   if (lower.startsWith('drop')) return 'Drop'
 
-  // 3. 멤버 단독 및 멤버 큐 간소화 ([Minami: high belting] or [Minami - cue] -> [Minami])
+  // 3. 멤버별 실전 보이스 디렉팅 태그 ([Member: Voice Cue]) 보존 및 표준화
   for (const m of RESCENE_MEMBERS_LOWER) {
-    if (lower === m) return trimmed
-    if (lower.startsWith(`${m}:`) || lower.startsWith(`${m} -`) || lower.startsWith(`${m},`)) {
-      // 멤버 이름 대소문자 보존
-      const matched = trimmed.match(new RegExp(`^(${m})`, 'i'))
-      return matched ? matched[1] : trimmed
+    if (m === 'all' || m === '완전체') continue
+
+    // 멤버 단독 표기인 경우 -> 실제 Suno 보이스가 발현되도록 표준 보이스 큐 부여
+    if (lower === m) {
+      return RESCENE_DEFAULT_VOICE_CUES[m] || trimmed
+    }
+
+    // [Member: cue] 또는 [Member - cue] 형태인 경우
+    if (lower.startsWith(`${m}:`) || lower.startsWith(`${m} -`)) {
+      const matched = trimmed.match(new RegExp(`^(${m})([: -]+)(.*)`, 'i'))
+      if (matched) {
+        const memberKey = matched[1].toLowerCase()
+        const rawCue = matched[3].trim()
+
+        // 쉼표나 긴 부가 설명은 1차 정제
+        const cleanCue = rawCue.split(',')[0].trim()
+        // 35자 이내의 간결한 영문 음향 디스크립터면 보존, 너무 길면 표준 큐로 치환
+        if (cleanCue.length > 0 && cleanCue.length <= 35) {
+          const capName = memberKey === 'minami' ? 'Minami' :
+                          memberKey === 'liv' ? 'Liv' :
+                          memberKey === 'zena' ? 'Zena' :
+                          memberKey === 'may' ? 'May' :
+                          memberKey === 'woni' ? 'Woni' : matched[1]
+          return `${capName}: ${cleanCue}`
+        }
+        return RESCENE_DEFAULT_VOICE_CUES[memberKey] || trimmed
+      }
     }
   }
 

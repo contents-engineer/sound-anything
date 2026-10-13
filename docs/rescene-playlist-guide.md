@@ -66,13 +66,19 @@ Suno 웹사이트([suno.com/create](https://suno.com/create))를 열고 **Custom
 | **Exclude Styles** | `[제외태그 복사]` | `hall reverb, metallic echo, cheap synth` 등 **싸구려 AI 에코 소리를 칼같이 차단**해 줍니다. |
 | **Lyrics** | `[🛡️ Suno 안전 가사 복사]` ⭐ | **가장 중요!** AI가 가사를 헛소리하지 않도록 정제된 가사를 붙여넣습니다. |
 
-### 💡 핵심 꿀팁: [가사 원본] vs [🛡️ Suno 안전 가사 복사]의 차이!
+### 💡 핵심 꿀팁: 왜 `[Liv: crystal-clear high tone]` 형태로 들어가나요?
 
-- **`[가사 원본]`**:
-  - `[Verse 1: May - breathy intimate whisper close-mic]` 처럼 누가 어떤 창법으로 부르는지 기획 의도가 상세히 적혀 있어, 사람이 곡을 파악하고 기획할 때 읽는 용도입니다.
-- **`[🛡️ Suno 안전 가사 복사]` (강력 추천!)**:
-  - 간혹 Suno AI가 대괄호 속의 긴 영어(`breathy intimate whisper...`)를 노래 가사로 소리 내어 읽어버리는 **환각 현상(Hallucination)**이 발생합니다!
-  - `Suno 안전 복사` 버튼을 누르면 `[Verse 1 - May]` 처럼 Suno 엔진이 가장 오작동 없이 찰떡같이 알아듣는 황금 규격으로 자동 변환되어 복사됩니다. **음원 뽑을 땐 무조건 이 버튼을 쓰세요!**
+- **Suno AI는 사람 이름을 모릅니다**:
+  - 단순히 `[Liv]`나 `[Minami]`만 적어두면 사람은 쉽게 알아보지만, **Suno AI는 Liv가 누구인지 전혀 알지 못해 임의의 목소리로 노래합니다.**
+- **진짜 멤버 목소리를 뽑는 마법의 주문 `[Member: Voice Cue]`**:
+  - 사람이 알아보기 쉬운 **멤버 이름** + Suno가 실제 목소리를 바꾸는 **핵심 음향 디스크립터**를 결합했습니다:
+    - **`[Liv: crystal-clear high tone]`**: 유리구슬처럼 투명한 청아한 고음
+    - **`[Minami: powerful clear belt]`**: 단단한 코어 & 시원하게 뻗는 파워 고음 벨팅
+    - **`[Zena: chic velvety low-mid]`**: 808 비트 위 쫀득한 어반 중저음 싱잉랩
+    - **`[May: breathy intimate whisper]`**: 공기 반 소리 반의 귓가 ASMR 밀착 속삭임
+    - **`[Woni: bright punchy delivery]`**: 비트에 착 감기는 산뜻한 비타민 타격감
+- **`[🛡️ Suno 안전 가사 복사]`**:
+  - 불필요한 군더더기 긴 문장은 걸러내고, Suno가 음색 전환 큐로 가장 민감하게 반응하는 위 표준 3~4단어 보이스 큐를 완벽 보존해 복사해 줍니다! 음원 뽑을 땐 이 버튼을 사용하세요.
 
 ---
 
