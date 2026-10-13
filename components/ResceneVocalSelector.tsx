@@ -2,7 +2,7 @@
 'use client'
 
 import { useState } from 'react'
-import { RESCENE_MEMBERS, type ResceneMemberVocal } from '@/lib/rescene-vocal'
+import { RESCENE_MEMBERS, RESCENE_PART_CUES } from '@/lib/rescene-vocal'
 
 type Props = {
   selectedVocals: string[]
@@ -18,9 +18,11 @@ export function ResceneVocalSelector({
   const [expandedMemberId, setExpandedMemberId] = useState<string | null>(null)
 
   const isSelected = (label: string) => selectedVocals.includes(label)
+  const isFullGroup = selectedVocals.includes(RESCENE_MEMBERS[0].label)
 
   return (
     <div className="mb-6 overflow-hidden rounded-3xl border border-violet-200 bg-gradient-to-br from-violet-50/70 via-white to-pink-50/40 p-5 shadow-xs">
+      {/* 헤더 */}
       <div className="mb-4 flex flex-wrap items-center justify-between gap-2 border-b border-violet-100/80 pb-3">
         <div className="flex items-center gap-2.5">
           <span className="flex h-8 w-8 items-center justify-center rounded-2xl bg-gradient-to-tr from-violet-500 to-pink-400 text-base shadow-xs">
@@ -29,35 +31,39 @@ export function ResceneVocalSelector({
           <div>
             <div className="flex items-center gap-2">
               <h3 className="text-sm font-bold text-zinc-900 sm:text-base">
-                리센느(RESCENE) 멤버별 보컬 분석 & 선택
+                리센느 멤버 파트 분배 &amp; 보컬 연출 (가사 섹션별 배치)
               </h3>
               <span className="rounded-full bg-violet-100 px-2 py-0.5 text-[11px] font-semibold text-violet-700">
-                리센느낌 전용
+                파트 브래킷 태그 탑재
               </span>
               <span className="rounded-full bg-emerald-100 px-2 py-0.5 text-[11px] font-semibold text-emerald-800">
-                🎙️ 안티-AI 에코 (Dry 스튜디오)
+                🎙️ AI 에코 차단
               </span>
             </div>
             <p className="text-xs text-zinc-500">
-              AI 특유의 깡통 에코·홀 리버브를 제거하고 마이크에 바짝 붙은(Close-mic) 선명한 스튜디오 보컬로 자동 매핑합니다.
+              가사를 뽑을 때 각 멤버의 음색과 연출 태그([May - whisper], [Minami - belting] 등)가 가사 구간마다 차례대로 배치되어 Suno에서 파트 전환을 이끕니다.
             </p>
           </div>
         </div>
 
-        {/* 퀵 유닛 버튼 */}
+        {/* 퀵 라인업 버튼 */}
         <div className="flex flex-wrap items-center gap-1.5 text-xs">
-          <span className="text-[11px] font-medium text-zinc-400">추천 유닛:</span>
+          <span className="text-[11px] font-medium text-zinc-400">파트 구성:</span>
           <button
             type="button"
             onClick={() => onSelectExclusiveMember(RESCENE_MEMBERS[0].label)}
-            className="rounded-lg border border-zinc-200 bg-white px-2 py-1 text-[11px] font-medium text-zinc-600 hover:border-violet-300 hover:text-violet-700"
+            className={[
+              'rounded-lg px-2.5 py-1 text-[11px] font-bold transition',
+              isFullGroup
+                ? 'bg-violet-600 text-white shadow-2xs'
+                : 'border border-zinc-200 bg-white text-zinc-600 hover:border-violet-300 hover:text-violet-700',
+            ].join(' ')}
           >
-            5인 완전체
+            🫧 5인 완전체 (기본)
           </button>
           <button
             type="button"
             onClick={() => {
-              // 미나미 & 리브 보컬 라인
               const m = RESCENE_MEMBERS.find((x) => x.id === 'minami')!
               const l = RESCENE_MEMBERS.find((x) => x.id === 'liv')!
               onSelectExclusiveMember(m.label)
@@ -65,12 +71,11 @@ export function ResceneVocalSelector({
             }}
             className="rounded-lg border border-zinc-200 bg-white px-2 py-1 text-[11px] font-medium text-zinc-600 hover:border-violet-300 hover:text-violet-700"
           >
-            미나미 & 리브 (보컬라인)
+            🎤 미나미 &amp; 리브 (보컬라인)
           </button>
           <button
             type="button"
             onClick={() => {
-              // 원이 & 제나 에너지/비트 유닛
               const w = RESCENE_MEMBERS.find((x) => x.id === 'woni')!
               const z = RESCENE_MEMBERS.find((x) => x.id === 'zena')!
               onSelectExclusiveMember(w.label)
@@ -78,12 +83,11 @@ export function ResceneVocalSelector({
             }}
             className="rounded-lg border border-zinc-200 bg-white px-2 py-1 text-[11px] font-medium text-zinc-600 hover:border-violet-300 hover:text-violet-700"
           >
-            원이 & 제나 (비트유닛)
+            ⚡ 원이 &amp; 제나 (비트유닛)
           </button>
           <button
             type="button"
             onClick={() => {
-              // 메이 & 리브 몽환 유닛
               const my = RESCENE_MEMBERS.find((x) => x.id === 'may')!
               const l = RESCENE_MEMBERS.find((x) => x.id === 'liv')!
               onSelectExclusiveMember(my.label)
@@ -91,16 +95,64 @@ export function ResceneVocalSelector({
             }}
             className="rounded-lg border border-zinc-200 bg-white px-2 py-1 text-[11px] font-medium text-zinc-600 hover:border-violet-300 hover:text-violet-700"
           >
-            메이 & 리브 (몽환유닛)
+            ☁️ 메이 &amp; 리브 (몽환유닛)
           </button>
         </div>
       </div>
 
-      {/* 6명 멤버 카드 그리드 */}
+      {/* 가사 파트 전개 시뮬레이션 타임라인 */}
+      <div className="mb-4 rounded-2xl border border-violet-100 bg-white/90 p-3 shadow-2xs">
+        <div className="flex items-center justify-between mb-2">
+          <span className="text-xs font-bold text-violet-900 flex items-center gap-1.5">
+            <span>🎼</span> 가사 섹션별 멤버 파트 전개도 (Suno 프롬프트 큐)
+          </span>
+          <span className="text-[10px] text-zinc-400">곡 구조에 따라 브래킷 자동 생성</span>
+        </div>
+        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2 text-center">
+          <div className="rounded-xl bg-purple-50/80 border border-purple-200/60 p-2">
+            <span className="text-[10px] font-bold text-purple-700 block">1. 도입 벌스</span>
+            <span className="text-xs font-bold text-zinc-800 mt-0.5 block">메이</span>
+            <span className="text-[10px] text-zinc-500 block leading-tight mt-0.5">귓가 속삭임</span>
+          </div>
+          <div className="rounded-xl bg-amber-50/80 border border-amber-200/60 p-2">
+            <span className="text-[10px] font-bold text-amber-700 block">2. 벌스 전개</span>
+            <span className="text-xs font-bold text-zinc-800 mt-0.5 block">원이</span>
+            <span className="text-[10px] text-zinc-500 block leading-tight mt-0.5">비트 그루브</span>
+          </div>
+          <div className="rounded-xl bg-zinc-100 border border-zinc-200 p-2">
+            <span className="text-[10px] font-bold text-zinc-700 block">3. 빌드업</span>
+            <span className="text-xs font-bold text-zinc-800 mt-0.5 block">제나</span>
+            <span className="text-[10px] text-zinc-500 block leading-tight mt-0.5">시크 중저음</span>
+          </div>
+          <div className="rounded-xl bg-violet-100/90 border border-violet-300 p-2 shadow-2xs">
+            <span className="text-[10px] font-bold text-violet-800 block">4. 후렴 (Chorus)</span>
+            <span className="text-xs font-bold text-violet-950 mt-0.5 block">완전체</span>
+            <span className="text-[10px] text-violet-700 block leading-tight mt-0.5">5인 하모니</span>
+          </div>
+          <div className="rounded-xl bg-pink-50/80 border border-pink-200/60 p-2">
+            <span className="text-[10px] font-bold text-pink-700 block">5. 벌스 2</span>
+            <span className="text-xs font-bold text-zinc-800 mt-0.5 block">리브</span>
+            <span className="text-[10px] text-zinc-500 block leading-tight mt-0.5">청아한 크리스탈</span>
+          </div>
+          <div className="rounded-xl bg-rose-50/80 border border-rose-200/60 p-2">
+            <span className="text-[10px] font-bold text-rose-700 block">6. 브릿지 클라이맥스</span>
+            <span className="text-xs font-bold text-zinc-800 mt-0.5 block">미나미</span>
+            <span className="text-[10px] text-zinc-500 block leading-tight mt-0.5">고음 벨팅 폭발</span>
+          </div>
+          <div className="rounded-xl bg-indigo-50/80 border border-indigo-200/60 p-2">
+            <span className="text-[10px] font-bold text-indigo-700 block">7. 아웃트로</span>
+            <span className="text-xs font-bold text-zinc-800 mt-0.5 block">메이</span>
+            <span className="text-[10px] text-zinc-500 block leading-tight mt-0.5">여운 속삭임</span>
+          </div>
+        </div>
+      </div>
+
+      {/* 6명 멤버별 카드 그리드 */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
         {RESCENE_MEMBERS.map((member) => {
           const active = isSelected(member.label)
           const isExpanded = expandedMemberId === member.id
+          const partCue = RESCENE_PART_CUES.find((p) => p.memberId === member.id)
 
           return (
             <div
@@ -112,7 +164,7 @@ export function ResceneVocalSelector({
                   : 'border-zinc-200/90 bg-white/70 hover:border-violet-200 hover:bg-white',
               ].join(' ')}
             >
-              {/* 상단: 이름 + 배지 + 선택 체크박스 */}
+              {/* 상단: 이름 + 배지 + 체크박스 */}
               <div className="flex items-start justify-between gap-2">
                 <button
                   type="button"
@@ -146,19 +198,28 @@ export function ResceneVocalSelector({
                 </button>
               </div>
 
+              {/* 가사 브래킷 태그 미리보기 */}
+              {partCue && (
+                <div className="mt-2.5 rounded-xl bg-violet-50/70 border border-violet-100 p-2 text-[11px]">
+                  <div className="text-[10px] font-bold text-violet-800">
+                    가사 적용 브래킷:
+                  </div>
+                  <div className="mt-0.5 font-mono text-[10px] font-semibold text-violet-900 truncate">
+                    {partCue.lyricBracketTag}
+                  </div>
+                  <div className="mt-1 text-[10px] text-zinc-500 leading-tight">
+                    {partCue.sectionRole}
+                  </div>
+                </div>
+              )}
+
               {/* 음색 요약 문구 */}
               <p
                 onClick={() => onToggleVocal(member.label)}
-                className="mt-2.5 cursor-pointer text-xs leading-relaxed text-zinc-600"
+                className="mt-2 cursor-pointer text-xs leading-relaxed text-zinc-600"
               >
                 {member.vocalAnalysis.tone}
               </p>
-
-              {/* 향기 키워드 */}
-              <div className="mt-2 flex items-center gap-1 text-[11px] text-zinc-400">
-                <span>🌸 향기:</span>
-                <span className="font-medium text-zinc-600">{member.scentKeyword}</span>
-              </div>
 
               {/* 하단 상세 분석 펼침 토글 버튼 */}
               <div className="mt-3 flex items-center justify-between border-t border-zinc-100 pt-2 text-[11px]">
@@ -167,7 +228,7 @@ export function ResceneVocalSelector({
                   onClick={() => setExpandedMemberId(isExpanded ? null : member.id)}
                   className="inline-flex items-center gap-1 font-medium text-violet-600 hover:text-violet-800"
                 >
-                  <span>{isExpanded ? '▲ 분석 접기' : '▼ 상세 분석 보기'}</span>
+                  <span>{isExpanded ? '▲ 연출 접기' : '▼ 보컬 연출 분석'}</span>
                 </button>
                 <button
                   type="button"
@@ -187,15 +248,15 @@ export function ResceneVocalSelector({
                     <span>{member.vocalAnalysis.technique}</span>
                   </div>
                   <div>
-                    <span className="font-bold text-violet-900">핵심 강점: </span>
-                    <span>{member.vocalAnalysis.strengths}</span>
+                    <span className="font-bold text-violet-900">보컬 연출: </span>
+                    <span>{partCue?.vocalDirecting || member.vocalAnalysis.strengths}</span>
                   </div>
                   <div>
                     <span className="font-bold text-violet-900">추천 비트: </span>
                     <span>{member.vocalAnalysis.recommendedGenre}</span>
                   </div>
                   <div className="border-t border-violet-100 pt-1 text-[10px] text-zinc-500">
-                    <span className="font-semibold text-zinc-600">Suno 태그: </span>
+                    <span className="font-semibold text-zinc-600">Suno Style 태그: </span>
                     <span className="font-mono text-violet-700">{member.stylePromptDescriptor}</span>
                   </div>
                 </div>

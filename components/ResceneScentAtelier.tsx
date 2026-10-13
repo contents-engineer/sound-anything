@@ -3,13 +3,13 @@
 
 import { useState } from 'react'
 import {
-  TOP_NOTES,
-  MIDDLE_NOTES,
-  BASE_NOTES,
   CURATED_NEW_SCENTS,
-  buildCustomScentFormula,
+  CUSTOM_KEYBOARD_MODULES,
+  CUSTOM_BASS_MODULES,
+  CUSTOM_SPACE_MODULES,
+  buildCustomSoundFormula,
   type CuratedScentFormula,
-  type ScentNoteItem,
+  type SoundModuleItem,
 } from '@/lib/rescene-scents'
 
 type Props = {
@@ -34,44 +34,28 @@ export function ResceneScentAtelier({
 }: Props) {
   const [activeTab, setActiveTab] = useState<'curated' | 'custom'>('curated')
 
-  // 커스텀 조향 상태 (기본값: 베르가못 + 금목서 + 캐시미어 우드)
-  const [selectedTop, setSelectedTop] = useState<ScentNoteItem>(TOP_NOTES[0])
-  const [selectedMiddle, setSelectedMiddle] = useState<ScentNoteItem>(MIDDLE_NOTES[0])
-  const [selectedBase, setSelectedBase] = useState<ScentNoteItem>(BASE_NOTES[0])
+  // 커스텀 사운드 조합 상태
+  const [selectedKeyboard, setSelectedKeyboard] = useState<SoundModuleItem>(CUSTOM_KEYBOARD_MODULES[0])
+  const [selectedBass, setSelectedBass] = useState<SoundModuleItem>(CUSTOM_BASS_MODULES[0])
+  const [selectedSpace, setSelectedSpace] = useState<SoundModuleItem>(CUSTOM_SPACE_MODULES[0])
 
-  const customFormula = buildCustomScentFormula(selectedTop, selectedMiddle, selectedBase)
+  const customSound = buildCustomSoundFormula(selectedKeyboard, selectedBass, selectedSpace)
 
-  function handleRandomBlend() {
-    const randomTop = TOP_NOTES[Math.floor(Math.random() * TOP_NOTES.length)]
-    const randomMiddle = MIDDLE_NOTES[Math.floor(Math.random() * MIDDLE_NOTES.length)]
-    const randomBase = BASE_NOTES[Math.floor(Math.random() * BASE_NOTES.length)]
-    setSelectedTop(randomTop)
-    setSelectedMiddle(randomMiddle)
-    setSelectedBase(randomBase)
-
-    const blended = buildCustomScentFormula(randomTop, randomMiddle, randomBase)
+  function handleApplyCustom(
+    kb: SoundModuleItem = selectedKeyboard,
+    bs: SoundModuleItem = selectedBass,
+    sp: SoundModuleItem = selectedSpace
+  ) {
+    const formula = buildCustomSoundFormula(kb, bs, sp)
     onApplyCustomScent({
-      name: blended.nameKo,
-      nameEn: blended.nameEn,
-      pyramid: blended.pyramidSummary,
-      topic: blended.topicSentence,
-      bpm: blended.bpmRecommendation,
-      genre: blended.genreRecommendation,
-      instruments: ['신디사이저', '베이스', '808 비트'],
-      sonicDescriptor: blended.sonicDescriptor,
-    })
-  }
-
-  function handleApplyCurrentCustom() {
-    onApplyCustomScent({
-      name: customFormula.nameKo,
-      nameEn: customFormula.nameEn,
-      pyramid: customFormula.pyramidSummary,
-      topic: customFormula.topicSentence,
-      bpm: customFormula.bpmRecommendation,
-      genre: customFormula.genreRecommendation,
-      instruments: ['신디사이저', '베이스', '808 비트'],
-      sonicDescriptor: customFormula.sonicDescriptor,
+      name: formula.nameKo,
+      nameEn: formula.nameEn,
+      pyramid: formula.techniqueSummary,
+      topic: `${formula.techniqueSummary} 기반의 감각적인 사운드 텍스처`,
+      bpm: formula.bpmRecommendation,
+      genre: formula.genreRecommendation,
+      instruments: [kb.nameKo, bs.nameKo, sp.nameKo],
+      sonicDescriptor: formula.sonicDescriptor,
     })
   }
 
@@ -86,14 +70,14 @@ export function ResceneScentAtelier({
           <div>
             <div className="flex items-center gap-2">
               <h3 className="text-sm font-bold text-zinc-900 sm:text-base">
-                리센느 시그니처 향기 &amp; 조향 아틀리에 (Scent Atelier)
+                시그니처 사운드 텍스처 &amp; 악기 주법 (Sound &amp; Instrument Textures)
               </h3>
               <span className="rounded-full bg-pink-50 px-2 py-0.5 text-[11px] font-bold text-pink-700">
-                Proust Effect
+                악기 3요소 기법
               </span>
             </div>
             <p className="text-xs text-zinc-500">
-              기존 앨범의 복제를 넘어, 조향 피라미드(탑-미들-베이스 노트)를 기반으로 새로운 향기를 창조합니다.
+              어려운 향수 화학 용어 대신, 스타일 프롬프트에 직접 반영될 구체적 악기 기종, 음색(Timbre), 연주 주법(Articulation)을 직관적으로 선택합니다.
             </p>
           </div>
         </div>
@@ -110,13 +94,13 @@ export function ResceneScentAtelier({
                 : 'text-zinc-500 hover:text-zinc-800',
             ].join(' ')}
           >
-            🌟 큐레이션 신규 향기 (6종)
+            🌟 사운드 프리셋 (6종)
           </button>
           <button
             type="button"
             onClick={() => {
               setActiveTab('custom')
-              handleApplyCurrentCustom()
+              handleApplyCustom()
             }}
             className={[
               'rounded-lg px-3 py-1 text-xs font-bold transition',
@@ -125,12 +109,12 @@ export function ResceneScentAtelier({
                 : 'text-zinc-500 hover:text-zinc-800',
             ].join(' ')}
           >
-            🧪 나만의 커스텀 조향 (직접 배합)
+            🎛️ 나만의 악기 주법 직접 조합
           </button>
         </div>
       </div>
 
-      {/* 탭 1: 큐레이션 신규 시그니처 향기 (6종) */}
+      {/* 탭 1: 큐레이션 시그니처 사운드 (6종) */}
       {activeTab === 'curated' && (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {CURATED_NEW_SCENTS.map((scent) => {
@@ -170,20 +154,23 @@ export function ResceneScentAtelier({
                     {scent.inspiration}
                   </p>
 
-                  {/* 조향 피라미드 요약 */}
-                  <div className="mt-3 space-y-1 rounded-xl bg-white/80 border border-zinc-100 p-2 text-[11px] leading-tight text-zinc-600">
-                    <div>
-                      <span className="font-bold text-amber-600">Top: </span>
-                      <span>{scent.pyramid.top}</span>
+                  {/* 스타일 프롬프트 반영 악기 및 주법 목록 */}
+                  <div className="mt-3 space-y-1 rounded-xl bg-white/90 border border-zinc-100 p-2 text-[11px] leading-tight text-zinc-700">
+                    <div className="text-[10px] font-bold text-violet-800 mb-1">
+                      구현되는 악기 기법 (Playing Techniques):
                     </div>
-                    <div>
-                      <span className="font-bold text-pink-600">Mid: </span>
-                      <span>{scent.pyramid.middle}</span>
-                    </div>
-                    <div>
-                      <span className="font-bold text-indigo-600">Base: </span>
-                      <span>{scent.pyramid.base}</span>
-                    </div>
+                    {scent.instrumentTechniques.map((tech, i) => (
+                      <div key={i} className="flex items-center gap-1.5 text-zinc-600">
+                        <span className="text-violet-500">•</span>
+                        <span>{tech}</span>
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* Suno 영문 프롬프트 디스크립터 미리보기 */}
+                  <div className="mt-2 rounded-lg bg-zinc-100/80 p-2 text-[10px] font-mono text-zinc-600">
+                    <span className="font-bold text-zinc-700">Style Tag: </span>
+                    <span className="line-clamp-2 text-violet-800">{scent.sonicDescriptor}</span>
                   </div>
                 </div>
 
@@ -197,150 +184,137 @@ export function ResceneScentAtelier({
         </div>
       )}
 
-      {/* 탭 2: 나만의 커스텀 조향 아틀리에 (직접 배합) */}
+      {/* 탭 2: 나만의 악기 주법 직접 조합 빌더 */}
       {activeTab === 'custom' && (
         <div className="space-y-4">
-          <div className="flex items-center justify-between bg-violet-50/70 rounded-2xl px-4 py-3">
+          <div className="flex flex-wrap items-center justify-between gap-2 bg-violet-50/70 rounded-2xl px-4 py-3">
             <div className="text-xs text-zinc-700">
-              <span className="font-bold text-violet-900">💡 조향 방법:</span> 탑 노트(첫인상) + 미들 노트(핵심 서사) + 베이스 노트(프루스트 잔향)를 각각 선택하면 세상에 단 하나뿐인 향기 음악 포뮬러가 완성됩니다.
+              <span className="font-bold text-violet-900">💡 구현 방식:</span> 건반 주법 + 베이스 리듬 + 믹스 질감을 선택하면 Suno 스타일 프롬프트에 정밀한 3요소 악기 디스크립터가 실시간 결합됩니다.
             </div>
-            <button
-              type="button"
-              onClick={handleRandomBlend}
-              className="shrink-0 rounded-xl bg-white border border-violet-200 px-3 py-1.5 text-xs font-bold text-violet-700 hover:bg-violet-100 transition shadow-2xs"
-            >
-              🎲 영감 랜덤 조향
-            </button>
+            <div className="text-[11px] font-bold text-violet-700">
+              현재 조합: {selectedKeyboard.nameKo.split(' ')[0]} + {selectedBass.nameKo.split(' ')[0]} + {selectedSpace.nameKo.split(' ')[0]}
+            </div>
           </div>
 
-          {/* 3단 조향 피라미드 선택기 */}
+          {/* 3단 선택 모듈 그리드 */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-            {/* 1) Top Note */}
-            <div className="rounded-2xl border border-amber-200/80 bg-amber-50/30 p-3.5">
+            {/* 1) 건반/신스 주법 */}
+            <div className="rounded-2xl border border-violet-200/80 bg-violet-50/30 p-3.5">
               <div className="mb-2 flex items-center justify-between">
-                <span className="text-xs font-bold text-amber-900 flex items-center gap-1">
-                  <span>🍋</span> 1. 탑 노트 (Top / 첫인상)
+                <span className="text-xs font-bold text-violet-900 flex items-center gap-1">
+                  <span>🎹</span> 1. 건반 &amp; 신스 주법 (Lead/Keys)
                 </span>
-                <span className="text-[10px] text-amber-700">인트로·첫 벌스</span>
+                <span className="text-[10px] text-violet-600">음색·아르페지오</span>
               </div>
               <div className="space-y-1.5">
-                {TOP_NOTES.map((n) => {
-                  const sel = selectedTop.id === n.id
+                {CUSTOM_KEYBOARD_MODULES.map((k) => {
+                  const sel = selectedKeyboard.id === k.id
                   return (
                     <button
-                      key={n.id}
+                      key={k.id}
                       type="button"
                       onClick={() => {
-                        setSelectedTop(n)
-                        const blended = buildCustomScentFormula(n, selectedMiddle, selectedBase)
-                        onApplyCustomScent({
-                          name: blended.nameKo,
-                          topic: blended.topicSentence,
-                          bpm: blended.bpmRecommendation,
-                          genre: blended.genreRecommendation,
-                          instruments: ['신디사이저', '베이스', '808 비트'],
-                        })
+                        setSelectedKeyboard(k)
+                        handleApplyCustom(k, selectedBass, selectedSpace)
                       }}
                       className={[
-                        'w-full flex items-center justify-between rounded-xl p-2 text-left text-xs transition',
+                        'w-full flex flex-col rounded-xl p-2.5 text-left text-xs transition',
                         sel
-                          ? 'border border-amber-400 bg-white font-bold text-amber-900 shadow-2xs'
-                          : 'border border-transparent bg-white/60 text-zinc-700 hover:bg-white',
+                          ? 'border border-violet-500 bg-white font-bold text-violet-950 shadow-2xs ring-1 ring-violet-400/40'
+                          : 'border border-transparent bg-white/70 text-zinc-700 hover:bg-white',
                       ].join(' ')}
                     >
-                      <span className="flex items-center gap-1.5">
-                        <span>{n.emoji}</span>
-                        <span>{n.nameKo}</span>
-                      </span>
-                      {sel && <span className="text-[10px] text-amber-600">선택</span>}
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-zinc-900 flex items-center gap-1">
+                          <span>{k.emoji}</span> {k.nameKo}
+                        </span>
+                        {sel && <span className="text-violet-600 font-bold text-[10px]">✓ 선택</span>}
+                      </div>
+                      <p className="mt-1 text-[11px] text-zinc-500 leading-tight">
+                        {k.descriptionKo}
+                      </p>
                     </button>
                   )
                 })}
               </div>
             </div>
 
-            {/* 2) Middle Note */}
+            {/* 2) 베이스 & 리듬 주법 */}
             <div className="rounded-2xl border border-pink-200/80 bg-pink-50/30 p-3.5">
               <div className="mb-2 flex items-center justify-between">
                 <span className="text-xs font-bold text-pink-900 flex items-center gap-1">
-                  <span>🌸</span> 2. 미들 노트 (Heart / 감정선)
+                  <span>🎸</span> 2. 베이스 &amp; 리듬 주법 (Bass/Rhythm)
                 </span>
-                <span className="text-[10px] text-pink-700">코러스 후렴구</span>
+                <span className="text-[10px] text-pink-600">사이드체인·그루브</span>
               </div>
               <div className="space-y-1.5">
-                {MIDDLE_NOTES.map((n) => {
-                  const sel = selectedMiddle.id === n.id
+                {CUSTOM_BASS_MODULES.map((b) => {
+                  const sel = selectedBass.id === b.id
                   return (
                     <button
-                      key={n.id}
+                      key={b.id}
                       type="button"
                       onClick={() => {
-                        setSelectedMiddle(n)
-                        const blended = buildCustomScentFormula(selectedTop, n, selectedBase)
-                        onApplyCustomScent({
-                          name: blended.nameKo,
-                          topic: blended.topicSentence,
-                          bpm: blended.bpmRecommendation,
-                          genre: blended.genreRecommendation,
-                          instruments: ['신디사이저', '베이스', '808 비트'],
-                        })
+                        setSelectedBass(b)
+                        handleApplyCustom(selectedKeyboard, b, selectedSpace)
                       }}
                       className={[
-                        'w-full flex items-center justify-between rounded-xl p-2 text-left text-xs transition',
+                        'w-full flex flex-col rounded-xl p-2.5 text-left text-xs transition',
                         sel
-                          ? 'border border-pink-400 bg-white font-bold text-pink-900 shadow-2xs'
-                          : 'border border-transparent bg-white/60 text-zinc-700 hover:bg-white',
+                          ? 'border border-pink-500 bg-white font-bold text-pink-950 shadow-2xs ring-1 ring-pink-400/40'
+                          : 'border border-transparent bg-white/70 text-zinc-700 hover:bg-white',
                       ].join(' ')}
                     >
-                      <span className="flex items-center gap-1.5">
-                        <span>{n.emoji}</span>
-                        <span>{n.nameKo}</span>
-                      </span>
-                      {sel && <span className="text-[10px] text-pink-600">선택</span>}
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-zinc-900 flex items-center gap-1">
+                          <span>{b.emoji}</span> {b.nameKo}
+                        </span>
+                        {sel && <span className="text-pink-600 font-bold text-[10px]">✓ 선택</span>}
+                      </div>
+                      <p className="mt-1 text-[11px] text-zinc-500 leading-tight">
+                        {b.descriptionKo}
+                      </p>
                     </button>
                   )
                 })}
               </div>
             </div>
 
-            {/* 3) Base Note */}
+            {/* 3) 믹스 & 공간 텍스처 */}
             <div className="rounded-2xl border border-indigo-200/80 bg-indigo-50/30 p-3.5">
               <div className="mb-2 flex items-center justify-between">
                 <span className="text-xs font-bold text-indigo-900 flex items-center gap-1">
-                  <span>🧣</span> 3. 베이스 노트 (Base / 잔향)
+                  <span>💎</span> 3. 믹스 &amp; 공간 텍스처 (Mix/Space)
                 </span>
-                <span className="text-[10px] text-indigo-700">아웃트로·프루스트</span>
+                <span className="text-[10px] text-indigo-600">드라이·질감</span>
               </div>
               <div className="space-y-1.5">
-                {BASE_NOTES.map((n) => {
-                  const sel = selectedBase.id === n.id
+                {CUSTOM_SPACE_MODULES.map((s) => {
+                  const sel = selectedSpace.id === s.id
                   return (
                     <button
-                      key={n.id}
+                      key={s.id}
                       type="button"
                       onClick={() => {
-                        setSelectedBase(n)
-                        const blended = buildCustomScentFormula(selectedTop, selectedMiddle, n)
-                        onApplyCustomScent({
-                          name: blended.nameKo,
-                          topic: blended.topicSentence,
-                          bpm: blended.bpmRecommendation,
-                          genre: blended.genreRecommendation,
-                          instruments: ['신디사이저', '베이스', '808 비트'],
-                        })
+                        setSelectedSpace(s)
+                        handleApplyCustom(selectedKeyboard, selectedBass, s)
                       }}
                       className={[
-                        'w-full flex items-center justify-between rounded-xl p-2 text-left text-xs transition',
+                        'w-full flex flex-col rounded-xl p-2.5 text-left text-xs transition',
                         sel
-                          ? 'border border-indigo-400 bg-white font-bold text-indigo-900 shadow-2xs'
-                          : 'border border-transparent bg-white/60 text-zinc-700 hover:bg-white',
+                          ? 'border border-indigo-500 bg-white font-bold text-indigo-950 shadow-2xs ring-1 ring-indigo-400/40'
+                          : 'border border-transparent bg-white/70 text-zinc-700 hover:bg-white',
                       ].join(' ')}
                     >
-                      <span className="flex items-center gap-1.5">
-                        <span>{n.emoji}</span>
-                        <span>{n.nameKo}</span>
-                      </span>
-                      {sel && <span className="text-[10px] text-indigo-600">선택</span>}
+                      <div className="flex items-center justify-between">
+                        <span className="font-semibold text-zinc-900 flex items-center gap-1">
+                          <span>{s.emoji}</span> {s.nameKo}
+                        </span>
+                        {sel && <span className="text-indigo-600 font-bold text-[10px]">✓ 선택</span>}
+                      </div>
+                      <p className="mt-1 text-[11px] text-zinc-500 leading-tight">
+                        {s.descriptionKo}
+                      </p>
                     </button>
                   )
                 })}
@@ -348,34 +322,17 @@ export function ResceneScentAtelier({
             </div>
           </div>
 
-          {/* 실시간 조향 결과 카드 */}
-          <div className="rounded-2xl border border-violet-300 bg-gradient-to-r from-violet-50 via-white to-pink-50 p-4 shadow-xs">
-            <div className="flex flex-wrap items-center justify-between gap-2">
-              <div className="flex items-center gap-2">
-                <span className="text-lg">✨</span>
-                <div>
-                  <h4 className="text-sm font-bold text-zinc-900">
-                    {customFormula.nameKo}{' '}
-                    <span className="text-xs font-normal text-zinc-500">
-                      ({customFormula.nameEn})
-                    </span>
-                  </h4>
-                  <p className="mt-0.5 text-xs font-medium text-violet-700">
-                    {customFormula.pyramidSummary}
-                  </p>
-                </div>
-              </div>
-              <button
-                type="button"
-                onClick={handleApplyCurrentCustom}
-                className="rounded-xl bg-violet-600 px-3.5 py-1.5 text-xs font-bold text-white shadow-xs hover:bg-violet-700 transition"
-              >
-                이 조향으로 음악 설정 적용 ✓
-              </button>
+          {/* 생성될 stylePrompt 영문 태그 실시간 미리보기 박스 */}
+          <div className="rounded-2xl bg-zinc-900 text-white p-4 shadow-sm">
+            <div className="flex items-center justify-between mb-1.5 text-xs">
+              <span className="font-bold text-zinc-200 flex items-center gap-1.5">
+                <span>⚡</span> Suno Style Prompt 반영 디스크립터 (실시간 미리보기):
+              </span>
+              <span className="text-emerald-400 font-medium">3요소 악기 주법 결합됨</span>
             </div>
-            <p className="mt-2 text-xs leading-relaxed text-zinc-600 border-t border-violet-100 pt-2">
-              {customFormula.topicSentence}
-            </p>
+            <div className="font-mono text-xs text-violet-300 bg-zinc-800/80 rounded-xl p-2.5 break-all">
+              {customSound.sonicDescriptor}
+            </div>
           </div>
         </div>
       )}

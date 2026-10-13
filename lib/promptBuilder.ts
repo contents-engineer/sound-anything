@@ -30,18 +30,28 @@ Suno v6는 소리로 번역되는 구체적 음악 구성 요소(보컬 캐릭�
 # 각 song의 stylePrompt 필드 (Suno Style 입력란용)
 
 - 반드시 영어로만, 콤마로 구분된 디스크립터 **4~7개**로 작성합니다. 8개 이상 금지 — 디스크립터끼리 경쟁해 소리가 탁해집니다.
-- 순서 고정(앞일수록 가중치가 큼): 장르/서브장르 → 템포/에너지 → 핵심 악기 / 향기 공감각 사운드 질감 → 보컬 → 프로덕션 → 무드. **주 장르를 반드시 맨 앞에** 둡니다.
-- **리센느 시그니처 향기가 선택된 경우**: 4~7개 슬롯 중 **1~2개를 반드시 향기 공감각 사운드 질감**(예: "apricot-infused Rhodes piano", "smoky earl grey synth chords", "effervescent sea-salt plucks", "dewy rain-soaked pads" 등)에 배정합니다. 무드나 부가 악기를 줄이더라도 향기 사운드는 절대로 생략하지 마세요.
-- 사용자가 옵션을 많이 골라도 전부 나열하지 말고, 곡 콘셉트에 맞게 우선순위를 정해 4~7개로 압축·번역합니다. 사용자가 직접 입력(Custom Input)한 항목 및 시그니처 향기 질감이 있다면 최우선으로 stylePrompt에 반영합니다.
+- 순서 고정(앞일수록 가중치가 큼): 장르/서브장르 → 템포/에너지 → 핵심 악기 & 연주 기법 → 보컬 → 프로덕션 → 무드. **주 장르를 반드시 맨 앞에** 둡니다.
+- **악기 표현 및 연주 기법(Articulation/Technique) & 음색(Timbre) 3요소 필수 규칙**:
+  - Suno AI는 단순 악기명("piano, synth, bass")만 나열하면 평범하고 밋밋한 MIDI 사운드를 출력합니다. 원하는 정밀한 사운드를 구현하려면 악기 슬롯(최대 2~3개 핵심 악기)에 반드시 **[구체적 악기 기종] + [음색 질감 Timbre] + [연주 주법/기법 Playing Technique & Articulation]**의 3요소 결합형 디스크립터를 작성해야 합니다:
+    - 건반/신스 주법: "dusty Rhodes electric piano with gentle tremolo chords", "sparkling arpeggiated synth plucks with crystal delay", "bright resonant staccato synth leads with fast filter decay", "warm detuned Juno-106 analog pad swells", "intimate felt piano with soft hammer attack"
+    - 베이스/리듬 주법: "sidechain pumping Moog sub-bass groove with deep low-end", "crisp syncopated 2-step garage shuffle drums with tight snare claps", "punchy 808 sub bass with smooth melodic glides", "bouncy rolling house bassline with round warmth", "tight slap bass groove", "warm pizzicato acoustic upright bass"
+    - 기타/현악 주법: "palm-muted staccato electric guitar riff", "fingerpicked acoustic guitar with crisp string friction", "glassy chorus-soaked clean electric guitar chords"
+- **리센느 시그니처 사운드 텍스처 반영 (필수 적용)**:
+  - 4~7개 슬롯 중 **1~2개를 반드시 위 악기 주법 3요소와 결합된 공감각 사운드 질감**에 배정합니다:
+    - 오스만투스 노을 & 감성 딥하우스: "dusty Rhodes electric piano with gentle tremolo chords", "sidechain pumping warm Moog sub-bass groove", "arpeggiated bell plucks"
+    - 야생 무화과 & 어반 2-Step: "staccato dewy synth plucks with short decay", "crisp syncopated 2-step garage shuffle drums", "creamy analog bassline"
+    - 솔티 마린 & 시 글래스: "effervescent arpeggiated synth plucks with crystal delay", "airy atmospheric pad sweeps", "bouncy rolling bass groove"
+    - 비안개 런던 & 스모키 바닐라: "warm Rhodes electric piano with tape flutter", "dark velvety low-pass Moog bass", "muted chords with smooth decay"
+    - 캐시미어 코튼 & 소프트 머스크: "intimate felt piano with soft hammer attack", "warm analog Juno-106 pad swells", "subtle pizzicato acoustic bass"
+    - 네롤리 선셋 & 시트러스 팝: "bright resonant staccato synth leads with fast filter decay", "punchy 808 sub bass", "uplifting brass synth stabs"
+  - 사용자가 커스텀 사운드 조합이나 추가 악기를 지정한 경우에도 해당 악기의 연주 기법과 질감을 3요소 결합형으로 번역하여 반영합니다.
 - 차별화 레버 (곡마다 1개 이상 활용):
   - 마이크로장르: rock 대신 shoegaze·surf rock, hip-hop 대신 boom-bap·phonk, dance-pop 대신 2-step garage·deep house처럼 좁고 뾰족한 장르명
-  - 악기 고유명사: keyboard 대신 Rhodes electric piano, Juno-106 pad, Moog bass, TR-808
   - 시대 앵커: 80s synth-pop, late 2010s minimal production처럼 시대를 못박기
   - 프로덕션 질감: tape saturation, vinyl crackle, gated reverb drums, warm analog production
 - **시대 앵커 옵션이 선택되면** 그 시대를 stylePrompt에 디스크립터 1개로 반드시 못박습니다(예: "1980s Japanese city pop production", "late 2010s minimal production"). full 모드에서는 이 시대가 10곡 공통 앵커이므로 곡마다 시대를 바꾸지 마세요. 선택이 없을 때만 곡별 차별화 레버로 자유롭게 씁니다.
 - **프로덕션·믹스 옵션이 선택되면** 프로덕션 슬롯을 그 선택으로 고정하고 모델 재량으로 다른 질감을 넣지 마세요. 매핑: 드라이 스튜디오 보컬 → "dry upfront studio vocal recording, close-mic clean mix" / 깨끗한 현대 믹스 → "clean modern mix"(+필요 시 high fidelity) / 아날로그 따뜻함 → "warm analog production" / 로파이 테이프 → "lo-fi tape saturation"(vinyl crackle 추가 가능) / 라이브 밴드 (원테이크) → "live band recording"(room mics 추가 가능). 이 선택도 full 모드에서 10곡 공통 앵커입니다.
 - 시대·프로덕션 옵션이 함께 선택되면 4~7개 슬롯 중 2개가 이 둘에 배정되므로, 무드 등 우선순위가 낮은 디스크립터를 줄여 상한을 지킵니다.
-- 로파이 테이프가 선택된 곡에는 명료도 계열(professional studio vocal recording·high fidelity·clean mix)을 절대 함께 쓰지 마세요. 반대로 깨끗한 현대 믹스가 선택되면 tape saturation·vinyl crackle·lo-fi를 쓰지 않습니다.
 - 보컬은 3계층으로 씁니다: Character(누가 — raspy female vocals), Delivery(어떻게 — breathy, powerful belt), Effects(질감 — reverb-drenched, 필요할 때만). 최소 Character+Delivery는 지정합니다.
 - **연주곡 예외**(보컬에 "연주곡 (보컬 없음)"이 선택된 곡): 보컬 디스크립터를 일절 쓰지 말고, 대신 "instrumental"과 "no vocals" 두 디스크립터를 반드시 포함합니다.
 - **듀엣**(보컬에 "남녀 듀엣"을 골랐거나, 남성·여성 보컬을 함께 선택했거나 듀엣을 요청한 곡): "Duet"을 디스크립터로 반드시 포함합니다.
@@ -57,32 +67,41 @@ Suno v6는 소리로 번역되는 구체적 음악 구성 요소(보컬 캐릭�
   - 2명 이상 선택된 경우(유닛/듀엣): 각 멤버의 보컬 캐릭터를 결합해 "female vocal duo, [캐릭터1] and [캐릭터2]" 형태로 작성합니다.
 - BPM 옵션이 있으면 그대로 명시합니다(예: 70-90 BPM). 신호끼리 싸우게 하지 마세요: slow + 140 BPM, happy bright + D minor 같은 조합 금지.
 - 무드는 한 방향만. aggressive와 peaceful 병치 금지 — 대비가 필요하면 태그가 아니라 가사 구조(조용한 [Verse] → 터지는 [Chorus])로 만듭니다.
-- 사용자가 무드를 여러 개 골랐다면: 1곡 생성 시에는 서로 충돌하지 않는 하나의 지배적 방향만 stylePrompt에 반영하고 나머지는 버립니다. 2곡 이상 생성 시에는 고른 무드들을 플레이리스트 전체에 곡별로 분배해(트랙 역할에 맞게) 곡마다 다른 무드를 대표로 삼되, 앵커(장르 패밀리·핵심 악기·보컬)는 유지합니다.
 - 저중역 질감 계열 디스크립터(dark, warm, lush, heavy, thick, reverb-heavy 등)는 곡당 **최대 2개** — 뭉개진(muddy) 믹스를 예방합니다. 무드상 이 계열이 몰리면 하나를 clean mix 또는 hi-fi production으로 대체합니다.
-- 보컬이 곡의 주인공인 장르(발라드·CCM/찬양·R&B·소울 등)에서 프로덕션 디스크립터를 쓸 때는 명료도를 올리는 쪽을 우선합니다: professional studio vocal recording, high fidelity, clean mix 중 **최대 1개**. 단 lo-fi·빈티지·tape saturation·vinyl crackle 질감을 의도한 곡에는 절대 함께 쓰지 마세요(정면 충돌). 연주곡에도 쓰지 않습니다.
+- 보컬이 곡의 주인공인 장르(발라드·CCM/찬양·R&B·소울 등)에서 프로덕션 디스크립터를 쓸 때는 명료도를 올리는 쪽을 우선합니다: professional studio vocal recording, high fidelity, clean mix 중 **최대 1개**.
 - 금지: 추상어(epic, beautiful, amazing, emotional), 명령문(make the drums louder), 실제 아티스트명, "Target duration ..." 같은 길이 지시, 무한 루프 유발어(hypnotic, looping, endless).
-- 예시: "Dream Pop, slow 70-90 BPM, Juno-106 pad and clean electric guitar, breathy female vocals singing in Korean, Clear Korean Pronunciation, 2010s reverb-heavy production, wistful"
-- 2곡 이상 생성 시 각 곡의 stylePrompt가 서로 명확히 달라야 하며, 곡마다 차별화 레버 중 최소 1개를 다르게 씁니다. 단, 그 차이는 아래 "플레이리스트 일관성" 섹션의 앵커를 깨지 않는 범위에서 만듭니다.
+- 예시: "Dream Pop, slow 70-90 BPM, Juno-106 pad swells with sparkling resonance, breathy female vocals singing in Korean, Clear Korean Pronunciation, close-mic clean mix, wistful"
 
-# 리센느(RESCENE) 시그니처 향기 공감각화 규약 (Scent-to-Sound in Style Only)
+# 리센느(RESCENE) 멤버별 가사 파트 분배 및 보컬 연출 브래킷 규칙 (Member Part Allocation & Vocal Cues)
 
-리센느 음악의 핵심은 **"사운드와 스타일(음악적 질감)이 향기를 일으키는 공감각적 체험"**입니다.
-**중요 (철칙): 향기 콘셉트는 stylePrompt(악기, 신스 질감, 프로덕션 믹스)에만 적용되며, 곡의 가사(Lyrics)와 제목(Titles)을 향기로 도배하라는 뜻이 절대 아닙니다!**
+리센느 관련 곡(또는 멤버 보컬 지정 시)에서는 일반 "[Verse 1]" 같은 무색무취 태그 대신, **가사 섹션 및 소절마다 해당 파트를 부르는 멤버 이름과 보컬 연출 지시문(Vocal Cue)을 대괄호 브래킷에 구체적으로 명시**해야 합니다!
+Suno는 가사 창의 "[Section: Member - vocal style]" 브래킷 태그를 인식하여 구간별 음색 전환과 멤버별 가창 역할을 다이내믹하게 연출합니다:
 
-- **stylePrompt 향기 공감각 사운드 반영 (필수 적용)**:
-  - 4~7개 디스크립터 중 **최소 1~2개**는 선택된 향기의 음악적 공감각 텍스처를 직접 묘사하여, 듣는 것만으로도 향기가 퍼지는 듯한 감각적인 딥하우스/2-Step 사운드를 완성합니다:
-    - 오스만투스 티 & 노을빛 잔향: "apricot-infused Rhodes piano", "smoky earl grey synth chords", "golden autumn warmth"
-    - 야생 무화과 숲 & 그린 밀키: "bittersweet green attack", "dewy fig leaf plucks", "creamy cedarwood groove"
-    - 솔티 마린 & 시 글래스: "effervescent sea-salt synth plucks", "breezy ocean atmospheric pads", "sparkling crystal sea-glass texture"
-    - 비안개 런던 & 스모키 바닐라: "smoked bourbon vanilla warmth", "dark velvety midnight chords", "cozy rain-slicked atmosphere"
-    - 캐시미어 살결 & 화이트 머스크: "soft clean linen synth texture", "intimate cashmere warmth", "powdery skin scent aura"
-    - 네롤리 선셋 & 골든 블룸: "sunlit sparkling neroli chords", "radiant citrus blossom synth leads", "golden sunset bounce"
-  - 커스텀 조향일 경우에도 조향 피라미드의 음악적 대응 디스크립터를 추출하여 stylePrompt에 반영합니다.
+1. **5인 완전체 기본 파트 분배 템플릿**:
+   - "[Intro: soft synth intro]"
+   - "[Verse 1: May - breathy intimate whisper close-mic]" (메이의 귓가 속삭임 도입)
+   - "[Verse 1 (Cont.): Woni - punchy energetic upbeat delivery]" (원의의 밝은 텐션과 비트 그루브)
+   - "[Pre-Chorus: Zena - chic velvety low-mid tone, tension build]" (제나의 시크한 중저음 빌드업)
+   - "[Chorus: All - tight girl group harmonies, Minami & Liv powerful lead]" (5인 에테리얼 하모니 + 미나미/리브 리드)
+   - "[Verse 2: Liv - pure crystal-clear lead melody]" (리브의 청아한 크리스탈 독백 전개)
+   - "[Verse 2 (Cont.): Woni & Zena - energetic rhythmic flow]" (원이 & 제나 비트 유닛 호흡)
+   - "[Bridge: Minami - soaring high-pitch belting climax]" (미나미의 폭발적인 클라이맥스 고음 벨팅)
+   - "[Chorus: All - tight explosive harmonized chorus]"
+   - "[Outro: May - delicate fading whisper]" (메이의 서정적인 잔향 속삭임)
+   - "[End]"
+2. **유닛 또는 솔로 선택 시**:
+   - 선택된 멤버들의 음색 특성에 맞춰 도입(속삭임/도입), 전개, 후렴(듀엣 하모니), 브릿지(고음)를 분배합니다.
+   - 예: 미나미 & 리브 유닛 → 벌스1(리브), 프리코러스(미나미), 후렴(듀엣), 브릿지(미나미 고음).
+   - 예: 솔로 멤버 → 섹션마다 해당 멤버의 가창 다이내믹 표기 (예: "[Verse 1: Minami - calm storytelling]", "[Chorus: Minami - explosive punchy belting]").
 
-- **가사(Lyrics) 및 제목(Titles) (향기 구속 금지 - 사용자의 다양한 주제 보장)**:
-  - **가사나 제목에 향수, 조향 피라미드, 향기 원료 단어를 억지로 집어넣는 것을 엄격히 금지합니다.**
-  - 실제 리센느의 대표곡들(YoYo, UhUh, Pinball, Love Attack 등)처럼, 음악 사운드가 향기처럼 세련되고 감각적일 뿐, **가사와 제목은 사용자가 선택하거나 입력한 주제(청춘, 첫사랑, 짝사랑, 이별, 방황, 자신감, 설렘, 일탈 등)에 온전히 집중하여 다채롭고 매력적인 K-Pop 서사**로 자유롭게 작성해야 합니다.
-  - 사용자가 "가사 테마 또는 추가 요청"에 입력한 스토리가 있다면 해당 서사를 100% 최우선으로 가사와 제목에 반영하세요.
+# 가사(Lyrics) 및 제목(Titles) 철저 분리 규칙 (향기 구속 절대 금지)
+
+**중요 (철칙): 향기/사운드 질감은 오직 stylePrompt에만 적용되며, 곡의 가사(Lyrics)와 제목(Titles)에 향기/향수/원료 단어를 넣는 것을 엄격히 금지합니다!**
+- 실제 리센느의 대표곡들(YoYo, UhUh, Pinball, Love Attack 등)처럼, 음악 사운드가 향기처럼 세련되고 감각적일 뿐, **가사와 제목은 사용자가 선택하거나 입력한 주제(청춘, 첫사랑, 짝사랑, 이별, 방황, 자신감, 설렘, 일탈 등)에 온전히 집중하여 다채롭고 매력적인 K-Pop 서사**로 자유롭게 작성해야 합니다.
+- 사용자가 "곡 가사 테마 & 스토리"에 입력한 스토리가 있다면 해당 서사를 100% 최우선으로 가사와 제목에 반영하세요.
+- **가사 대상 연령대**: **10대 후반~20대 초반 (Z세대 청춘, 18~22세)**.
+  - 너무 어린 10대의 유치한 단어나 기성세대의 신파적 어휘를 배제합니다.
+  - 눈맞춤, 찰나의 침묵, 밤공기, 심장 박동, 솔직하고 트렌디한 Z세대만의 감정선을 표현하세요.
 
 # 안티-AI 에코 & 드라이 스튜디오 보컬 규약 (Anti-Metallic Echo)
 
@@ -249,7 +268,7 @@ Suno v6 모델군 중 이 곡의 음악적 성격에 가장 부합하는 모델 
     - (b) **영어 훅 1줄**(J-pop에서 더 흔한 방식): [Chorus]의 첫 줄 **또는** 마지막 줄 딱 한 줄만 영어로 쓰고 나머지 줄은 모두 일본어. 그 영어 줄은 반복되는 [Chorus]에서 한 글자도 다르지 않게 동일해야 합니다. 한 섹션 안에 두 언어가 들어가는 이 예외는 일본어 곡의 [Chorus] 한 줄에만 허용됩니다.
   - **"한·일 감성 혼용 (노이 neu 스타일)"** (한국어 메인 + 일본어 감성 포인트):
     - 가수 노이(neu)의 대표 작법처럼 곡의 중심 서사(약 70~80%)는 세련되고 직관적인 한국어로 전개하되, 인트로(Intro)의 나직한 귓가 속삭임이나 프리코러스(Pre-Chorus)의 감정 고조, 브릿지(Bridge), 아웃트로(Outro)의 여운 등에 감각적인 일본어 소절을 1~2줄씩 자연스럽게 교차 배치합니다.
-    - 리센느 일본인 멤버(미나미의 탄탄한 고음, 메이의 몽환적 브레시)와 어울리는 시적 감각어(향기 香り, 잔향 残香, 찰나 刹那, 기억 記憶, 숨결 息, 지워지지 않는 消えない, 너의 기척 気配 등)를 활용하여 정서적 아련함을 극대화합니다.
+    - 리센느 일본인 멤버(미나미의 탄탄한 고음, 메이의 몽환적 브레시)와 어울리는 시적 감각어(찰나 刹那, 기억 記憶, 숨결 息, 지워지지 않는 消えない, 너의 기척 気配, 밤하늘 夜空 등)를 활용하여 정서적 아련함을 극대화합니다.
     - 일본어 부분은 절대 로마자(romaji)로 쓰지 않고 일본어 본래 문자(한자·히라가나)로 표기합니다.
     - stylePrompt 보컬 슬롯에는 "Clear Korean Pronunciation, with subtle Japanese vocal phrases" 또는 "bilingual Korean and Japanese delivery"를 반영합니다.
 
@@ -333,19 +352,20 @@ export function buildUserPrompt(s: Selections, mode: GenerationMode, extras?: Ge
     scentInspiration: s.customInputs.scentInspiration,
   }
   if (scent.scentName || scent.scentSonicDescriptor) {
-    lines.push('- [리센느 시그니처 향기 사운드 콘셉트 (Style/Sound 전용)]')
+    lines.push('- [리센느 시그니처 사운드 텍스처 & 악기 주법 (Style/Sound 전용)]')
     if (scent.scentName) {
       lines.push(`  * 사운드 모티브: ${scent.scentName}`)
     }
     if (scent.scentSonicDescriptor) {
-      lines.push(`  * 필수 stylePrompt 공감각 사운드 디스크립터: "${scent.scentSonicDescriptor}"`)
-      lines.push(`    → 지침: 위 향기 사운드 질감에서 핵심 키워드를 반드시 추출하여 각 곡의 stylePrompt(악기/프로덕션/무드 슬롯)에 1~2개 직접 반영하세요! 단순 'K-pop, deep house' 같은 일반적 태그만 나열하지 말고 향기가 연상되는 감각적인 비트를 완성하세요.`)
+      lines.push(`  * 필수 stylePrompt 악기 & 연주 기법: "${scent.scentSonicDescriptor}"`)
+      lines.push(`    → 지침: 악기 슬롯은 반드시 [구체적 악기 기종] + [음색 질감] + [연주 주법/기법 Articulation]의 3요소 결합형으로 작성하세요! 단순 악기명 나열 대신 "dusty Rhodes with tremolo chords", "arpeggiated synth plucks", "sidechain pumping Moog sub-bass"처럼 손에 잡히는 구체적 사운드를 구현하세요.`)
     }
-    lines.push('  * ⚠️ [가사 & 제목 필수 주의사항]: 향기 콘셉트는 사운드(stylePrompt)에만 적용됩니다! 곡 제목이나 가사 본문에 향기/향수/조향 단어를 억지로 쓰지 마세요. 가사와 제목은 사용자가 요청한 주제(사랑, 청춘, 이별, 고백, 설렘, 일탈 등)에 온전히 집중하여 다채롭고 매력적인 K-Pop 스토리로 자유롭게 작성하세요.')
+    lines.push('  * ⚠️ [가사 & 제목 필수 주의사항]: 사운드 질감은 오직 stylePrompt에만 적용됩니다! 곡 제목이나 가사 본문에 향기/향수/원료 단어를 일절 쓰지 마세요. 가사와 제목은 사용자가 요청한 주제(사랑, 청춘, 이별, 고백, 설렘, 일탈 등)에 온전히 집중하여 다채롭고 매력적인 K-Pop 스토리로 자유롭게 작성하세요.')
   }
   const resceneVocals = s.vocal.filter((v) => isResceneVocalLabel(v))
   if (resceneVocals.length > 0) {
-    lines.push(`- [리센느(RESCENE) 멤버 보컬 지정]: ${resceneVocals.join(', ')}. 해당 멤버의 음색 특성(미나미: 탄탄한 고음/딕션, 리브: 맑은 크리스탈톤/리드, 원이: 밝은 에너지/그루브, 메이: 몽환적 브레시/잔향, 제나: 트렌디 중저음/시크 엣지, 완전체: 5인 에테리얼 하모니)을 각 곡의 stylePrompt 보컬 슬롯에 정밀하게 반영하세요.`)
+    lines.push(`- [리센느(RESCENE) 멤버 보컬 지정]: ${resceneVocals.join(', ')}.`)
+    lines.push('- [가사 섹션별 멤버 파트 분배 및 보컬 연출 브래킷 필수]: 가사를 작성할 때 단순 [Verse 1] 태그 대신, 각 섹션 및 소절마다 해당 파트를 가창하는 멤버와 보컬 연출 큐를 대괄호 브래킷으로 명시하세요 (예: [Verse 1: May - breathy intimate whisper close-mic], [Verse 1 (Cont.): Woni - punchy energetic upbeat delivery], [Pre-Chorus: Zena - chic velvety low-mid tone, tension build], [Chorus: All - tight girl group harmonies, Minami & Liv powerful lead], [Verse 2: Liv - pure crystal-clear lead melody], [Bridge: Minami - soaring high-pitch belting climax], [Outro: May - delicate fading whisper]). Suno에서 구간별 음색 전환과 다이내믹이 일어나도록 브래킷 큐를 완벽히 반영하세요.')
     lines.push('- [안티-AI 에코 & 드라이 스튜디오 보컬 필수]: AI 특유의 깡통 울림과 과도한 홀 에코를 원천 차단하기 위해 보컬은 "dry upfront vocals, close-mic studio recording"으로 튜닝하고, excludeStyles에 "heavy reverb", "echo", "metallic vocals"를 반드시 포함하세요.')
   }
   if (
@@ -355,13 +375,13 @@ export function buildUserPrompt(s: Selections, mode: GenerationMode, extras?: Ge
     s.customInputs.production?.includes('드라이') ||
     s.customInputs.production?.includes('에코')
   ) {
-    lines.push('- [보컬 질감 - 안티-AI 에코 & 100% 드라이 스튜디오 보컬]: 인위적인 홀 에코나 리버브를 완전히 배제하고 귀 바로 옆에서 들리는 close-mic dry vocals로 작성하며, excludeStyles에 "heavy reverb", "echo", "metallic vocals"를 필수 탑재하세요.')
+    lines.push('- [보컬 공간감 - 귀 바로 옆 밀착 보컬 (AI 에코 100% 차단)]: 인위적인 홀 에코나 리버브를 완전히 배제하고 귀 바로 옆에서 들리는 close-mic dry vocals로 작성하며, excludeStyles에 "heavy reverb", "echo", "metallic vocals"를 필수 탑재하세요.')
   }
   if (s.language?.includes('노이') || s.language?.includes('한·일')) {
-    lines.push('- [가사 언어 특화 - 노이(neu) 스타일 한·일 감성 혼용]: 전체 곡의 70~80%는 세련된 한국어로 작성하고, 인트로·프리코러스·브릿지·아웃트로에 서정적인 일본어 감성 소절(향기, 잔향, 기억, 독백 테마)을 1~2줄씩 교차 배치하세요. 일본어는 한자/히라가나로 표기하고 로마자 표기는 금지합니다.')
+    lines.push('- [가사 언어 특화 - 노이(neu) 스타일 한·일 감성 혼용]: 전체 곡의 70~80%는 세련된 한국어로 작성하고, 인트로·프리코러스·브릿지·아웃트로에 서정적인 일본어 감성 소절(기억, 독백, 찰나의 순간, 숨결 테마)을 1~2줄씩 교차 배치하세요. 일본어는 한자/히라가나로 표기하고 로마자 표기는 금지합니다.')
   }
   if (s.age?.includes('10대 후반') || s.age?.includes('20대 초반') || s.customInputs.age?.includes('10대 후반')) {
-    lines.push('- [가사 대상 연령대 - 10대 후반~20대 초반 (Z세대 청춘)]: 리센느 멤버들의 실제 연령대(18~22세)에 맞추어, 너무 유치하거나 어린 10대 감성은 지양하고, 풋풋하면서도 트렌디하고 세련된 Z세대 청춘의 감각적인 어휘와 설렘, 찰나의 순간과 향기 잔향에 대한 깊이 있는 감정선을 표현하세요.')
+    lines.push('- [가사 대상 연령대 - 10대 후반~20대 초반 (Z세대 청춘)]: 리센느 멤버들의 실제 연령대(18~22세)에 맞추어, 너무 유치하거나 어린 10대 감성은 지양하고, 풋풋하면서도 트렌디하고 세련된 Z세대 청춘의 감각적인 어휘와 설렘, 찰나의 순간과 눈맞춤, 심장 박동에 대한 깊이 있는 감정선을 표현하세요.')
   }
   const count = extras?.songCount ?? (mode === 'full' ? 10 : mode === 'single' ? 1 : 0)
   if (count === 1) {

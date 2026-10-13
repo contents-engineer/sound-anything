@@ -153,3 +153,68 @@ export function findResceneMemberByLabel(label: string): ResceneMemberVocal | un
 export function isResceneVocalLabel(label: string): boolean {
   return label.includes('리센느') || RESCENE_MEMBERS.some((m) => label.includes(m.nameKo))
 }
+
+/**
+ * 리센느 가사 섹션별 멤버 파트 분배 및 보컬 연출 브래킷 태그 가이드
+ * Suno에 가사를 입력할 때 섹션 헤더나 파트 시작점에 아래 브래킷 태그를 표기하여
+ * 인공지능이 구간별 음색 전환 및 멤버별 캐릭터를 표현하도록 지시합니다.
+ */
+export interface MemberPartCue {
+  memberId: string
+  nameKo: string
+  nameEn: string
+  sectionRole: string
+  lyricBracketTag: string
+  vocalDirecting: string
+}
+
+export const RESCENE_PART_CUES: MemberPartCue[] = [
+  {
+    memberId: 'may',
+    nameKo: '메이',
+    nameEn: 'MAY',
+    sectionRole: '도입 인트로 / 나직한 귓가 속삭임 / 아웃트로 잔향',
+    lyricBracketTag: '[Verse 1: May - breathy intimate whisper close-mic]',
+    vocalDirecting: '공기 반 소리 반의 귓가 속삭임, 에코 없이 귀에 밀착된 ASMR 브레시 보컬',
+  },
+  {
+    memberId: 'woni',
+    nameKo: '원이',
+    nameEn: 'WONI',
+    sectionRole: '벌스 전개 / 비트 그루브 & 산뜻한 텐션 메이킹',
+    lyricBracketTag: '[Verse 1 (Cont.): Woni - punchy energetic upbeat delivery]',
+    vocalDirecting: '비트에 달라붙는 밝고 경쾌한 리듬감, 산뜻하고 당당한 비타민 에너지',
+  },
+  {
+    memberId: 'zena',
+    nameKo: '제나',
+    nameEn: 'ZENA',
+    sectionRole: '프리코러스 빌드업 / 시크한 중저음 / 킬링 훅 포인트',
+    lyricBracketTag: '[Pre-Chorus: Zena - chic velvety low-mid tone, tension build]',
+    vocalDirecting: '벨벳처럼 감기는 트렌디 중저음, 쿨한 싱잉랩 플로우와 텐션 고조',
+  },
+  {
+    memberId: 'all',
+    nameKo: '완전체',
+    nameEn: 'ALL',
+    sectionRole: '후렴구 / 5인 에테리얼 하모니 레이어링',
+    lyricBracketTag: '[Chorus: All - tight girl group harmonies, Minami & Liv powerful lead]',
+    vocalDirecting: '풍성한 5인 화음 레이어링과 드라이하고 또렷한 센터 리드 멜로디',
+  },
+  {
+    memberId: 'liv',
+    nameKo: '리브',
+    nameEn: 'LIV',
+    sectionRole: '벌스 2 메인 전개 / 청아한 크리스탈톤 서사',
+    lyricBracketTag: '[Verse 2: Liv - pure crystal-clear lead melody]',
+    vocalDirecting: '유리구슬처럼 맑은 청아함, 곡의 감정선을 안정적으로 이끄는 실키한 보컬',
+  },
+  {
+    memberId: 'minami',
+    nameKo: '미나미',
+    nameEn: 'MINAMI',
+    sectionRole: '브릿지 클라이맥스 / 폭발적인 고음 벨팅 & 애드리브',
+    lyricBracketTag: '[Bridge: Minami - soaring high-pitch belting climax]',
+    vocalDirecting: '단단한 코어에서 뻗어나오는 시원하고 정확한 한국어 딕션의 고음 벨팅',
+  },
+]

@@ -345,11 +345,11 @@ export default function RescenePage() {
                 YouTube &quot;리센느낌&quot; 공식 제작 스튜디오
               </span>
               <h2 className="mt-2 text-lg sm:text-xl font-bold leading-snug">
-                향기로 기억을 깨우는 프루스트 효과 &amp; 128 BPM 딥하우스
+                가사 섹션별 멤버 파트 분배 &amp; 3요소 악기 주법 딥하우스
               </h2>
               <p className="mt-1 text-xs sm:text-sm text-violet-100 leading-relaxed max-w-2xl">
-                리센느 멤버 각자의 음색을 선택하고 시그니처 향기 테마를 지정하여 팬들의 마음을 사로잡을 완성도 높은 곡을 만들어보세요.
-                AI 특유의 깡통 에코를 억제한 <strong>드라이 &amp; 클로즈마이크 스튜디오 보컬</strong> 규약이 적용됩니다.
+                가사 구간마다 멤버별 보컬 연출 브래킷을 자동 생성하고, 구체적 악기 기종·음색·주법(Articulation)을 스타일 프롬프트에 결합합니다.
+                AI 깡통 에코를 원천 차단한 <strong>귀 바로 옆 밀착(Close-mic) 스튜디오 보컬</strong>이 기본 적용됩니다.
               </p>
             </div>
             <Link
@@ -361,14 +361,14 @@ export default function RescenePage() {
           </div>
         </div>
 
-        {/* 1. 멤버별 보컬 분석 & 선택기 */}
+        {/* 1. 멤버별 파트 분배 & 보컬 연출 */}
         <ResceneVocalSelector
           selectedVocals={selectedVocals}
           onToggleVocal={handleToggleVocal}
           onSelectExclusiveMember={handleSelectExclusiveMember}
         />
 
-        {/* 2. 시그니처 향기 & 조향 아틀리에 (Scent Atelier) */}
+        {/* 2. 시그니처 사운드 텍스처 & 악기 주법 (Sound & Instrument Textures) */}
         <ResceneScentAtelier
           selectedScentId={selectedScentId}
           onSelectCuratedScent={handleSelectCuratedScent}
@@ -405,20 +405,30 @@ export default function RescenePage() {
 
             <div>
               <label className="block text-xs font-bold text-zinc-700 mb-1.5">
-                보컬 공간감 / 에코 튜닝
+                보컬 공간감 (목소리 위치·울림)
               </label>
               <select
                 value={vocalSpace}
                 onChange={(e) => setVocalSpace(e.target.value)}
                 className="w-full rounded-xl border border-zinc-300 bg-white px-3 py-2 text-xs font-medium text-zinc-800 focus:border-violet-500 focus:outline-none"
               >
-                <option value="dry-studio">🎙️ 드라이 스튜디오 (AI 에코 제거)</option>
-                <option value="natural-room">✨ 자연스러운 룸 앰비언스 (내추럴)</option>
-                <option value="soft-ethereal">🫧 은은한 소프트 하모니 (몽환)</option>
+                <option value="dry-studio">🎙️ 귀 바로 옆 밀착 보컬 (AI 에코 차단 · 추천)</option>
+                <option value="natural-room">✨ 아늑한 방 안 라이브 (내추럴 룸)</option>
+                <option value="soft-ethereal">🫧 안개 속 몽환적 보컬 (소프트 앰비언트)</option>
               </select>
               {vocalSpace === 'dry-studio' && (
                 <p className="mt-1.5 text-[11px] text-emerald-700 font-medium leading-snug">
-                  ✓ 인위적 홀 에코를 차단한 클로즈마이크 보컬
+                  ✓ 이어폰 착용 시 귀 바로 옆에서 들리듯 선명함 (깡통 에코 100% 제거)
+                </p>
+              )}
+              {vocalSpace === 'natural-room' && (
+                <p className="mt-1.5 text-[11px] text-zinc-600 font-medium leading-snug">
+                  ✓ 스튜디오 녹음실 안에서 살짝 감도는 자연스럽고 편안한 현장감
+                </p>
+              )}
+              {vocalSpace === 'soft-ethereal' && (
+                <p className="mt-1.5 text-[11px] text-violet-600 font-medium leading-snug">
+                  ✓ 안개 속에 은은하게 스며드는 신비로운 새벽 드림팝 하모니
                 </p>
               )}
             </div>
