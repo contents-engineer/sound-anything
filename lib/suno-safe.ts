@@ -57,24 +57,7 @@ function cleanBracketContent(inner: string): string {
       }
     }
 
-    // 대시(-) 이전의 멤버 파트 추출 (단, rest 자체가 Pre-Chorus 등인 경우는 없음)
-    const dashIdx = rest.indexOf('-')
-    let memberPart = dashIdx > 0 ? rest.slice(0, dashIdx).trim() : rest
-
-    // 쉼표가 있으면 앞부분만
-    const commaIdx = memberPart.indexOf(',')
-    if (commaIdx > 0 && !memberPart.toLowerCase().includes('&')) {
-      memberPart = memberPart.slice(0, commaIdx).trim()
-    }
-
-    // 만약 memberPart가 너무 긴 디스크립터라면 섹션만 남김
-    if (memberPart.length > 20) {
-      return sectionPart
-    }
-
-    if (memberPart) {
-      return `${sectionPart} - ${memberPart}`
-    }
+    // 멤버 지정이 아닌 일반 편곡 디스크립터([Chorus: uplifting 2-step...] 등)는 순수 섹션명만 반환
     return sectionPart
   }
 

@@ -211,10 +211,10 @@ export const RESCENE_PART_CUES: MemberPartCue[] = [
   },
   {
     memberId: 'all',
-    nameKo: '완전체',
-    nameEn: 'ALL',
-    sectionRole: '후렴구 화음 레이어링 / 킬링 훅 단체 제창',
-    lyricBracketTag: '[Chorus: All - tight harmonies, Minami & Liv lead]',
-    vocalDirecting: '풍성한 5인 화음 레이어링과 드라이하고 또렷한 센터 리드 보컬',
+    nameKo: '5인 완전체 (솔로 교차)',
+    nameEn: 'ALL (Solo Trading)',
+    sectionRole: '5인 100% 솔로 배분 (2소절 기본 + 1소절 포인트 교차, 합창 없음)',
+    lyricBracketTag: '[5인 솔로 교차 - 단체 합창 없음]',
+    vocalDirecting: '단체 합창([All]) 없이 2소절 기본 호흡과 1소절 포인트로 미나미·리브·제나·메이·원이가 100% 솔로로 가창',
   },
 ]
