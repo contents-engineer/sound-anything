@@ -170,7 +170,7 @@ export default function RescenePage() {
       production: vocalSpaceText,
       bpm: tempo.includes('130') || tempo.includes('빠름') ? '빠름 (130-150 BPM)' : '약간 빠름 (110-130 BPM)',
       age: ageGroup,
-      form: '후렴 선행 (90년대식)',
+      form: 'K-Pop 딥하우스 댄스 (프리코러스 빌드업 → 드롭)',
       language: language,
       topic: topicList,
       lengthMin: lengthMin,
@@ -291,6 +291,18 @@ export default function RescenePage() {
 
   function handleSendToLyricsAlbum() {
     if (!result?.songs || result.songs.length === 0) return
+    const exportData = {
+      songs: result.songs.map((s) => ({
+        title: s.title,
+        lyrics: s.lyrics,
+      })),
+      targetMood: '🌸 리센느 느낌 × 노이(neu) 한·일 감성 딥하우스',
+    }
+    try {
+      sessionStorage.setItem('pending_lyrics_album_import', JSON.stringify(exportData))
+    } catch {
+      // ignore
+    }
     router.push('/lyrics-album')
   }
 
@@ -619,6 +631,7 @@ export default function RescenePage() {
               result={result}
               onRegenerate={regenerateSong}
               regenerating={regenIndex}
+              onSendToLyricsAlbum={handleSendToLyricsAlbum}
             />
           </div>
         )}

@@ -87,6 +87,36 @@ export default function LyricsAlbumPage() {
     }
     checkStatus()
     window.addEventListener('api-keys-updated', checkStatus)
+
+    // 리센느 제너레이터 등에서 전달된 보류 데이터 자동 임포트
+    try {
+      const pendingRaw = sessionStorage.getItem('pending_lyrics_album_import')
+      if (pendingRaw) {
+        sessionStorage.removeItem('pending_lyrics_album_import')
+        const pending = JSON.parse(pendingRaw)
+        if (Array.isArray(pending?.songs) && pending.songs.length > 0) {
+          setSongs(
+            pending.songs.map((s: { title: string; lyrics: string }, idx: number) => ({
+              id: String(idx + 1),
+              title: s.title || '',
+              lyrics: s.lyrics || '',
+            }))
+          )
+          if (pending.targetMood) {
+            setTargetMood(pending.targetMood)
+          }
+          if (pending.songs.length <= 2) {
+            setAlbumType('single')
+          } else {
+            setAlbumType('mini')
+          }
+          showToast(`💿 리센느 제너레이터에서 ${pending.songs.length}곡의 트랙을 성공적으로 불러왔습니다! ✨`)
+        }
+      }
+    } catch {
+      // ignore
+    }
+
     return () => window.removeEventListener('api-keys-updated', checkStatus)
   }, [])
 

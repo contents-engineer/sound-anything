@@ -5,6 +5,7 @@ import { useState } from 'react'
 import type { GenerationResult, SectionKey, Selections } from '@/types'
 import { SECTIONS } from '@/lib/options'
 import { getCondensedStylePrompt, getPromptVariants } from '@/lib/presets'
+import { convertToSunoSafeLyrics } from '@/lib/suno-safe'
 
 function CopyButton({ text, label = '복사' }: { text: string; label?: string }) {
   const [copied, setCopied] = useState(false)
@@ -249,9 +250,10 @@ type ResultPanelProps = {
   result: GenerationResult
   onRegenerate?: (index: number, retryHint?: string) => void
   regenerating?: number | null
+  onSendToLyricsAlbum?: () => void
 }
 
-export function ResultPanel({ result, onRegenerate, regenerating }: ResultPanelProps) {
+export function ResultPanel({ result, onRegenerate, regenerating, onSendToLyricsAlbum }: ResultPanelProps) {
   const expected =
     result.songCount ?? (result.mode === 'full' ? 10 : result.mode === 'single' ? 1 : (result.songs?.length ?? 0))
   const got = result.songs?.length ?? 0
@@ -260,6 +262,27 @@ export function ResultPanel({ result, onRegenerate, regenerating }: ResultPanelP
   return (
     <div className="mt-6 flex flex-col gap-4">
       {result.selections && <SelectionMirror selections={result.selections} />}
+
+      {/* 유튜브 앨범 패키지 제작 연동 배너 */}
+      {result.songs && result.songs.length > 0 && onSendToLyricsAlbum && (
+        <div className="flex flex-wrap items-center justify-between gap-3 rounded-2xl border border-violet-200 bg-gradient-to-r from-violet-50 via-white to-pink-50 p-4 shadow-xs">
+          <div>
+            <h4 className="text-sm font-bold text-violet-950 flex items-center gap-2">
+              <span>💿</span> 유튜브 &quot;리센느낌&quot; 앨범 패키지 제작
+            </h4>
+            <p className="mt-0.5 text-xs text-zinc-600">
+              생성된 {result.songs.length}곡의 제목과 가사로 유튜브 썸네일 프롬프트, 챕터 타임스탬프, 트랙리스트 설명글을 한번에 생성합니다.
+            </p>
+          </div>
+          <button
+            type="button"
+            onClick={onSendToLyricsAlbum}
+            className="shrink-0 rounded-xl bg-gradient-to-r from-violet-600 to-pink-500 px-4 py-2 text-xs font-bold text-white shadow-sm hover:from-violet-700 hover:to-pink-600 transition"
+          >
+            유튜브 앨범 패키지로 전송 →
+          </button>
+        </div>
+      )}
 
       {countMismatch && (
         <div className="rounded-xl border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-800">
@@ -337,13 +360,18 @@ export function ResultPanel({ result, onRegenerate, regenerating }: ResultPanelP
                       <span>📋</span> Suno 웹사이트 즉시 입력용 복사:
                     </span>
                     <div className="flex flex-wrap items-center gap-1.5">
-                      <CopyButton text={s.lyrics} label="가사 복사" />
+                      <CopyButton text={s.lyrics} label="가사 원본" />
+                      <CopyButton
+                        text={convertToSunoSafeLyrics(s.lyrics)}
+                        label="🛡️ Suno 안전 가사 복사"
+                      />
                       <CopyButton text={stylePrompt} label="스타일 복사" />
                       {excludeStyles.length > 0 && (
                         <CopyButton text={excludeStyles.join(', ')} label="제외태그 복사" />
                       )}
                     </div>
                   </div>
+
 
                   {s.concept && (
                     <section className="mb-3 rounded-lg border-l-2 border-violet-300 bg-violet-50/40 px-3 py-2">
@@ -467,7 +495,10 @@ export function ResultPanel({ result, onRegenerate, regenerating }: ResultPanelP
                   <section className="mt-3">
                     <div className="mb-1 flex items-center justify-between">
                       <span className="text-xs font-medium text-zinc-500">🎤 가사 (Suno 입력란용)</span>
-                      <CopyButton text={s.lyrics} />
+                      <div className="flex items-center gap-1.5">
+                        <CopyButton text={s.lyrics} label="원본 복사" />
+                        <CopyButton text={convertToSunoSafeLyrics(s.lyrics)} label="🛡️ Suno 안전 복사" />
+                      </div>
                     </div>
                     <pre className="overflow-x-auto whitespace-pre-wrap rounded-lg bg-zinc-50 p-3 font-mono text-sm leading-relaxed text-zinc-800">{s.lyrics}</pre>
                   </section>

@@ -173,6 +173,7 @@ export const AGES: Preset[] = [
 ]
 
 export const FORMS: Preset[] = [
+  { emoji: '⚡', label: 'K-Pop 딥하우스 댄스 (프리코러스 빌드업 → 드롭)' },
   { emoji: '🎼', label: '표준 (벌스 → 후렴)' },
   { emoji: '💥', label: '후렴 선행 (90년대식)' },
   { emoji: '🌅', label: '점층형 (후렴 아끼기)' },
