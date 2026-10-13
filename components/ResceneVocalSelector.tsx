@@ -41,7 +41,7 @@ export function ResceneVocalSelector({
               </span>
             </div>
             <p className="text-xs text-zinc-500">
-              가사를 뽑을 때 각 멤버의 음색과 연출 태그([May - whisper], [Minami - belting] 등)가 가사 구간마다 차례대로 배치되어 Suno에서 파트 전환을 이끕니다.
+              가사를 뽑을 때 각 멤버의 태그([Minami], [Liv], [Zena] 등)가 소절(Line) 단위로 티키타카 교차 배치되어 K-Pop 걸그룹의 다이내믹한 보컬 전환을 이끕니다.
             </p>
           </div>
         </div>
@@ -59,7 +59,7 @@ export function ResceneVocalSelector({
                 : 'border border-zinc-200 bg-white text-zinc-600 hover:border-violet-300 hover:text-violet-700',
             ].join(' ')}
           >
-            🫧 5인 완전체 (기본)
+            🫧 5인 완전체 (소절 교차 분배)
           </button>
           <button
             type="button"
@@ -104,45 +104,40 @@ export function ResceneVocalSelector({
       <div className="mb-4 rounded-2xl border border-violet-100 bg-white/90 p-3 shadow-2xs">
         <div className="flex items-center justify-between mb-2">
           <span className="text-xs font-bold text-violet-900 flex items-center gap-1.5">
-            <span>🎼</span> 가사 섹션별 멤버 파트 전개도 (Suno 프롬프트 큐)
+            <span>🎼</span> K-Pop 소절(Line)별 교차 분배 구조 (미나미·리브 중심 보컬 밸런스)
           </span>
-          <span className="text-[10px] text-zinc-400">곡 구조에 따라 브래킷 자동 생성</span>
+          <span className="text-[10px] text-zinc-400">1~2줄씩 티키타카 교대</span>
         </div>
-        <div className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-2 text-center">
+        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-2 text-center">
           <div className="rounded-xl bg-purple-50/80 border border-purple-200/60 p-2">
-            <span className="text-[10px] font-bold text-purple-700 block">1. 도입 벌스</span>
-            <span className="text-xs font-bold text-zinc-800 mt-0.5 block">메이</span>
-            <span className="text-[10px] text-zinc-500 block leading-tight mt-0.5">귓가 속삭임</span>
+            <span className="text-[10px] font-bold text-purple-700 block">1. 벌스 1 (도입)</span>
+            <span className="text-xs font-bold text-zinc-800 mt-0.5 block">제나 ➔ 미나미</span>
+            <span className="text-[10px] text-zinc-500 block leading-tight mt-0.5">포문 열기 &amp; 텐션</span>
           </div>
           <div className="rounded-xl bg-amber-50/80 border border-amber-200/60 p-2">
-            <span className="text-[10px] font-bold text-amber-700 block">2. 벌스 전개</span>
-            <span className="text-xs font-bold text-zinc-800 mt-0.5 block">원이</span>
-            <span className="text-[10px] text-zinc-500 block leading-tight mt-0.5">비트 그루브</span>
+            <span className="text-[10px] font-bold text-amber-700 block">2. 벌스 연결</span>
+            <span className="text-xs font-bold text-zinc-800 mt-0.5 block">메이 ➔ 원이</span>
+            <span className="text-[10px] text-zinc-500 block leading-tight mt-0.5">귓속말 &amp; 그루브</span>
           </div>
-          <div className="rounded-xl bg-zinc-100 border border-zinc-200 p-2">
-            <span className="text-[10px] font-bold text-zinc-700 block">3. 빌드업</span>
-            <span className="text-xs font-bold text-zinc-800 mt-0.5 block">제나</span>
-            <span className="text-[10px] text-zinc-500 block leading-tight mt-0.5">시크 중저음</span>
+          <div className="rounded-xl bg-pink-50/80 border border-pink-200/60 p-2">
+            <span className="text-[10px] font-bold text-pink-700 block">3. 프리코러스 빌드업</span>
+            <span className="text-xs font-bold text-zinc-800 mt-0.5 block">리브 ➔ 미나미</span>
+            <span className="text-[10px] text-zinc-500 block leading-tight mt-0.5">크리스탈 &amp; 고음 상승</span>
           </div>
           <div className="rounded-xl bg-violet-100/90 border border-violet-300 p-2 shadow-2xs">
             <span className="text-[10px] font-bold text-violet-800 block">4. 후렴 (Chorus)</span>
-            <span className="text-xs font-bold text-violet-950 mt-0.5 block">완전체</span>
-            <span className="text-[10px] text-violet-700 block leading-tight mt-0.5">5인 하모니</span>
-          </div>
-          <div className="rounded-xl bg-pink-50/80 border border-pink-200/60 p-2">
-            <span className="text-[10px] font-bold text-pink-700 block">5. 벌스 2</span>
-            <span className="text-xs font-bold text-zinc-800 mt-0.5 block">리브</span>
-            <span className="text-[10px] text-zinc-500 block leading-tight mt-0.5">청아한 크리스탈</span>
+            <span className="text-xs font-bold text-violet-950 mt-0.5 block">미나미 &amp; 리브 리드</span>
+            <span className="text-[10px] text-violet-700 block leading-tight mt-0.5">센터 멜로디 + 5인 화음</span>
           </div>
           <div className="rounded-xl bg-rose-50/80 border border-rose-200/60 p-2">
-            <span className="text-[10px] font-bold text-rose-700 block">6. 브릿지 클라이맥스</span>
-            <span className="text-xs font-bold text-zinc-800 mt-0.5 block">미나미</span>
-            <span className="text-[10px] text-zinc-500 block leading-tight mt-0.5">고음 벨팅 폭발</span>
+            <span className="text-[10px] font-bold text-rose-700 block">5. 브릿지 클라이맥스</span>
+            <span className="text-xs font-bold text-zinc-800 mt-0.5 block">리브 ➔ 미나미</span>
+            <span className="text-[10px] text-zinc-500 block leading-tight mt-0.5">감성 고조 &amp; 초고음 벨팅</span>
           </div>
           <div className="rounded-xl bg-indigo-50/80 border border-indigo-200/60 p-2">
-            <span className="text-[10px] font-bold text-indigo-700 block">7. 아웃트로</span>
-            <span className="text-xs font-bold text-zinc-800 mt-0.5 block">메이</span>
-            <span className="text-[10px] text-zinc-500 block leading-tight mt-0.5">여운 속삭임</span>
+            <span className="text-[10px] font-bold text-indigo-700 block">6. 아웃트로</span>
+            <span className="text-xs font-bold text-zinc-800 mt-0.5 block">메이 &amp; ALL</span>
+            <span className="text-[10px] text-zinc-500 block leading-tight mt-0.5">은은한 잔향 페이드아웃</span>
           </div>
         </div>
       </div>

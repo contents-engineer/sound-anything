@@ -72,27 +72,72 @@ Suno v6는 소리로 번역되는 구체적 음악 구성 요소(보컬 캐릭�
 - 금지: 추상어(epic, beautiful, amazing, emotional), 명령문(make the drums louder), 실제 아티스트명, "Target duration ..." 같은 길이 지시, 무한 루프 유발어(hypnotic, looping, endless).
 - 예시: "Dream Pop, slow 70-90 BPM, Juno-106 pad swells with sparkling resonance, breathy female vocals singing in Korean, Clear Korean Pronunciation, close-mic clean mix, wistful"
 
-# 리센느(RESCENE) 멤버별 가사 파트 분배 및 보컬 연출 브래킷 규칙 (Member Part Allocation & Vocal Cues)
+# 리센느(RESCENE) 멤버별 가사 파트 분배 및 보컬 연출 규칙 (K-Pop Line-by-Line Trading)
 
-리센느 관련 곡(또는 멤버 보컬 지정 시)에서는 일반 "[Verse 1]" 같은 무색무취 태그 대신, **가사 섹션 및 소절마다 해당 파트를 부르는 멤버 이름과 보컬 연출 지시문(Vocal Cue)을 대괄호 브래킷에 구체적으로 명시**해야 합니다!
-Suno는 가사 창의 "[Section: Member - vocal style]" 브래킷 태그를 인식하여 구간별 음색 전환과 멤버별 가창 역할을 다이내믹하게 연출합니다:
+리센느 관련 곡(또는 멤버 보컬 지정 시)에서는 특정 멤버가 한 섹션 전체를 독점하는 것이 아니라, **실제 K-Pop 5인 걸그룹 곡(Uh-Uh, Love Attack 등)처럼 섹션(Verse, Pre-Chorus, Chorus) 내부에서 멤버들이 1~2줄씩 티키타카로 교차 가창(Line-by-Line Trading)**하도록 작성해야 합니다!
 
-1. **5인 완전체 기본 파트 분배 템플릿**:
-   - "[Intro: soft synth intro]"
-   - "[Verse 1: May - breathy intimate whisper close-mic]" (메이의 귓가 속삭임 도입)
-   - "[Verse 1 (Cont.): Woni - punchy energetic upbeat delivery]" (원의의 밝은 텐션과 비트 그루브)
-   - "[Pre-Chorus: Zena - chic velvety low-mid tone, tension build]" (제나의 시크한 중저음 빌드업)
-   - "[Chorus: All - tight girl group harmonies, Minami & Liv powerful lead]" (5인 에테리얼 하모니 + 미나미/리브 리드)
-   - "[Verse 2: Liv - pure crystal-clear lead melody]" (리브의 청아한 크리스탈 독백 전개)
-   - "[Verse 2 (Cont.): Woni & Zena - energetic rhythmic flow]" (원이 & 제나 비트 유닛 호흡)
-   - "[Bridge: Minami - soaring high-pitch belting climax]" (미나미의 폭발적인 클라이맥스 고음 벨팅)
-   - "[Chorus: All - tight explosive harmonized chorus]"
-   - "[Outro: May - delicate fading whisper]" (메이의 서정적인 잔향 속삭임)
-   - "[End]"
-2. **유닛 또는 솔로 선택 시**:
+또한 **핵심 보컬 라인인 미나미(MINAMI)와 리브(LIV)**가 벌스, 프리코러스, 후렴구, 브릿지 전반에 걸쳐 중심을 든든하게 잡고, 제나·메이·원이가 킬링 훅과 도입부, 리듬 그루브로 반전 매력을 부여하는 황금 밸런스를 이룹니다:
+
+1. **5인 멤버별 고유 역할 & 보컬 밸런스**:
+   - **미나미 (MINAMI)** [메인보컬 / 올라운더]: 단단한 코어, 시원한 고음 벨팅, 명확한 딕션. 벌스 2열 전개, 프리코러스 텐션 고조, 후렴구 1열 센터 멜로디 및 애드리브, 브릿지 클라이맥스를 이끄는 곡의 절대적 보컬 기둥!
+   - **리브 (LIV)** [리드보컬 / 크리스탈 음색]: 맑고 투명한 유리구슬 고음, 실키한 음색. 벌스 메인 서사, 프리코러스 감성 리프트, 후렴구 주요 화음 및 센터 멜로디 담당.
+   - **제나 (ZENA)** [서브보컬 / 킬링 엣지 (막내)]: 트렌디한 벨벳 중저음, 시크한 싱잉랩 플로우. 벌스 1 포문 열기, 킬링 훅, 비트 드롭 직전 포인트.
+   - **메이 (MAY)** [서브보컬 / 몽환적 브레시]: 귓가에 닿는 공기 반 소리 반 ASMR 속삭임. 감성 연결 소절, 프리코러스 귓속말, 아웃트로 서정적 잔향.
+   - **원이 (WONI)** [리더 / 산뜻한 그루브]: 비트에 착 감기는 산뜻한 딕션과 비타민 에너지. 벌스 리듬 전개, 랩/싱잉 텐션 업, 후렴구 리듬 훅.
+
+2. **가사 작성 형식: 소절/줄(Line) 단위 멤버 브래킷 필수**:
+   각 가사 줄 앞머리에 멤버 이름 브래킷([Minami], [Liv], [Zena], [May], [Woni], [All])을 표기하여 가창자를 명시합니다:
+   - 가사 작성 예시:
+     [Verse 1]
+     [Zena] 귓가에 번진 낯선 떨림 어두운 골목길 위
+     [Minami] 발걸음마다 느껴지는 팽팽한 tension
+     [May] 몰랐겠지 넌 아직 모를 텐데
+     [Woni] 서두르지 마 천천히 다가와
+
+     [Pre-Chorus]
+     [Liv] 눈을 감아봐 feel the chemistry
+     [Minami] 이 순간을 기다려온 걸
+     [All] You gonna shout it out (Uh-uh)
+
+     [Chorus]
+     [Minami] Like me, Like me 눈이 부신 너를 보여줘
+     [Liv] 한 번도 본 적 없던 빛으로 번져가
+     [Zena] 망설이지 마 내 손을 잡아봐
+     [Woni] 지금 이 리듬 속에 빠져들어
+
+     [Drop]
+     [All] (4-on-the-floor deep house bass drop)
+
+     [Verse 2]
+     [May] 스쳐간 바람 속에 맴도는 잔향
+     [Liv] 차가웠던 마음에 스며든 온기
+     [Woni] 망설임은 지워 지금 뛰어들어
+     [Minami] 더 이상 숨길 수 없는 걸
+
+     [Pre-Chorus]
+     [Zena] Beautiful, 선명해진 우리 둘의 scene
+     [Liv] 한 걸음 더 너에게 닿을 때
+     [Minami] 터질 듯한 심장 소릴 들어봐
+
+     [Bridge]
+     [Liv] 온 세상이 멈춘 것 같은 이 찰나의 침묵
+     [Minami] 너와 나만의 공간 속으로 날아올라
+
+     [Chorus]
+     [Minami] Like me, Like me 눈이 부신 너를 보여줘
+     [Liv] 한 번도 본 적 없던 빛으로 번져가
+     [Zena] 망설이지 마 내 손을 잡아봐
+     [Woni] 지금 이 리듬 속에 빠져들어
+
+     [Outro]
+     [May] 조용히 스며든 우리만의 밤
+     [All] (delicate fade out)
+     [End]
+
+3. **유닛 또는 솔로 선택 시**:
    - 선택된 멤버들의 음색 특성에 맞춰 도입(속삭임/도입), 전개, 후렴(듀엣 하모니), 브릿지(고음)를 분배합니다.
    - 예: 미나미 & 리브 유닛 → 벌스1(리브), 프리코러스(미나미), 후렴(듀엣), 브릿지(미나미 고음).
-   - 예: 솔로 멤버 → 섹션마다 해당 멤버의 가창 다이내믹 표기 (예: "[Verse 1: Minami - calm storytelling]", "[Chorus: Minami - explosive punchy belting]").
+   - 예: 솔로 멤버 → 섹션마다 해당 멤버의 가창 다이내믹 표기 (예: [Verse 1: Minami - calm storytelling], [Chorus: Minami - explosive punchy belting]).
 
 # 가사(Lyrics) 및 제목(Titles) 철저 분리 규칙 (향기 구속 절대 금지)
 
@@ -226,7 +271,7 @@ Suno v6 모델군 중 이 곡의 음악적 성격에 가장 부합하는 모델 
 4. 한 줄은 한 호흡으로 부를 길이 — Verse 줄은 8~10음절, Chorus 줄은 10~12음절을 기준으로 합니다(한국어는 글자 수 ≒ 음절 수, 영어는 대략 5~8단어). **일본어는 음절이 아니라 모라(mora)로 셉니다**: Verse 줄 12~16모라, Chorus 줄 16~20모라. 한자는 글자 수가 아니라 읽는 모라 수로 계산합니다(「心」=2, 「桜」=3, 「太陽」=4). 정확한 카운트보다 **줄 간 길이 일관성**이 중요합니다. 어떤 줄도 영어 12단어 / 한국어 18자 / 일본어 24모라를 넘기지 마세요.
 5. 줄 끝에 마침표나 느낌표를 붙이지 마세요. 문장 중간의 쉼표나 물음표는 허용.
 6. 섹션과 섹션 사이는 빈 줄 1개로 구분. 섹션 내부에는 빈 줄을 넣지 마세요.
-7. 허용 태그는 [Intro], [Verse N], [Pre-Chorus], [Chorus], [Drop], [Post-Chorus], [Bridge], [Outro], [End], 보컬 지정 태그([Female Vocals] [Male Vocals]는 첫 줄 전용 · [Male] [Female] [Both]는 듀엣 가사 줄 라벨 전용), 멤버 브래킷 태그([Verse: Member - cue]), 그리고 아래 편곡 파라미터 문법뿐입니다.
+7. 허용 태그는 [Intro], [Verse N], [Pre-Chorus], [Chorus], [Drop], [Post-Chorus], [Bridge], [Outro], [End], 보컬 지정 태그([Female Vocals] [Male Vocals]는 첫 줄 전용 · [Male] [Female] [Both]는 듀엣 가사 줄 라벨 전용), 멤버 브래킷 태그([Minami], [Liv], [Zena], [May], [Woni], [All] 등 가사 줄 앞머리 태그 또는 [Section: Member - cue]), 그리고 아래 편곡 파라미터 문법뿐입니다.
 8. 보컬에 "연주곡 (보컬 없음)"이 선택되면 lyrics 필드는 정확히 "[Instrumental]" 한 줄만 채웁니다. 소괄호 "(Instrumental)"는 가사로 불릴 수 있으므로 반드시 대괄호 표기를 씁니다.
 
 # 섹션별 다이내믹 악기·편곡 태그 (파라미터 문법)
@@ -369,7 +414,7 @@ export function buildUserPrompt(s: Selections, mode: GenerationMode, extras?: Ge
   const resceneVocals = s.vocal.filter((v) => isResceneVocalLabel(v))
   if (resceneVocals.length > 0) {
     lines.push(`- [리센느(RESCENE) 멤버 보컬 지정]: ${resceneVocals.join(', ')}.`)
-    lines.push('- [가사 섹션별 멤버 파트 분배 및 보컬 연출 브래킷 필수]: 가사를 작성할 때 단순 [Verse 1] 태그 대신, 각 섹션 및 소절마다 해당 파트를 가창하는 멤버와 보컬 연출 큐를 대괄호 브래킷으로 명시하세요 (예: [Verse 1: May - breathy intimate whisper close-mic], [Verse 1 (Cont.): Woni - punchy energetic upbeat delivery], [Pre-Chorus: Zena - chic velvety low-mid tone, tension build], [Chorus: All - tight girl group harmonies, Minami & Liv powerful lead], [Verse 2: Liv - pure crystal-clear lead melody], [Bridge: Minami - soaring high-pitch belting climax], [Outro: May - delicate fading whisper]). Suno에서 구간별 음색 전환과 다이내믹이 일어나도록 브래킷 큐를 완벽히 반영하세요.')
+    lines.push('- [가사 소절(Line)별 멤버 교차 분배(Line-by-Line Trading) 필수]: 한 멤버가 한 섹션 전체를 부르는 대신, 섹션(Verse, Pre-Chorus, Chorus) 내부에서 각 가사 줄 앞머리에 [Minami], [Liv], [Zena], [May], [Woni], [All] 태그를 붙여 1~2줄씩 티키타카로 교차 가창하도록 작성하세요. 특히 핵심 보컬인 미나미(MINAMI)와 리브(LIV)가 벌스, 프리코러스, 후렴구, 브릿지 전반에 걸쳐 중심을 든든하게 이끌고, 제나(도입/킬링훅), 메이(속삭임/잔향), 원이(비트그루브/에너지)가 유기적으로 맞물리는 K-Pop 5인 황금 밸런스를 구현하세요.')
     lines.push('- [안티-AI 에코 & 드라이 스튜디오 보컬 필수]: AI 특유의 깡통 울림과 과도한 홀 에코를 원천 차단하기 위해 보컬은 "dry upfront vocals, close-mic studio recording"으로 튜닝하고, excludeStyles에 "heavy reverb", "echo", "metallic vocals"를 반드시 포함하세요.')
   }
   if (
