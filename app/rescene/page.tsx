@@ -20,7 +20,7 @@ import { CLIENT_TIMEOUT_MS as TIMEOUT_MS } from '@/lib/timeouts'
 
 export default function RescenePage() {
   const router = useRouter()
-  const [selectedScentId, setSelectedScentId] = useState<string>('osmanthus-tea')
+  const [selectedScentId, setSelectedScentId] = useState<string>(CURATED_NEW_SCENTS[0].id)
   const [scentTopic, setScentTopic] = useState<string>(CURATED_NEW_SCENTS[0].topic)
   const [scentGenre, setScentGenre] = useState<string>(CURATED_NEW_SCENTS[0].genre)
   const [scentInstruments, setScentInstruments] = useState<string[]>(CURATED_NEW_SCENTS[0].instruments)

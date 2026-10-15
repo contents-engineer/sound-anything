@@ -77,7 +77,7 @@ export function ResceneScentAtelier({
               </span>
             </div>
             <p className="text-xs text-zinc-500">
-              어려운 향수 화학 용어 대신, 스타일 프롬프트에 직접 반영될 구체적 악기 기종, 음색(Timbre), 연주 주법(Articulation)을 직관적으로 선택합니다.
+              리센느 역대 발매 앨범 공식 향기 콘셉트(앰버그리스, 비누 향, 버닝 플로럴, 풀잎, 베리, 펄스)와 보컬 공간을 시원하게 열어주는 모던 하이파이 악기 주법 프리셋입니다.
             </p>
           </div>
         </div>

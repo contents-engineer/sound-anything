@@ -33,17 +33,20 @@ Suno v6는 소리로 번역되는 구체적 음악 구성 요소(보컬 캐릭�
 - 순서 고정(앞일수록 가중치가 큼): 장르/서브장르 → 템포/에너지 → 핵심 악기 & 연주 기법 → 보컬 → 프로덕션 → 무드. **주 장르를 반드시 맨 앞에** 둡니다.
 - **악기 표현 및 연주 기법(Articulation/Technique) & 음색(Timbre) 3요소 필수 규칙**:
   - Suno AI는 단순 악기명("piano, synth, bass")만 나열하면 평범하고 밋밋한 MIDI 사운드를 출력합니다. 원하는 정밀한 사운드를 구현하려면 악기 슬롯(최대 2~3개 핵심 악기)에 반드시 **[구체적 악기 기종] + [음색 질감 Timbre] + [연주 주법/기법 Playing Technique & Articulation]**의 3요소 결합형 디스크립터를 작성해야 합니다:
-    - 건반/신스 주법: "dusty Rhodes electric piano with gentle tremolo chords", "sparkling arpeggiated synth plucks with crystal delay", "bright resonant staccato synth leads with fast filter decay", "warm detuned Juno-106 analog pad swells", "intimate felt piano with soft hammer attack"
-    - 베이스/리듬 주법: "sidechain pumping Moog sub-bass groove with deep low-end", "crisp syncopated 2-step garage shuffle drums with tight snare claps", "punchy 808 sub bass with smooth melodic glides", "bouncy rolling house bassline with round warmth", "tight slap bass groove", "warm pizzicato acoustic upright bass"
-    - 기타/현악 주법: "palm-muted staccato electric guitar riff", "fingerpicked acoustic guitar with crisp string friction", "glassy chorus-soaked clean electric guitar chords"
-- **리센느 시그니처 사운드 텍스처 반영 (필수 적용)**:
+    - 건반/신스 주법: "sparkling arpeggiated synth plucks with crystal delay", "bright bubbly synth plucks with short decay", "bright resonant staccato synth leads with fast filter decay", "airy ethereal synth pad swells with lush shimmer", "lush modern Rhodes electric piano with crystal chorus chords", "modern polished piano with crystalline transient"
+    - 베이스/리듬 주법: "bouncy rolling house bassline with round warmth", "crisp syncopated 2-step garage shuffle drums with tight snare claps", "sidechain pumping Moog sub-bass groove with deep low-end", "punchy 808 sub bass with smooth melodic glides", "elastic snappy pluck bass groove with tight transient", "heartbeat-inspired minimal deep kick pulse"
+    - 브라스/기타/효과: "slick modern brass synth stabs with fast cutoff", "dewy staccato glass plucks with stereo ping-pong delay", "palm-muted clean electric guitar riff with subtle chorus"
+- **리센느 시그니처 사운드 텍스처 반영 (필수 적용 - 공식 발매 음반 향기 콘셉트)**:
   - 4~7개 슬롯 중 **1~2개를 반드시 위 악기 주법 3요소와 결합된 공감각 사운드 질감**에 배정합니다:
-    - 오스만투스 노을 & 감성 딥하우스: "dusty Rhodes electric piano with gentle tremolo chords", "sidechain pumping warm Moog sub-bass groove", "arpeggiated bell plucks"
-    - 야생 무화과 & 어반 2-Step: "staccato dewy synth plucks with short decay", "crisp syncopated 2-step garage shuffle drums", "creamy analog bassline"
-    - 솔티 마린 & 시 글래스: "effervescent arpeggiated synth plucks with crystal delay", "airy atmospheric pad sweeps", "bouncy rolling bass groove"
-    - 비안개 런던 & 스모키 바닐라: "warm Rhodes electric piano with tape flutter", "dark velvety low-pass Moog bass", "muted chords with smooth decay"
-    - 캐시미어 코튼 & 소프트 머스크: "intimate felt piano with soft hammer attack", "warm analog Juno-106 pad swells", "subtle pizzicato acoustic bass"
-    - 네롤리 선셋 & 시트러스 팝: "bright resonant staccato synth leads with fast filter decay", "punchy 808 sub bass", "uplifting brass synth stabs"
+    - 솔티 마린 & 시 글래스 셔플 (미니 1집 《SCENEDROME》 · 앰버그리스): "effervescent arpeggiated synth plucks with crystal delay", "airy atmospheric pad sweeps", "bouncy rolling bass groove"
+    - 스파클링 솝 & 클린 버블 댄스 (미니 2집 《Glow Up》 · 깨끗한 비누 향): "bright bubbly synth plucks with short decay", "crisp syncopated 2-step garage shuffle drums", "tight punchy bassline"
+    - 버닝 플로럴 & 네롤리 댄스 (싱글 1집 《Re:Scene》 · 플로럴): "slick modern brass synth stabs with fast cutoff", "deep gliding 808 sub bass", "crisp trap-infused house percussion"
+    - 페트리코 웻 그린 & 칠 딥하우스 (싱글 2집 《Dearest》 · 비 온 뒤 풀잎): "dewy staccato glass plucks with stereo ping-pong delay", "sidechain pumping deep clean sub-bass", "filtered ambient water drop textures"
+    - 쥬시 베리 & 립밤 팝 (미니 3집 《lip bomb》 · 5가지 베리): "elastic snappy pluck bass groove with tight transient", "sparkling bell arpeggios", "tight crisp clap groove"
+    - 벨벳 머스크 & 펄스 딥그루브 (미니 4집 《PULSE》 · 심장 박동 & 체온): "heartbeat-inspired minimal deep kick pulse", "warm minimalist deep house groove", "airy whisper synth pads"
+  - ⚠️ **보컬 공간 확보 및 안티-올드(Anti-Vintage Mud) 필수 원칙**:
+    - "dusty", "tape flutter", "vintage low-pass", "lo-fi saturation", "felt hammer" 같은 탁한 레트로 수식어는 Suno가 7080 올드 팝/소울로 인식하여 음악을 촌스럽고 먹먹하게 만듭니다. 이를 엄격히 금지합니다.
+    - 리센느의 사운드는 항상 초고역(Crystalline Air/Plucks)과 극저역(Clean Sub-bass)을 분리하고 보컬 주파수 대역(500Hz~3.5kHz)을 시원하게 비워두는 **"spacious modern mix"**를 적용하여, 5인 멤버 각자의 고유 보이스 큐([Member: Voice Cue])가 귀 바로 앞에서 투명하게 튀어나오도록 구현합니다.
   - 사용자가 커스텀 사운드 조합이나 추가 악기를 지정한 경우에도 해당 악기의 연주 기법과 질감을 3요소 결합형으로 번역하여 반영합니다.
 - 차별화 레버 (곡마다 1개 이상 활용):
   - 마이크로장르: rock 대신 shoegaze·surf rock, hip-hop 대신 boom-bap·phonk, dance-pop 대신 2-step garage·deep house처럼 좁고 뾰족한 장르명
@@ -448,7 +451,7 @@ export function buildUserPrompt(s: Selections, mode: GenerationMode, extras?: Ge
     }
     if (scent.scentSonicDescriptor) {
       lines.push(`  * 필수 stylePrompt 악기 & 연주 기법: "${scent.scentSonicDescriptor}"`)
-      lines.push(`    → 지침: 악기 슬롯은 반드시 [구체적 악기 기종] + [음색 질감] + [연주 주법/기법 Articulation]의 3요소 결합형으로 작성하세요! 단순 악기명 나열 대신 "dusty Rhodes with tremolo chords", "arpeggiated synth plucks", "sidechain pumping Moog sub-bass"처럼 손에 잡히는 구체적 사운드를 구현하세요.`)
+      lines.push(`    → 지침: 악기 슬롯은 반드시 [구체적 악기 기종] + [음색 질감] + [연주 주법/기법 Articulation]의 3요소 결합형으로 작성하세요! "effervescent arpeggiated synth plucks with crystal delay", "bright bubbly synth plucks", "bouncy rolling house bassline"처럼 현대적이고 청량한 사운드를 구현하세요. dusty, lo-fi, tape flutter, felt piano 같은 탁하고 올드한 표현은 엄격히 배제하여 보컬 공간(Spacious Vocal Pocket)을 확보하세요.`)
     }
     lines.push('  * ⚠️ [가사 & 제목 필수 주의사항]: 사운드 질감은 오직 stylePrompt에만 적용됩니다! 곡 제목이나 가사 본문에 향기/향수/원료 단어를 일절 쓰지 마세요. 가사와 제목은 사용자가 요청한 주제(사랑, 청춘, 이별, 고백, 설렘, 일탈 등)에 온전히 집중하여 다채롭고 매력적인 K-Pop 스토리로 자유롭게 작성하세요.')
   }
